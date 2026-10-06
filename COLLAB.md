@@ -95,7 +95,7 @@ Fase berikutnya **tidak boleh dimulai** sebelum tag di kolom "Butuh" ada di remo
 
 | Fase | Pemilik | Isi | Butuh | Status |
 |---|---|---|---|---|
-| BE-0 | BE | Scaffold Next.js (App Router) + TS strict + Tailwind v4 + Vitest; folder sesuai ARCHITECTURE §2; `lib/types.ts` lengkap (§2.1); memory store + seed (SEED_DATA.md); `getStationView`, `getShiftBoardView`, `setRole`; stub `page.tsx` polos untuk semua route; script `dev`/`test`/`lint`/`typecheck` jalan | – | TODO |
+| BE-0 | BE | Scaffold Next.js (App Router) + TS strict + Tailwind v4 + Vitest; folder sesuai ARCHITECTURE §2; `lib/types.ts` lengkap (§2.1); memory store + seed (SEED_DATA.md); `getStationView`, `getShiftBoardView`, `setRole`; stub `page.tsx` polos untuk semua route; script `dev`/`test`/`lint`/`typecheck` jalan | – | DONE |
 | UI-0 | UI | Token `@theme` di `globals.css` (DESIGN.md); `layout.tsx`: top bar navy, role switcher, shift clock, footer label; primitive `components/ui/`: Button (48–64 px), Badge, AndonBadge, LoopBadge, DataTable gaya dokumen, KpiTile, Sheet/Dialog, EmptyState | `handoff/be-0` | TODO |
 | BE-1 | BE | `lib/rules` repeat/budget/recommend/override + test; action §2.3 fase BE-1; mekanisme refresh 2 detik | `handoff/ui-0` | TODO |
 | UI-1 | UI | `/station`: AlertCard + HeatmapImage, score vs threshold, DecisionBar, ReasonCodeSheet, status "what happens next", Suggest idea. `/shift-board`: grid StationTile (counts, budget meter, flag "model review needed"), RecommendationBox + 3 tombol keputusan + note | `handoff/be-1` | TODO |
@@ -183,3 +183,4 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 | Tgl | Oleh | Perubahan | Dampak ke pihak lain |
 |---|---|---|---|
 | 2026-10-06 | UI | Aturan kolaborasi (COLLAB.md, AGENTS.md) dibuat | BE mulai dari BE-0 |
+| 2026-10-06 | BE | BE-0 menambahkan kontrak tipe lengkap, `getStationView(stationId)`, `getShiftBoardView()`, dan `setRole(role)` | UI-0 memakai view model dari `lib/queries.ts`, tipe dari `lib/types.ts`, dan action dari `lib/actions/role.ts` |
