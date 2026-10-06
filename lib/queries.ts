@@ -2,7 +2,13 @@ import { cookies } from "next/headers";
 
 import { DEFAULT_ROLE, isRole, ROLE_COOKIE_NAME } from "@/lib/role-cookie";
 import { getFalseAlarmBudgetState } from "@/lib/rules/budget";
-import { calculateOverrideRate } from "@/lib/rules/metrics";
+import {
+  calculateIdeaMetrics,
+  calculateLearningCycleTimes,
+  calculateOverrideRate,
+  calculateOverrideRateForAlerts,
+  median,
+} from "@/lib/rules/metrics";
 import { getShiftRecommendation } from "@/lib/rules/recommend";
 import { getConfirmedRepeatState, isConfirmedAlert } from "@/lib/rules/repeat";
 import { isA3Complete } from "@/lib/rules/lifecycle";
@@ -20,6 +26,7 @@ import type {
   KnowledgeCard,
   KnowledgeFilters,
   KnowledgeView,
+  MetricsView,
   ReasonCodeOption,
   RecommendationView,
   Role,
@@ -267,12 +274,15 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
   const ticket = snapshot.tickets.find((item) => item.id === id);
   if (!ticket) return null;
   const defectTypesById = new Map(snapshot.defectTypes.map((item) => [item.id, item]));
+  const defectType = defectTypesById.get(ticket.defectTypeId);
+  if (!defectType) return null;
   const draft = snapshot.cards
     .filter((card) => card.sourceTicketId === ticket.id && card.status === "draft")
     .sort((left, right) => right.revision - left.revision)[0];
   const requiredFieldsComplete = isA3Complete(ticket.a3);
   return {
     ticket,
+    defectType,
     triggerAlerts: ticket.triggerAlertIds
       .map((alertId) => snapshot.alerts.find((alert) => alert.id === alertId))
       .filter((alert): alert is Alert => alert !== undefined)
@@ -315,5 +325,103 @@ export async function getKnowledgeView(filters: KnowledgeFilters = {}): Promise<
       statuses,
       selected: filters,
     },
+  };
+}
+
+export async function getMetricsView(): Promise<MetricsView> {
+  const snapshot = await getStore().getSnapshot();
+  const falseAlarms = snapshot.stations.map((station) => {
+    const budget = getFalseAlarmBudgetState(
+      snapshot.alerts,
+      snapshot.decisions,
+      station.id,
+      snapshot.currentShift,
+    );
+    return {
+      station,
+      count: budget.count,
+      budget: budget.budget,
+      withinBudget: !budget.exceeded,
+    };
+  });
+
+  const completedAlerts = snapshot.alerts.filter(
+    (alert) => Date.parse(alert.createdAt) < Date.parse(snapshot.currentShift.startsAt),
+  );
+  const latestCompletedDate = completedAlerts
+    .map((alert) => alert.createdAt.slice(0, 10))
+    .sort()
+    .at(-1);
+  const latestCompletedDayAlerts = latestCompletedDate
+    ? completedAlerts.filter((alert) => alert.createdAt.startsWith(latestCompletedDate))
+    : [];
+  const currentOverridePercent = Math.round(
+    calculateOverrideRateForAlerts(latestCompletedDayAlerts, snapshot.decisions) * 100,
+  );
+  const learningCycleDays = median(
+    calculateLearningCycleTimes(snapshot.tickets, snapshot.cards, snapshot.alerts),
+  );
+  const ideas = calculateIdeaMetrics(snapshot.ideas);
+  const stationsWithinBudget = falseAlarms.filter((item) => item.withinBudget).length;
+
+  return {
+    gate1: [
+      {
+        id: "false-alarms",
+        label: "False alarms per station per shift",
+        value: `${stationsWithinBudget} of ${falseAlarms.length} within`,
+        unit: "stations",
+        baseline: "n/a",
+        target: "≤ 2 per station per shift",
+        sourceLabel: "ES Gate 1",
+      },
+      {
+        id: "override-rate",
+        label: "Operators overriding alerts",
+        value: currentOverridePercent,
+        unit: "%",
+        baseline: 31,
+        target: "< 20%",
+        sourceLabel: "Casebook survey; ES Section 3",
+      },
+      {
+        id: "limit-sample-detection",
+        label: "Detection on seeded limit samples",
+        value: "Not run",
+        unit: "",
+        baseline: "n/a",
+        target: "59 per defect type",
+        sourceLabel: "ES Appendix H",
+      },
+      {
+        id: "scrap-index",
+        label: "Scrap index (2023 = 100)",
+        value: "Not measured",
+        unit: "index",
+        baseline: 108,
+        target: 96,
+        sourceLabel: "Casebook Exhibit 4; ES Table 4",
+      },
+      {
+        id: "operator-help",
+        label: "Operators saying technology helps",
+        value: "Survey due",
+        unit: "%",
+        baseline: 54,
+        target: "≥ 75%",
+        sourceLabel: "Casebook survey; ES Gate 1",
+      },
+    ],
+    falseAlarms,
+    overrideRate: {
+      baselinePercent: 31,
+      currentPercent: currentOverridePercent,
+      gate1TargetPercent: 20,
+      year2030TargetPercent: 10,
+      periodLabel: "Latest completed simulated day",
+    },
+    learningCycleDays,
+    ideas,
+    dataLabel: "Simulated data",
   };
 }

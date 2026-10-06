@@ -1,12 +1,12 @@
 import { createSeedData } from "@/lib/seed";
-import { resetMemoryStore } from "@/lib/store/memory";
+import { getStore, getStoreBackend } from "@/lib/store";
 
 async function main() {
   const seed = createSeedData();
-  await resetMemoryStore();
+  await getStore().reset();
 
   console.log(
-    `Seeded deterministic memory store: ${seed.stations.length} stations, ${seed.alerts.length} alerts, ${seed.tickets.length} tickets, ${seed.cards.length} cards, ${seed.ideas.length} ideas.`,
+    `Seeded deterministic ${getStoreBackend()} store: ${seed.stations.length} stations, ${seed.alerts.length} alerts, ${seed.tickets.length} tickets, ${seed.cards.length} cards, ${seed.ideas.length} ideas.`,
   );
 }
 

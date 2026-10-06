@@ -247,6 +247,7 @@ export interface KaizenView {
 
 export interface TicketView {
   ticket: Ticket;
+  defectType: DefectType;
   triggerAlerts: AlertView[];
   a3: A3;
   aiPrefilledFields: A3Field[];
@@ -299,12 +300,26 @@ export interface KpiView {
 
 export interface MetricsView {
   gate1: KpiView[];
+  falseAlarms: {
+    station: Station;
+    count: number;
+    budget: number;
+    withinBudget: boolean;
+  }[];
+  overrideRate: {
+    baselinePercent: number;
+    currentPercent: number;
+    gate1TargetPercent: number;
+    year2030TargetPercent: number;
+    periodLabel: string;
+  };
   learningCycleDays: number;
   ideas: {
     submitted: number;
     answeredWithin7Days: number;
     implemented: number;
   };
+  dataLabel: "Simulated data";
 }
 
 export interface AssistantAnswer {

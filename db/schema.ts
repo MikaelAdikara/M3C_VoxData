@@ -9,7 +9,13 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 
-import type { A3 } from "@/lib/types";
+import type { A3, StoreSnapshot } from "@/lib/types";
+
+export const demoStates = pgTable("demo_states", {
+  id: text("id").primaryKey(),
+  snapshot: jsonb("snapshot").$type<StoreSnapshot>().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
+});
 
 export const stations = pgTable("stations", {
   id: text("id").primaryKey(),

@@ -35,7 +35,9 @@ export const defectTypes: DefectType[] = [
 function historyAlert(index: number): Alert {
   const day = Math.floor(index / 80);
   const withinDay = index % 80;
-  const rejectedPerDay = Math.round(25 - (day * 6) / 29);
+  const alertsInDay = day === 29 ? 76 : 80;
+  const rejectionRate = 0.31 - (day * 0.07) / 29;
+  const rejectedPerDay = Math.round(alertsInDay * rejectionRate);
   const station = stations[index % stations.length];
   const isRejected = withinDay < rejectedPerDay;
   const defectTypeId = defectTypes[(index * 3) % defectTypes.length].id;
@@ -58,7 +60,7 @@ function historyAlert(index: number): Alert {
 }
 
 function createHistoricalAlerts(): Alert[] {
-  const alerts = Array.from({ length: 2_395 }, (_, index) => historyAlert(index));
+  const alerts = Array.from({ length: 2_396 }, (_, index) => historyAlert(index));
   const st04Confirmed = alerts.filter(
     (alert) => alert.stationId === "st-04" && alert.status === "confirmed",
   );
@@ -116,20 +118,6 @@ const currentAlerts: Alert[] = [
     createdAt: new Date(SEED_NOW - 8 * 60_000).toISOString(),
     status: "confirmed",
   },
-  {
-    id: "alert-st04-open-001",
-    stationId: "st-04",
-    bodyId: "K2-27-031487",
-    roi: "seam-R-door-07",
-    defectTypeId: "BEAD_BREAK",
-    anomalyScore: 0.83,
-    threshold: 0.61,
-    modelVersion: "sealer-st04-v1.3",
-    image: "/beads/bead_break.svg",
-    mask: "/beads/bead_break-mask.svg",
-    createdAt: "2027-03-14T08:42:17.412+07:00",
-    status: "open",
-  },
 ];
 
 const currentDecisions: Decision[] = Array.from({ length: 3 }, (_, index) => ({
@@ -150,46 +138,87 @@ const emptyA3 = {
   standardise: "",
 };
 
-function createTickets(): Ticket[] {
-  return [
-    ...Array.from({ length: 6 }, (_, index): Ticket => ({
+function matchingTriggerAlerts(
+  alerts: readonly Alert[],
+  stationId: string,
+  defectTypeId: DefectTypeId,
+  placement: "first" | "last" = "first",
+): Alert[] {
+  const matching = alerts
+    .filter(
+      (alert) =>
+        alert.stationId === stationId &&
+        alert.defectTypeId === defectTypeId &&
+        alert.status === "confirmed",
+    )
+    .sort((left, right) => left.createdAt.localeCompare(right.createdAt));
+  const selected = placement === "last" ? matching.slice(-3) : matching.slice(0, 3);
+  if (selected.length !== 3) {
+    throw new Error(`Seed needs three confirmed ${defectTypeId} alerts at ${stationId}.`);
+  }
+  return selected;
+}
+
+function createTickets(alerts: readonly Alert[]): Ticket[] {
+  const closedSpecs: { stationId: string; defectTypeId: DefectTypeId; cycleDays: number }[] = [
+    { stationId: "st-04", defectTypeId: "BEAD_THIN", cycleDays: 16 },
+    { stationId: "st-04", defectTypeId: "BEAD_BREAK", cycleDays: 18 },
+    { stationId: "st-01", defectTypeId: "BEAD_OFFSET", cycleDays: 19 },
+    { stationId: "st-02", defectTypeId: "BEAD_EXCESS", cycleDays: 19 },
+    { stationId: "st-05", defectTypeId: "BEAD_MISSING", cycleDays: 21 },
+    { stationId: "st-06", defectTypeId: "BEAD_THIN", cycleDays: 22 },
+  ];
+  const closedTickets = closedSpecs.map((spec, index): Ticket => {
+    const triggerAlerts = matchingTriggerAlerts(alerts, spec.stationId, spec.defectTypeId);
+    return {
       id: `KZ-SEAL-${String(index + 1).padStart(3, "0")}`,
-      stationId: "st-04",
-      defectTypeId: defectTypes[index % defectTypes.length].id,
-      triggerAlertIds: [`alert-history-${String(index * 3 + 1).padStart(4, "0")}`],
+      stationId: spec.stationId,
+      defectTypeId: spec.defectTypeId,
+      triggerAlertIds: triggerAlerts.map((alert) => alert.id),
       ownerRole: "role:engineer@body",
       status: "closed",
       a3: emptyA3,
       aiPrefilledFields: [],
-      createdAt: new Date(SEED_NOW - (50 - index) * DAY_MS).toISOString(),
-      closedAt: new Date(SEED_NOW - (31 - index) * DAY_MS).toISOString(),
-    })),
+      createdAt: triggerAlerts.at(-1)!.createdAt,
+      closedAt: new Date(Date.parse(triggerAlerts[0].createdAt) + spec.cycleDays * DAY_MS).toISOString(),
+    };
+  });
+  const thinTriggers = matchingTriggerAlerts(alerts, "st-04", "BEAD_THIN", "last");
+  const offsetTriggers = matchingTriggerAlerts(alerts, "st-02", "BEAD_OFFSET", "last");
+
+  return [
+    ...closedTickets,
     {
       id: "KZ-SEAL-007",
       stationId: "st-04",
       defectTypeId: "BEAD_THIN",
-      triggerAlertIds: ["alert-history-2301", "alert-history-2309", "alert-history-2317"],
+      triggerAlertIds: thinTriggers.map((alert) => alert.id),
       ownerRole: "role:engineer@body",
       status: "a3_in_progress",
       a3: { ...emptyA3, background: "Three thin-bead alerts at st-04 in shift A." },
       aiPrefilledFields: ["background"],
-      createdAt: new Date(SEED_NOW - 4 * DAY_MS).toISOString(),
+      createdAt: thinTriggers.at(-1)!.createdAt,
     },
     {
       id: "KZ-SEAL-008",
       stationId: "st-02",
       defectTypeId: "BEAD_OFFSET",
-      triggerAlertIds: ["alert-history-2322", "alert-history-2330", "alert-history-2338"],
+      triggerAlertIds: offsetTriggers.map((alert) => alert.id),
       ownerRole: "role:engineer@body",
       status: "countermeasure_trial",
       a3: emptyA3,
       aiPrefilledFields: [],
-      createdAt: new Date(SEED_NOW - 8 * DAY_MS).toISOString(),
+      createdAt: offsetTriggers.at(-1)!.createdAt,
     },
   ];
 }
 
-function createCards(): KnowledgeCard[] {
+function createCards(tickets: readonly Ticket[]): KnowledgeCard[] {
+  const closedTicket = (id: string) => {
+    const ticket = tickets.find((item) => item.id === id);
+    if (!ticket?.closedAt) throw new Error(`Seed card needs closed ticket ${id}.`);
+    return ticket;
+  };
   const examples: KnowledgeCard[] = [
     {
       id: "KC-SEAL-014",
@@ -204,7 +233,8 @@ function createCards(): KnowledgeCard[] {
       countermeasure: "Warm-up purge of 30 s before the first body; check gun pressure at start-up",
       standardRevised: "Standardized work st-04, step 2",
       validatedByRole: "role:senior_expert@body",
-      validatedAt: "2027-02-20T09:00:00.000+07:00",
+      validatedAt: closedTicket("KZ-SEAL-001").closedAt,
+      sourceTicketId: "KZ-SEAL-001",
     },
     {
       id: "KC-SEAL-021",
@@ -219,7 +249,8 @@ function createCards(): KnowledgeCard[] {
       countermeasure: "Angle gauge check after every nozzle change; add to change checklist",
       standardRevised: "QC process chart, sealer section",
       validatedByRole: "role:senior_expert@body",
-      validatedAt: "2027-01-28T09:00:00.000+07:00",
+      validatedAt: closedTicket("KZ-SEAL-002").closedAt,
+      sourceTicketId: "KZ-SEAL-002",
     },
     {
       id: "KC-SEAL-009",
@@ -247,7 +278,7 @@ function createCards(): KnowledgeCard[] {
       symptom: "Offset bead after operator rotation",
       rootCause: "Hand-over misses robot path check",
       countermeasure: "Pending senior validation",
-      standardRevised: "—",
+      standardRevised: "Pending validation",
     },
     {
       id: "KC-SEAL-004",
@@ -260,25 +291,106 @@ function createCards(): KnowledgeCard[] {
       symptom: "Excess sealer",
       rootCause: "Old pump regulator (replaced)",
       countermeasure: "Superseded by KC-SEAL-014",
-      standardRevised: "—",
+      standardRevised: "Retired; replacement standard is recorded in KC-SEAL-014",
     },
   ];
 
-  const additionalValidated = Array.from({ length: 6 }, (_, index): KnowledgeCard => ({
-    id: `KC-SEAL-${String(40 + index).padStart(3, "0")}`,
-    revision: 1,
-    status: "validated",
-    process: "Sealer",
-    stationIds: [`st-0${(index % 6) + 1}`],
-    variants: ["K2"],
-    factor4M: (["Man", "Machine", "Material", "Method"] as const)[index % 4],
-    symptom: `Validated sealer symptom ${index + 1}`,
-    rootCause: `Validated root cause ${index + 1}`,
-    countermeasure: `Validated countermeasure ${index + 1}`,
-    standardRevised: `Sealer standard section ${index + 1}`,
-    validatedByRole: "role:senior_expert@body",
-    validatedAt: new Date(SEED_NOW - (20 + index) * DAY_MS).toISOString(),
-  }));
+  const additionalValidated: KnowledgeCard[] = [
+    {
+      id: "KC-SEAL-040",
+      revision: 1,
+      status: "validated",
+      process: "Sealer",
+      stationIds: ["st-01"],
+      variants: ["K2"],
+      factor4M: "Method",
+      symptom: "Bead offset after a robot path program change",
+      rootCause: "First-off path verification was skipped after recipe selection",
+      countermeasure: "Verify the robot path on the first-off body before normal production",
+      standardRevised: "Robot path change checklist, first-off verification",
+      validatedByRole: "role:senior_expert@body",
+      validatedAt: closedTicket("KZ-SEAL-003").closedAt,
+      sourceTicketId: "KZ-SEAL-003",
+    },
+    {
+      id: "KC-SEAL-041",
+      revision: 1,
+      status: "validated",
+      process: "Sealer",
+      stationIds: ["st-02"],
+      variants: ["K2"],
+      factor4M: "Machine",
+      symptom: "Excess sealer at the end of the bead",
+      rootCause: "Shut-off response slowed after applicator valve seal wear",
+      countermeasure: "Inspect valve response and confirm clean cut-off on a trial body",
+      standardRevised: "Applicator inspection standard, valve response check",
+      validatedByRole: "role:senior_expert@body",
+      validatedAt: closedTicket("KZ-SEAL-004").closedAt,
+      sourceTicketId: "KZ-SEAL-004",
+    },
+    {
+      id: "KC-SEAL-042",
+      revision: 1,
+      status: "validated",
+      process: "Sealer",
+      stationIds: ["st-05"],
+      variants: ["K2"],
+      factor4M: "Material",
+      symptom: "Missing bead immediately after a material cartridge change",
+      rootCause: "An air pocket remained in the supply line after changeover",
+      countermeasure: "Purge until flow is continuous and verify the first bead before release",
+      standardRevised: "Material change standard, purge and first-bead check",
+      validatedByRole: "role:senior_expert@body",
+      validatedAt: closedTicket("KZ-SEAL-005").closedAt,
+      sourceTicketId: "KZ-SEAL-005",
+    },
+    {
+      id: "KC-SEAL-043",
+      revision: 1,
+      status: "validated",
+      process: "Sealer",
+      stationIds: ["st-06"],
+      variants: ["K2"],
+      factor4M: "Machine",
+      symptom: "Thin bead during rapid pressure fluctuation",
+      rootCause: "Pressure regulator response lagged during demand change",
+      countermeasure: "Check regulator response and hold pressure within the approved start-up range",
+      standardRevised: "Sealer pressure verification standard",
+      validatedByRole: "role:senior_expert@body",
+      validatedAt: closedTicket("KZ-SEAL-006").closedAt,
+      sourceTicketId: "KZ-SEAL-006",
+    },
+    {
+      id: "KC-SEAL-044",
+      revision: 1,
+      status: "validated",
+      process: "Sealer",
+      stationIds: ["st-03"],
+      variants: ["K2"],
+      factor4M: "Man",
+      symptom: "Bead break after manual robot recovery",
+      rootCause: "Recovery resumed from the middle of the seam instead of its defined restart point",
+      countermeasure: "Return to the defined seam restart point and inspect the recovered bead",
+      standardRevised: "Robot recovery work instruction, seam restart step",
+      validatedByRole: "role:senior_expert@body",
+      validatedAt: new Date(SEED_NOW - 18 * DAY_MS).toISOString(),
+    },
+    {
+      id: "KC-SEAL-045",
+      revision: 1,
+      status: "validated",
+      process: "Sealer",
+      stationIds: ["st-04"],
+      variants: ["K2"],
+      factor4M: "Method",
+      symptom: "Excess bead at a corner transition",
+      rootCause: "Robot speed reduction was not paired with a lower flow command",
+      countermeasure: "Pair the corner speed profile with the approved flow setpoint",
+      standardRevised: "Sealer recipe standard, corner transition settings",
+      validatedByRole: "role:senior_expert@body",
+      validatedAt: new Date(SEED_NOW - 17 * DAY_MS).toISOString(),
+    },
+  ];
 
   return [
     ...examples,
@@ -291,10 +403,10 @@ function createCards(): KnowledgeCard[] {
       stationIds: ["st-06"],
       variants: ["K2"],
       factor4M: "Method",
-      symptom: "Draft observation",
-      rootCause: "Under investigation",
+      symptom: "Intermittent bead offset after fixture release",
+      rootCause: "Fixture and path relationship is under investigation",
       countermeasure: "Pending senior validation",
-      standardRevised: "—",
+      standardRevised: "Pending validation",
     },
   ];
 }
@@ -316,6 +428,8 @@ function createIdeas(): Idea[] {
 }
 
 export function createSeedData(): StoreSnapshot {
+  const alerts = [...createHistoricalAlerts(), ...currentAlerts];
+  const tickets = createTickets(alerts);
   return {
     currentShift: {
       id: "shift-a-2027-03-14",
@@ -325,10 +439,10 @@ export function createSeedData(): StoreSnapshot {
     },
     stations,
     defectTypes,
-    alerts: [...createHistoricalAlerts(), ...currentAlerts],
+    alerts,
     decisions: currentDecisions,
-    tickets: createTickets(),
-    cards: createCards(),
+    tickets,
+    cards: createCards(tickets),
     ideas: createIdeas(),
     modelReviews: [
       {

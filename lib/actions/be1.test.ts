@@ -15,6 +15,7 @@ vi.mock("next/cache", () => ({ revalidatePath: context.revalidatePath }));
 
 import { confirmAlert, rejectAlert } from "@/lib/actions/alerts";
 import { submitIdea } from "@/lib/actions/ideas";
+import { injectTrueDefect } from "@/lib/actions/simulator";
 import { decideShift, verifyRejection } from "@/lib/actions/shift";
 import { getShiftBoardView } from "@/lib/queries";
 import { getMemoryStore, resetMemoryStore } from "@/lib/store/memory";
@@ -27,6 +28,7 @@ describe("BE-1 server actions", () => {
   });
 
   it("confirms an open alert as the station operator", async () => {
+    await injectTrueDefect();
     await expect(confirmAlert("alert-st04-open-001")).resolves.toEqual({ ok: true });
     const snapshot = await getMemoryStore().getSnapshot();
     expect(snapshot.alerts.find((alert) => alert.id === "alert-st04-open-001")?.status).toBe(
@@ -46,6 +48,7 @@ describe("BE-1 server actions", () => {
   });
 
   it("rejects an open alert with a valid reason and queues human verification", async () => {
+    await injectTrueDefect();
     await expect(
       rejectAlert("alert-st04-open-001", "reflection", "Light reflected from the panel"),
     ).resolves.toEqual({ ok: true });
@@ -69,6 +72,7 @@ describe("BE-1 server actions", () => {
   });
 
   it("rejects an invalid reason without changing alert state", async () => {
+    await injectTrueDefect();
     await expect(
       rejectAlert("alert-st04-open-001", "not-a-reason" as never),
     ).resolves.toEqual({ ok: false, error: "Invalid rejection reason." });
@@ -79,6 +83,7 @@ describe("BE-1 server actions", () => {
   });
 
   it("records an explicit team leader decision and closes the confirmed alert", async () => {
+    await injectTrueDefect();
     await confirmAlert("alert-st04-open-001");
     context.role = "team_leader";
     await expect(

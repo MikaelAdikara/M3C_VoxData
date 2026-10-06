@@ -16,6 +16,7 @@ import { confirmAlert } from "@/lib/actions/alerts";
 import { routeToOwner, returnCard, validateCard } from "@/lib/actions/knowledge";
 import { advanceTicket, requestValidation, updateA3 } from "@/lib/actions/kaizen";
 import { verifyRejection } from "@/lib/actions/shift";
+import { injectTrueDefect } from "@/lib/actions/simulator";
 import { getKnowledgeView, getShiftBoardView, getStationView, getTicketView } from "@/lib/queries";
 import { getMemoryStore, resetMemoryStore } from "@/lib/store/memory";
 import type { A3, Alert } from "@/lib/types";
@@ -54,6 +55,7 @@ describe("BE-2 Kaizen actions", () => {
   });
 
   it("atomically opens one ticket when operator confirmation reaches repeat three", async () => {
+    await injectTrueDefect();
     await getMemoryStore().mutate((draft) => {
       draft.alerts.push(repeatAlert("repeat-a", 10), repeatAlert("repeat-b", 20));
     });

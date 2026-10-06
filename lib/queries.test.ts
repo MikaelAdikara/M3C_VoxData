@@ -30,17 +30,10 @@ describe("BE-0 view models", () => {
     await expect(getCurrentRole()).resolves.toBe("operator");
   });
 
-  it("returns the latest open alert and UI-ready reason codes for st-04", async () => {
+  it("returns the baseline station and UI-ready reason codes without pre-injecting a demo alert", async () => {
     const view = await getStationView("st-04");
     expect(view?.station.id).toBe("st-04");
-    expect(view?.openAlert).toMatchObject({
-      id: "alert-st04-open-001",
-      roi: "seam-R-door-07",
-      anomalyScore: 0.83,
-      threshold: 0.61,
-      modelVersion: "sealer-st04-v1.3",
-      status: "open",
-    });
+    expect(view?.openAlert).toBeNull();
     expect(view?.reasonCodes.map((reason) => reason.value)).toEqual([
       "reflection",
       "variant_mismatch",

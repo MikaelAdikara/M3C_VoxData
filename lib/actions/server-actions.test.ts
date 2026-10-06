@@ -6,6 +6,7 @@ import * as kaizenActions from "@/lib/actions/kaizen";
 import * as knowledgeActions from "@/lib/actions/knowledge";
 import * as roleActions from "@/lib/actions/role";
 import * as shiftActions from "@/lib/actions/shift";
+import * as simulatorActions from "@/lib/actions/simulator";
 
 describe("server action module exports", () => {
   it.each([
@@ -15,6 +16,7 @@ describe("server action module exports", () => {
     ["knowledge", knowledgeActions],
     ["role", roleActions],
     ["shift", shiftActions],
+    ["simulator", simulatorActions],
   ])("exports only async functions from %s", (_name, actions) => {
     expect(Object.keys(actions).length).toBeGreaterThan(0);
     for (const action of Object.values(actions)) {

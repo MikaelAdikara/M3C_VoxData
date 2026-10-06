@@ -9,8 +9,8 @@ import {
   revalidatePaths,
 } from "@/lib/action-support";
 import { getCurrentRole } from "@/lib/queries";
+import { openRepeatTicketIfNeeded } from "@/lib/repeat-ticket";
 import { getFalseAlarmBudgetState } from "@/lib/rules/budget";
-import { getRepeatTicketTrigger, nextKaizenTicketId } from "@/lib/rules/tickets";
 import { getStore } from "@/lib/store";
 import type { ActionResult, Actor, ReasonCode } from "@/lib/types";
 
@@ -44,33 +44,7 @@ export async function confirmAlert(alertId: string): Promise<ActionResult> {
         createdAt: nextSimulatedTimestamp(draft),
       });
 
-      const trigger = getRepeatTicketTrigger(draft, alert.stationId, alert.defectTypeId);
-      if (trigger) {
-        const defectType = draft.defectTypes.find((item) => item.id === alert.defectTypeId);
-        const triggerAlerts = trigger.triggerAlertIds
-          .map((id) => draft.alerts.find((item) => item.id === id))
-          .filter((item) => item !== undefined);
-        draft.tickets.push({
-          id: nextKaizenTicketId(draft.tickets),
-          stationId: alert.stationId,
-          defectTypeId: alert.defectTypeId,
-          triggerAlertIds: trigger.triggerAlertIds,
-          ownerRole: "role:engineer@body",
-          status: "open",
-          a3: {
-            background: `Three confirmed ${defectType?.name ?? alert.defectTypeId} alerts at ${alert.stationId} in shift ${draft.currentShift.label}.`,
-            currentCondition: triggerAlerts
-              .map((item) => `${item.bodyId} at ${item.roi}`)
-              .join("; "),
-            rootCause: "",
-            countermeasure: "",
-            check: "",
-            standardise: "",
-          },
-          aiPrefilledFields: ["background", "currentCondition"],
-          createdAt: nextSimulatedTimestamp(draft),
-        });
-      }
+      openRepeatTicketIfNeeded(draft, alert);
       return { ok: true };
     });
   } catch {

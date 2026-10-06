@@ -5,7 +5,7 @@ vi.mock("next/headers", () => ({
 }));
 
 import { getKaizenView, getKnowledgeView, getTicketView } from "@/lib/queries";
-import { resetMemoryStore } from "@/lib/store/memory";
+import { getMemoryStore, resetMemoryStore } from "@/lib/store/memory";
 
 describe("BE-2 screen-ready queries", () => {
   beforeEach(async () => {
@@ -26,14 +26,13 @@ describe("BE-2 screen-ready queries", () => {
     const view = await getTicketView("KZ-SEAL-007");
     expect(view).toMatchObject({
       ticket: { id: "KZ-SEAL-007", status: "a3_in_progress" },
+      defectType: { id: "BEAD_THIN", name: "Thin bead" },
       aiPrefilledFields: ["background"],
       validation: { requiredFieldsComplete: false, draftCardId: null, canRequest: false },
     });
-    expect(view?.triggerAlerts.map((alert) => alert.id)).toEqual([
-      "alert-history-2301",
-      "alert-history-2309",
-      "alert-history-2317",
-    ]);
+    expect(view?.triggerAlerts).toHaveLength(3);
+    expect(view?.triggerAlerts.every((alert) => alert.stationId === "st-04")).toBe(true);
+    expect(view?.triggerAlerts.every((alert) => alert.defectType?.id === "BEAD_THIN")).toBe(true);
     await expect(getTicketView("missing-ticket")).resolves.toBeNull();
   });
 
@@ -45,5 +44,12 @@ describe("BE-2 screen-ready queries", () => {
     expect(view.filters.statuses).toEqual(["draft", "validated", "retired"]);
     expect(view.filters.selected).toEqual({ stationId: "st-04", status: "validated" });
     expect(view.cards[0].revisions.length).toBeGreaterThan(0);
+  });
+
+  it("fails safely when a ticket's defect reference is missing", async () => {
+    await getMemoryStore().mutate((draft) => {
+      draft.defectTypes = draft.defectTypes.filter((item) => item.id !== "BEAD_THIN");
+    });
+    await expect(getTicketView("KZ-SEAL-007")).resolves.toBeNull();
   });
 });
