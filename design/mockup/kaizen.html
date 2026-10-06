@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kaizen cockpit · Learning Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  body { font-size: 15px; }
+  .cockpit { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: var(--s5); align-items: start; }
+  .side { display: grid; gap: var(--s4); }
+  .pareto { display: grid; gap: var(--s3); }
+  .pareto__row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 40px; gap: var(--s3); align-items: center; font-size: 14px; }
+  .pareto__bar { height: 14px; background: var(--ink-2); border-radius: 0 2px 2px 0; }
+  .pareto__row[data-crit] .pareto__bar { background: var(--ink); }
+  .pareto__row[data-hit] .pareto__name { font-weight: 700; }
+  .pareto__name { display: flex; align-items: center; gap: 6px; }
+  .pareto__name i { color: var(--stop); font-size: 14px; }
+  .ticket-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s3); align-items: start; }
+  .ticket-head h2 { font-size: 22px; }
+  .meta { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); color: var(--muted); font-size: 14px; margin-top: var(--s1); }
+  .stepper { list-style: none; margin: var(--s4) 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .stepper li { padding-top: var(--s2); border-top: 4px solid var(--line); font-size: 13px; color: var(--muted); }
+  .stepper li[data-s="done"] { border-color: var(--line-strong); color: var(--ink-2); }
+  .stepper li[data-s="now"] { border-color: var(--ink); color: var(--ink); font-weight: 700; }
+  .a3 { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line-strong); border-radius: var(--r-panel); overflow: hidden; background: var(--surface); }
+  .a3__col + .a3__col { border-left: 1px solid var(--line-strong); }
+  .a3__block { padding: var(--s4) var(--s5); border-bottom: 1px solid var(--line); }
+  .a3__col .a3__block:last-child { border-bottom: 0; }
+  .a3__block h3 { font-size: 15px; display: flex; align-items: center; justify-content: space-between; gap: var(--s2); margin-bottom: var(--s2); }
+  .a3__block p, .a3__block li { font-size: 15px; line-height: 1.5; }
+  .a3__block ul { margin: 0; padding-left: 18px; }
+  .a3__block[data-ai] { background: #fafbfd; }
+  .who { font-size: 12.5px; color: var(--muted); font-weight: 600; margin-top: var(--s2); }
+  .trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); margin: var(--s2) 0; }
+  .trio figure { margin: 0; }
+  .trio figcaption { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .a3__foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s3); margin-top: var(--s4); }
+  .closed { font-size: 14px; color: var(--muted); padding: var(--s3) 0 0; }
+  @media (max-width: 1100px) { .cockpit { grid-template-columns: 1fr; } .side { order: 2; } }
+  @media (max-width: 767px) {
+    .a3 { grid-template-columns: 1fr; }
+    .a3__col + .a3__col { border-left: 0; border-top: 1px solid var(--line-strong); }
+    .a3__block { padding: var(--s4); }
+    .stepper li { font-size: 0; }
+    .stepper li[data-s="now"] { font-size: 12px; white-space: nowrap; overflow: visible; }
+    .stepper { margin-bottom: var(--s2); }
+  }
+</style>
+</head>
+<body data-screen="kaizen" data-role="engineer" data-trail="kaizen">
+
+<main class="page">
+  <div class="page__head">
+    <div>
+      <h1 class="page__title">Kaizen cockpit</h1>
+      <p class="page__sub">Sealer process · owner role:engineer@body</p>
+    </div>
+    <span class="loop loop--kaizen">Kaizen loop</span>
+  </div>
+
+  <div class="cockpit">
+    <div class="side">
+      <section class="panel" aria-labelledby="p-title">
+        <div class="panel__head"><h2 id="p-title">Confirmed defects at st-04</h2><span class="muted" style="font-size:13px">Last 30 days</span></div>
+        <div class="panel__body pareto" id="pareto"></div>
+      </section>
+      <section class="panel" aria-labelledby="t-title">
+        <div class="panel__head"><h2 id="t-title">Open tickets</h2><span class="badge badge--outline num">2 open</span></div>
+        <div class="panel__body" style="padding-top: var(--s2)">
+          <table class="table">
+            <thead><tr><th>Ticket</th><th>Defect</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr aria-selected="true"><td class="mono">KT-0418</td><td>Bead break · st-04</td><td>Countermeasure trial</td></tr>
+              <tr><td class="mono">KT-0411</td><td>Thin bead · st-04</td><td>A3 in progress</td></tr>
+            </tbody>
+          </table>
+          <p class="closed">6 closed tickets · median learning cycle time <strong class="num">19 days</strong></p>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="k-title">
+      <div class="panel__body">
+        <div class="ticket-head">
+          <div>
+            <h2 id="k-title"><span class="mono">KT-0418</span> · Bead break at st-04</h2>
+            <div class="meta"><span>Opened automatically: third confirmed repeat in Shift A</span><span>Owner role:engineer@body</span></div>
+          </div>
+          <span class="badge badge--stop"><i class="ph-bold ph-drop" aria-hidden="true"></i>Leak-critical</span>
+        </div>
+        <ol class="stepper" aria-label="Ticket status">
+          <li data-s="done">Open</li>
+          <li data-s="done">A3 in progress</li>
+          <li data-s="now" aria-current="step">Countermeasure trial</li>
+          <li>Validated</li>
+          <li>Closed</li>
+        </ol>
+      </div>
+
+      <div class="panel__body" style="padding-top: 0">
+        <div class="a3">
+          <div class="a3__col">
+            <div class="a3__block" data-ai>
+              <h3>Background <span class="badge badge--ai"><i class="ph ph-sparkle" aria-hidden="true"></i>Drafted by AI, check</span></h3>
+              <p>Three bead breaks were confirmed at <span class="mono">seam-R-door-07</span> in Shift A. All three are leak-critical; each body was held for repair. Model <span class="mono">sealer-st04-v1.3</span>.</p>
+            </div>
+            <div class="a3__block">
+              <h3>Current condition</h3>
+              <div class="trio">
+                <figure><div class="bead bead--thumb" data-bead-slot="BEAD_BREAK" data-label="off"></div><figcaption>07:58</figcaption></figure>
+                <figure><div class="bead bead--thumb" data-bead-slot="BEAD_BREAK" data-label="off"></div><figcaption>08:21</figcaption></figure>
+                <figure><div class="bead bead--thumb" data-bead-slot="BEAD_BREAK" data-label="off"></div><figcaption>08:43</figcaption></figure>
+              </div>
+              <p>Same region each time. Attached: gun flow and pressure trend, variant, shift.</p>
+            </div>
+            <div class="a3__block">
+              <h3>Root cause</h3>
+              <p>Nozzle angle drifts after a nozzle change.</p>
+              <p class="who">Written by engineer at the line</p>
+            </div>
+          </div>
+          <div class="a3__col">
+            <div class="a3__block">
+              <h3>Countermeasure</h3>
+              <p>Angle gauge check after every nozzle change; add it to the change checklist.</p>
+              <p class="who">Written by engineer</p>
+            </div>
+            <div class="a3__block">
+              <h3>Check</h3>
+              <p>Trial at st-04 over the next three shifts: no repeat of bead break at <span class="mono">seam-R-door-07</span>.</p>
+              <p class="who">Checked by engineer · ready for validation</p>
+            </div>
+            <div class="a3__block">
+              <h3>Standardise</h3>
+              <ul>
+                <li>Revise the QC process chart, sealer section.</li>
+                <li>Yokoten to sealer stations running the same process.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="a3__foot">
+          <p class="muted" style="font-size: 14px">AI only drafts the background. The engineer writes cause and countermeasure.</p>
+          <button class="btn" id="request"><i class="ph-bold ph-paper-plane-tilt" aria-hidden="true"></i>Request validation</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="assets/shell.js"></script>
+<script>
+const PARETO = [
+  ["Thin bead", 38], ["Bead off path", 27], ["Broken bead", 18, true, true], ["Excess sealer", 12], ["Missing bead", 5, true],
+];
+document.addEventListener("shell:ready", () => {
+  document.getElementById("pareto").innerHTML = PARETO.map(([n, v, crit, hit]) => `
+    <div class="pareto__row" ${crit ? "data-crit" : ""} ${hit ? "data-hit" : ""}>
+      <span class="pareto__name">${crit ? '<i class="ph-bold ph-drop" aria-label="Leak-critical"></i>' : ""}${n}</span>
+      <span class="pareto__bar" style="width: ${(v / 38) * 100}%"></span>
+      <span class="num" style="text-align:right">${v}%</span>
+    </div>`).join("");
+
+  document.getElementById("request").addEventListener("click", (e) => {
+    const b = e.currentTarget;
+    b.disabled = true;
+    b.innerHTML = '<i class="ph-bold ph-check" aria-hidden="true"></i>Sent to senior expert';
+    LL.setTrail("card");
+    LL.toast("Draft card KC-SEAL-021 r3 sent for validation.");
+  });
+});
+</script>
+</body>
+</html>

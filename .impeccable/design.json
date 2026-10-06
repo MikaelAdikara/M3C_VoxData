@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T21:30:00+07:00",
+  "title": "Design System: Learning Line",
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "primary", "displayName": "Charcoal Ink", "canonical": "#252525" },
+      "stop-red": { "role": "signal", "displayName": "Stop Red", "canonical": "#eb0a1e" },
+      "caution-yellow": { "role": "signal", "displayName": "Caution Yellow", "canonical": "#f2b705" },
+      "safe-green": { "role": "signal", "displayName": "Safe Green", "canonical": "#1a7a3d" },
+      "instruct-blue": { "role": "signal", "displayName": "Instruct Blue", "canonical": "#0066b1" },
+      "ground": { "role": "neutral", "displayName": "Plant Grey", "canonical": "#f2f2f2" },
+      "surface": { "role": "neutral", "displayName": "White", "canonical": "#ffffff" },
+      "panel": { "role": "neutral", "displayName": "Panel Grey", "canonical": "#e8e8e8" },
+      "muted": { "role": "neutral", "displayName": "Muted", "canonical": "#6e6e6e" }
+    },
+    "typographyMeta": {
+      "plate": { "displayName": "Plate", "purpose": "Sign plate titles; loudest text on screen." },
+      "body-floor": { "displayName": "Body, floor", "purpose": "Operator and team-leader screens." },
+      "body-desk": { "displayName": "Body, desk", "purpose": "Engineer, senior expert and management screens." },
+      "id-mono": { "displayName": "ID mono", "purpose": "Machine identifiers only." }
+    },
+    "shadows": [
+      { "name": "plate", "value": "0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05)", "purpose": "Sign plates and the station image." },
+      { "name": "overlay", "value": "0 8px 24px rgba(0,0,0,.14)", "purpose": "Sheets and toasts." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(.23,1,.32,1)", "purpose": "Press feedback and state changes." },
+      { "name": "ease-drawer", "value": "cubic-bezier(.32,.72,0,1)", "purpose": "Phone bottom sheets." },
+      { "name": "t-fast", "value": "160ms", "purpose": "Press and hover." },
+      { "name": "t-base", "value": "220ms", "purpose": "Plate state swap, sheets, toasts." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "767px" },
+      { "name": "tablet", "value": "1100px" },
+      { "name": "max", "value": "1440px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Sign Plate",
+      "kind": "custom",
+      "refersTo": "plate-caution",
+      "description": "State panel: colour band, pictogram tile, plain-verb title, facts below. Only for pending or final states.",
+      "html": "<article class=\"ds-plate\"><div class=\"ds-plate__band\"><span class=\"ds-plate__icon\">!</span><h2>Caution: bead break<small>Suggested by the system. You decide.</small></h2></div><div class=\"ds-plate__body\">Score 0.83 vs threshold 0.61</div></article>",
+      "css": ".ds-plate{border:1px solid #d8d8d8;border-radius:8px;overflow:hidden;background:#fff;font-family:'Source Sans 3',Arial,sans-serif;box-shadow:0 1px 2px rgba(0,0,0,.06),0 2px 6px rgba(0,0,0,.05)}.ds-plate__band{position:relative;display:flex;gap:12px;align-items:center;padding:12px 16px 20px;background:#f2b705;color:#252525}.ds-plate__band::after{content:'';position:absolute;left:0;right:0;bottom:0;height:8px;background:repeating-linear-gradient(-45deg,#252525 0 8px,transparent 8px 16px)}.ds-plate__icon{width:48px;height:48px;border-radius:6px;background:#252525;color:#f2b705;display:grid;place-items:center;font-weight:700;font-size:26px}.ds-plate h2{margin:0;font-size:26px;line-height:1.1}.ds-plate small{display:block;font-size:15px;font-weight:600}.ds-plate__body{padding:16px}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Charcoal pill; 72 px on floor screens.",
+      "html": "<button class=\"ds-btn\">Confirm defect</button>",
+      "css": ".ds-btn{min-height:48px;padding:0 24px;border-radius:999px;border:2px solid #252525;background:#252525;color:#fff;font:700 16px 'Source Sans 3',Arial,sans-serif;transition:transform 160ms cubic-bezier(.23,1,.32,1)}.ds-btn:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Stop Button",
+      "kind": "button",
+      "refersTo": "button-stop",
+      "description": "Red pill; only for Stop and fix, a team-leader decision.",
+      "html": "<button class=\"ds-btn-stop\">Stop and fix</button>",
+      "css": ".ds-btn-stop{min-height:72px;padding:0 32px;border-radius:999px;border:2px solid #eb0a1e;background:#eb0a1e;color:#fff;font:700 20px 'Source Sans 3',Arial,sans-serif}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Plant Sign",
+    "overview": "Learning Line reads like the safety signage of a Japanese car plant: a neutral grey ground, and colour only when something is abnormal or final, keeping each colour's plant meaning (red stop, yellow caution, green safe, blue instruction). Floor screens are large and sparse; desk screens are denser, ruled and tabular.",
+    "keyCharacteristics": ["Neutral grey ground, white surfaces, charcoal ink", "Safety colours carry state only", "Sign plate signature component", "Pill buttons, 8 px panels, ruled tables, tabular numerals", "Five-step abnormality trail"],
+    "rules": [
+      { "name": "The Sign Rule", "body": "A colour means what it means on a plant sign; otherwise the screen is grey and ink.", "section": "colors" },
+      { "name": "The One Red Rule", "body": "Toyota Red only for brand strip, stop and leak-critical.", "section": "colors" },
+      { "name": "The No Category Colour Rule", "body": "Loops, categories, selection and progress never take a signal colour.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Every number uses tabular figures and aligns to its column.", "section": "typography" }
+    ],
+    "dos": ["Do keep screens grey until something is abnormal, pending or final", "Do label simulated data", "Do show who decided after every human action", "Do keep floor targets at 48 px or more, with 72 px primary actions"],
+    "donts": ["Don't use red outside stop, leak-critical and the brand strip", "Don't fade content with opacity", "Don't use KPI-card rows", "Don't use eyebrows, decorative gradients, glass or em-dashes", "Don't use the Toyota emblem or Toyota Type"]
+  }
+}

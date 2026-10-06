@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Station alert · Learning Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .station { display: grid; grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr); grid-template-areas: "media decide" "hist decide"; gap: var(--s5); align-items: start; }
+  .station__media { grid-area: media; } .decide { grid-area: decide; } .history { grid-area: hist; }
+  .station__media .bead { box-shadow: var(--shadow-1); }
+  .decide { display: grid; gap: var(--s4); }
+  .decide__q { font-size: 22px; margin-top: var(--s2); }
+  .decide__btns { display: grid; gap: var(--s3); }
+  .next { display: flex; gap: var(--s3); align-items: flex-start; padding: var(--s4); border-radius: var(--r-panel); background: var(--ground); font-size: 17px; }
+  .next i { font-size: 26px; flex: none; }
+  .idea { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); padding-top: var(--s4); border-top: 1px solid var(--line); }
+  .idea p { font-size: 15px; color: var(--muted); }
+  .counter { text-align: right; font-size: 13px; color: var(--muted); }
+  .history { margin-top: var(--s5); }
+  .history li { display: flex; justify-content: space-between; gap: var(--s3); padding: var(--s3) 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .history ul { list-style: none; margin: 0; padding: 0; }
+  body { font-size: 18px; }
+  .facts dt, .facts dd { font-size: 17px; }
+  @media (max-width: 1023px) { .station { grid-template-columns: 1fr; grid-template-areas: "media" "decide" "hist"; } .history { margin-top: 0; } }
+</style>
+</head>
+<body data-screen="station" data-role="operator" data-trail="operator">
+
+<main class="page">
+  <div class="page__head">
+    <div>
+      <h1 class="page__title">Sealer station st-04</h1>
+      <p class="page__sub">Body <span class="mono">K2-27-031487</span> · detected 08:42:17</p>
+    </div>
+    <span class="loop loop--shift">Shift loop</span>
+  </div>
+
+  <div class="station">
+    <section class="station__media" aria-label="Camera image">
+      <div class="bead" data-bead-slot="BEAD_BREAK"></div>
+      <div class="bead__cap">
+        <span>Region <span class="mono">seam-R-door-07</span></span>
+        <span>Camera <span class="mono">sealer-edge-04/cam-01</span></span>
+      </div>
+    </section>
+
+    <section class="decide" aria-labelledby="plate-title">
+      <article class="plate" data-tone="caution" id="plate">
+        <div class="plate__band">
+          <span class="plate__icon"><i class="ph-fill ph-warning" aria-hidden="true"></i></span>
+          <h2 class="plate__title" id="plate-title">Caution: bead break<small id="plate-sub">Suggested by the system. You decide.</small></h2>
+        </div>
+        <div class="plate__body">
+          <div class="score" aria-label="Anomaly score 0.83 against threshold 0.61">
+            <div class="score__nums"><span class="score__val num">0.83</span><span class="score__thr num">threshold 0.61</span></div>
+            <div class="score__scale">
+              <span class="score__tick" style="left: 61%" data-label="0.61"></span>
+              <span class="score__mark" style="left: 83%"></span>
+            </div>
+            <div class="score__ends"><span>0</span><span>1.0</span></div>
+          </div>
+          <dl class="facts">
+            <dt>Criticality</dt><dd><span class="badge badge--stop"><i class="ph-bold ph-drop" aria-hidden="true"></i>Leak-critical</span></dd>
+            <dt>Model</dt><dd class="mono">sealer-st04-v1.3</dd>
+          </dl>
+        </div>
+      </article>
+
+      <div id="decision">
+        <h3 class="decide__q">Is this a real defect?</h3>
+        <div class="decide__btns" style="margin-top: var(--s3)">
+          <button class="btn btn--xl btn--block" id="confirm"><i class="ph-bold ph-check" aria-hidden="true"></i>Confirm defect</button>
+          <button class="btn btn--xl btn--block btn--ghost" id="reject"><i class="ph-bold ph-x" aria-hidden="true"></i>Reject: false alarm</button>
+        </div>
+      </div>
+
+      <div class="idea">
+        <p>Have an idea to stop this repeating?</p>
+        <button class="btn btn--ghost" id="idea-open"><i class="ph ph-lightbulb" aria-hidden="true"></i>Suggest an improvement</button>
+      </div>
+    </section>
+    <section class="history panel" aria-label="This station, this shift">
+        <div class="panel__head"><h2>This station, this shift</h2><span class="badge badge--outline num">2 confirmed earlier</span></div>
+        <div class="panel__body" style="padding-top: var(--s2); padding-bottom: var(--s2);">
+          <ul>
+            <li><span>07:58 · Bead break · <span class="mono">seam-R-door-07</span></span><span class="muted">Confirmed</span></li>
+            <li><span>08:21 · Bead break · <span class="mono">seam-R-door-07</span></span><span class="muted">Confirmed</span></li>
+          </ul>
+        </div>
+      </section>
+  </div>
+</main>
+
+<dialog class="sheet" id="reason" aria-labelledby="reason-title">
+  <form method="dialog">
+    <div class="sheet__head">
+      <h2 id="reason-title">Why is this a false alarm?</h2>
+      <button class="icon-btn" value="cancel" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="sheet__body">
+      <fieldset class="choices choices--big" style="border:0; padding:0; margin:0">
+        <legend class="sr-only">Reason code</legend>
+        <label class="choice"><input type="radio" name="rc" value="Reflection">Reflection</label>
+        <label class="choice"><input type="radio" name="rc" value="Variant mismatch">Variant mismatch</label>
+        <label class="choice"><input type="radio" name="rc" value="Dirty lens">Dirty lens</label>
+        <label class="choice"><input type="radio" name="rc" value="Bead within tolerance">Bead within tolerance</label>
+        <label class="choice"><input type="radio" name="rc" value="Other">Other</label>
+      </fieldset>
+      <p class="muted" style="font-size: 15px">Your rejection goes to the team leader. Only a verified rejection can update the model, as a 4M change.</p>
+    </div>
+    <div class="sheet__foot">
+      <button class="btn btn--xl btn--block" id="reject-send" value="send" disabled>Reject with reason</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="idea" aria-labelledby="idea-title">
+  <form method="dialog">
+    <div class="sheet__head">
+      <h2 id="idea-title">Suggest an improvement</h2>
+      <button class="icon-btn" value="cancel" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="sheet__body">
+      <div class="field">
+        <label for="idea-text">Your idea for st-04</label>
+        <textarea class="textarea" id="idea-text" maxlength="280" placeholder="For example: check nozzle angle after every nozzle change"></textarea>
+        <div class="counter num"><span id="idea-count">0</span> / 280</div>
+      </div>
+      <p class="muted" style="font-size: 15px">You will get an answer within 7 days.</p>
+    </div>
+    <div class="sheet__foot">
+      <button class="btn btn--xl btn--block" id="idea-send" value="send" disabled>Send idea</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="assets/shell.js"></script>
+<script>
+document.addEventListener("shell:ready", () => {
+  const plate = document.getElementById("plate");
+  const title = document.getElementById("plate-title");
+  const decision = document.getElementById("decision");
+  const reason = document.getElementById("reason");
+  const sendReject = document.getElementById("reject-send");
+
+  function settle(tone, icon, heading, sub, nextHTML, trail) {
+    plate.dataset.tone = tone;
+    plate.querySelector(".plate__icon i").className = `ph-fill ${icon}`;
+    title.innerHTML = `${heading}<small>${sub}</small>`;
+    decision.innerHTML = `<div class="next swap">${nextHTML}</div>
+      <button class="btn btn--quiet" id="undo" style="margin-top: var(--s2)"><i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>Undo (10 s)</button>`;
+    plate.classList.remove("swap"); void plate.offsetWidth; plate.classList.add("swap");
+    if (trail) LL.setTrail(trail);
+    document.getElementById("undo").addEventListener("click", () => location.reload());
+  }
+
+  document.getElementById("confirm").addEventListener("click", () => {
+    settle("caution", "ph-bell-ringing", "Confirmed: bead break",
+      "Decided by operator · role:operator@st-04",
+      `<i class="ph-bold ph-arrow-right" aria-hidden="true"></i><span>Yellow andon sent to the team leader. They decide: stop and fix, contain, or continue.<br><strong>Third confirmed repeat this shift:</strong> a Kaizen ticket opens for the engineer.</span>`,
+      "team-leader");
+    LL.toast("Defect confirmed. Team leader notified.");
+  });
+
+  document.getElementById("reject").addEventListener("click", () => reason.showModal());
+  reason.addEventListener("change", () => { sendReject.disabled = !reason.querySelector("input:checked"); });
+  reason.addEventListener("close", () => {
+    if (reason.returnValue !== "send") return;
+    const rc = reason.querySelector("input:checked").value;
+    settle("neutral", "ph-x-circle", "Rejected: " + rc.toLowerCase(),
+      "Decided by operator · role:operator@st-04",
+      `<i class="ph-bold ph-arrow-right" aria-hidden="true"></i><span>Queued for verified-rejection review. The model changes only after a team leader verifies it.</span>`,
+      null);
+    LL.toast("Rejection recorded with reason.");
+  });
+
+  const idea = document.getElementById("idea");
+  const text = document.getElementById("idea-text");
+  document.getElementById("idea-open").addEventListener("click", () => { idea.showModal(); text.focus(); });
+  text.addEventListener("input", () => {
+    document.getElementById("idea-count").textContent = text.value.length;
+    document.getElementById("idea-send").disabled = text.value.trim().length === 0;
+  });
+  idea.addEventListener("close", () => {
+    if (idea.returnValue === "send") { LL.toast("Idea sent. Answer due within 7 days."); text.value = ""; }
+  });
+});
+</script>
+</body>
+</html>

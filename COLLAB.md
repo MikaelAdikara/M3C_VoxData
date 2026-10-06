@@ -16,7 +16,7 @@ Setiap path punya **satu pemilik**. Yang bukan pemilik **tidak boleh** membuat, 
 | Pemilik | Path |
 |---|---|
 | **BE** | `package.json`, `package-lock.json`, semua config (`next.config.*`, `tsconfig.json`, `vitest.config.*`, `eslint.config.*`, `drizzle.config.*`, `postcss.config.*`), `lib/**`, `db/**`, `app/api/**`, `scripts/**`, `**/*.test.ts`, `.env.example`, setting Vercel |
-| **UI** | `app/globals.css`, `app/layout.tsx`, `app/**/page.tsx`, `app/**/loading.tsx`, `app/**/error.tsx`, `app/**/not-found.tsx`, `components/**`, `public/**` (kecuali `public/beads/` yang di-generate script BE), `docs/DESIGN.md`, `docs/screenshots/**` |
+| **UI** | `app/globals.css`, `app/layout.tsx`, `app/**/page.tsx`, `app/**/loading.tsx`, `app/**/error.tsx`, `app/**/not-found.tsx`, `components/**`, `public/**` (kecuali `public/beads/` yang di-generate script BE), `docs/DESIGN.md`, `docs/screenshots/**`, `design/**` (mockup HTML), `PRODUCT.md`, `.impeccable/**` |
 | **Bersama** | `COLLAB.md`, `README.md`, `CLAUDE.md`, `AGENTS.md`, `docs/PRD.md`, `docs/DEMO_SCRIPT.md` |
 
 Aturan tambahan:
@@ -184,3 +184,4 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 |---|---|---|---|
 | 2026-10-06 | UI | Aturan kolaborasi (COLLAB.md, AGENTS.md) dibuat | BE mulai dari BE-0 |
 | 2026-10-06 | BE | BE-0 menambahkan kontrak tipe lengkap, `getStationView(stationId)`, `getShiftBoardView()`, dan `setRole(role)` | UI-0 memakai view model dari `lib/queries.ts`, tipe dari `lib/types.ts`, dan action dari `lib/actions/role.ts` |
+| 2026-10-06 | UI | Mockup HTML 5 layar di `design/mockup/` + `PRODUCT.md`; `design/**`, `PRODUCT.md`, `.impeccable/**` jadi milik UI | Tidak ada; BE boleh membuka `design/mockup/` untuk melihat bentuk data yang dibutuhkan tiap layar |
