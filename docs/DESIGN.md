@@ -2,11 +2,18 @@
 name: Learning Line
 description: Shop-floor learning loop for TMMIN Karawang, styled like plant safety signage.
 colors:
-  ground: "#f2f2f2"
-  surface: "#ffffff"
-  panel: "#e8e8e8"
-  line: "#d8d8d8"
-  line-strong: "#a8a8a8"
+  ground: "rgba(255, 255, 255, .42)"
+  surface: "rgba(255, 255, 255, .52)"
+  surface-strong: "rgba(255, 255, 255, .86)"
+  panel: "rgba(37, 37, 37, .07)"
+  line: "rgba(37, 37, 37, .11)"
+  line-strong: "rgba(37, 37, 37, .30)"
+  glass-edge: "rgba(255, 255, 255, .75)"
+  steel-blue: "#bfd2e8"
+  blush: "#f0cdd2"
+  mint: "#c7e2da"
+  lilac-mist: "#d9d4ec"
+  base-steel: "#e9eef3"
   ink: "#252525"
   ink-2: "#333333"
   muted: "#6e6e6e"
@@ -50,11 +57,11 @@ typography:
     fontFamily: "Source Sans 3, Helvetica Neue, Arial, sans-serif"
     fontSize: "13px"
     fontWeight: 700
-  id-mono:
-    fontFamily: "Source Code Pro, ui-monospace, Menlo, monospace"
-    fontSize: "0.86em"
-    fontWeight: 500
-    letterSpacing: "-0.02em"
+  id:
+    fontFamily: "Source Sans 3, Helvetica Neue, Arial, sans-serif"
+    fontWeight: 600
+    letterSpacing: "0.01em"
+    fontFeature: "tnum"
 rounded:
   input: "4px"
   panel: "8px"
@@ -126,17 +133,17 @@ Reference build: `design/mockup/` (open `design/mockup/index.html`). Product tru
 
 **Creative North Star: "The Plant Sign"**
 
-Learning Line reads like the safety signage of a Japanese car plant. The ground is a calm neutral grey, as ISA-101 recommends for industrial screens. Colour appears only when something is abnormal or final, and each colour keeps the meaning it has on a plant sign: red stop, yellow caution, green safe or validated, blue instruction or standard. The result should feel like a Toyota tool: precise, plain, unhurried. It must not look like a marketing site or a generic SaaS dashboard.
+Learning Line reads like the safety signage of a Japanese car plant, set on frosted glass. A soft steel gradient (pale steel blue, blush, mint, a trace of lilac) lies under translucent glass panels; it stays light and low-contrast so industrial screens remain calm. Colour appears only when something is abnormal or final, and each colour keeps the meaning it has on a plant sign: red stop, yellow caution, green safe or validated, blue instruction or standard. The result should feel like a Toyota tool: precise, plain, unhurried. It must not look like a marketing site or a generic SaaS dashboard.
 
 Density follows the user. Operator and team-leader screens are large and sparse: one decision at a time, with targets usable in gloves. Engineer and management screens pack ruled modules and tables more tightly. One visual grammar holds across both.
 
 The visual language takes inspiration from Toyota but is not Toyota branding. There is no Toyota emblem, no Toyota Type, and nothing that suggests an official Toyota product.
 
 **Key Characteristics:**
-- Neutral grey ground, white work surfaces, charcoal ink.
+- Soft steel gradient ground, frosted glass panels, charcoal ink.
 - Safety colours carry state and nothing else.
 - The sign plate is the signature component.
-- Pill buttons, 8 px panels, ruled tables, tabular numerals.
+- Gradient pill buttons, 8 px glass panels, ruled tables, tabular numerals.
 - A five-step abnormality trail ties the screens into one story.
 
 ## Colors
@@ -152,11 +159,13 @@ Restrained neutrals with four signal colours that are never decorative.
 - **Safe Green** (#1a7a3d): validated knowledge cards and confirmed fixes. Darkened from Toyota's #1f8b46 so white text passes AA.
 - **Instruct Blue** (#0066b1): instructions and standards, such as model review needed, draft cards awaiting validation, links and the focus ring.
 
-### Neutral
-- **Plant Grey** (#f2f2f2): page ground and quieted elements.
-- **White** (#ffffff): panels, plates, inputs.
-- **Panel Grey** (#e8e8e8): neutral badges and the selected-row background.
-- **Rule** (#d8d8d8) and **Rule Strong** (#a8a8a8): hairlines, input borders, inactive trail rings.
+### Ground and glass
+- **Steel gradient**: radial washes of Steel Blue (#bfd2e8), Blush (#f0cdd2), Mint (#c7e2da) and Lilac Mist (#d9d4ec) over a Base Steel linear gradient (#e9eef3 to #e1e6ec). It is painted on a fixed layer behind the page.
+- **Glass** (white at 52%): panels, plates, tiles and inputs. Uses `backdrop-filter: blur(22px) saturate(180%)`, a 1 px white edge at 75% and an inner top highlight.
+- **Strong glass** (white at 86%): sheets and dialogs.
+- **Panel tint** (ink at 7%): neutral badges and the selected-row background.
+- **Rule** (ink at 11%) and **Rule Strong** (ink at 30%): hairlines, input borders, inactive trail rings.
+- With `prefers-reduced-transparency`, the glass falls back to solid white.
 - **Muted** (#6e6e6e): secondary text. It passes AA on both white and Plant Grey.
 
 ### Named Rules
@@ -168,10 +177,10 @@ Restrained neutrals with four signal colours that are never decorative.
 
 ## Typography
 
-**Body Font:** Source Sans 3 (400, 600, 700) with Helvetica Neue, Arial
-**Mono Font:** Source Code Pro (500), used only for IDs: bodies, regions, cards, tickets, model versions.
+**Font:** Source Sans 3 (400, 600, 700) with Helvetica Neue, Arial, used for all text.
+**IDs** (bodies, regions, cards, tickets, model versions): the same face at 600 with tabular figures. There is no monospace; dotted or slashed zeros are not used.
 
-**Character:** A plain, legible gothic sans in the spirit of Toyota's humanist-technical lettering, which is proprietary and not used. Mono marks machine identifiers, never decoration.
+**Character:** A plain, classic, legible sans in the spirit of Toyota's humanist-technical lettering, which is proprietary and not used.
 
 ### Hierarchy
 - **Plate** (700, 26 px, 22 px on phone, line-height 1.1): sign plate titles. Always the loudest text on the screen.
@@ -197,7 +206,7 @@ Restrained neutrals with four signal colours that are never decorative.
 
 ## Elevation & Depth
 
-The screens are flat by default. Panels separate by hairlines and white on grey. Two neutral shadows exist:
+Depth comes from frosted glass. Panels float over the gradient with blur, a white edge, an inner highlight and a soft cool shadow (`inset 0 1px 0 rgba(255,255,255,.9), 0 12px 32px rgba(28,42,58,.10)`). Plate bands, badges and buttons use 135° gradients of their signal colour. Two further shadows exist:
 - **Plate** (`0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05)`): sign plates and the station image.
 - **Overlay** (`0 8px 24px rgba(0,0,0,.14)`): sheets and toasts.
 
@@ -215,9 +224,9 @@ The screens are flat by default. Panels separate by hairlines and white on grey.
 - Use a plate only where a decision is pending or a state is final. Never use one as a generic card.
 
 ### Buttons
-- **Primary:** charcoal pill, white 16 px bold text, 48 px tall. On floor screens it is 72 px, 20 px text and full width.
-- **Ghost:** transparent with a 2 px ink border. On hover it fills with ink.
-- **Stop:** red pill, used only for "Stop and fix".
+- **Primary:** charcoal gradient pill (#3b3b3b to #1b1b1b) with an inner highlight and a soft shadow; white 16 px bold text, 48 px tall. On floor screens it is 72 px, 20 px text and full width.
+- **Ghost:** half-white glass with a 2 px ink border. On hover it fills with the charcoal gradient.
+- **Stop:** red gradient pill (#ee1f33 to #c50818), used only for "Stop and fix".
 - **Press:** `scale(.97)` over 160 ms with `cubic-bezier(.23,1,.32,1)`. Hover effects only apply on devices with a fine pointer.
 
 ### Chips and Badges
@@ -258,5 +267,6 @@ The screens are flat by default. Panels separate by hairlines and white on grey.
 - **Don't** colour loops, categories, selections or progress with signal colours.
 - **Don't** fade content with opacity to de-emphasise it.
 - **Don't** use KPI-card rows (a big number over a small label). Put metrics in ruled tables.
-- **Don't** add eyebrows or kickers above headings, gradients (except the functional heatmap and hazard stripe), glass, or em-dashes.
+- **Don't** add eyebrows or kickers above headings, saturated or purple-neon gradients, glow halos, or em-dashes. Gradients stay soft on the ground and signal-coloured on state elements.
+- **Don't** use monospace fonts.
 - **Don't** use the Toyota emblem, Toyota Type, faces or personal names.

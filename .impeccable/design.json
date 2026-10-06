@@ -18,7 +18,7 @@
       "plate": { "displayName": "Plate", "purpose": "Sign plate titles; loudest text on screen." },
       "body-floor": { "displayName": "Body, floor", "purpose": "Operator and team-leader screens." },
       "body-desk": { "displayName": "Body, desk", "purpose": "Engineer, senior expert and management screens." },
-      "id-mono": { "displayName": "ID mono", "purpose": "Machine identifiers only." }
+      "id": { "displayName": "ID", "purpose": "Machine identifiers in the body face at 600, tabular; no monospace." }
     },
     "shadows": [
       { "name": "plate", "value": "0 1px 2px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.05)", "purpose": "Sign plates and the station image." },
@@ -64,8 +64,8 @@
   ],
   "narrative": {
     "northStar": "The Plant Sign",
-    "overview": "Learning Line reads like the safety signage of a Japanese car plant: a neutral grey ground, and colour only when something is abnormal or final, keeping each colour's plant meaning (red stop, yellow caution, green safe, blue instruction). Floor screens are large and sparse; desk screens are denser, ruled and tabular.",
-    "keyCharacteristics": ["Neutral grey ground, white surfaces, charcoal ink", "Safety colours carry state only", "Sign plate signature component", "Pill buttons, 8 px panels, ruled tables, tabular numerals", "Five-step abnormality trail"],
+    "overview": "Learning Line reads like the safety signage of a Japanese car plant on frosted glass: a soft steel gradient under translucent panels, and colour only when something is abnormal or final, keeping each colour's plant meaning (red stop, yellow caution, green safe, blue instruction). Floor screens are large and sparse; desk screens are denser, ruled and tabular.",
+    "keyCharacteristics": ["Soft steel gradient ground, frosted glass panels, charcoal ink", "Safety colours carry state only", "Sign plate signature component", "Pill buttons, 8 px panels, ruled tables, tabular numerals", "Five-step abnormality trail"],
     "rules": [
       { "name": "The Sign Rule", "body": "A colour means what it means on a plant sign; otherwise the screen is grey and ink.", "section": "colors" },
       { "name": "The One Red Rule", "body": "Toyota Red only for brand strip, stop and leak-critical.", "section": "colors" },
@@ -73,6 +73,6 @@
       { "name": "The Tabular Rule", "body": "Every number uses tabular figures and aligns to its column.", "section": "typography" }
     ],
     "dos": ["Do keep screens grey until something is abnormal, pending or final", "Do label simulated data", "Do show who decided after every human action", "Do keep floor targets at 48 px or more, with 72 px primary actions"],
-    "donts": ["Don't use red outside stop, leak-critical and the brand strip", "Don't fade content with opacity", "Don't use KPI-card rows", "Don't use eyebrows, decorative gradients, glass or em-dashes", "Don't use the Toyota emblem or Toyota Type"]
+    "donts": ["Don't use red outside stop, leak-critical and the brand strip", "Don't fade content with opacity", "Don't use KPI-card rows", "Don't use eyebrows, saturated or neon gradients, glow halos, em-dashes or monospace", "Don't use the Toyota emblem or Toyota Type"]
   }
 }

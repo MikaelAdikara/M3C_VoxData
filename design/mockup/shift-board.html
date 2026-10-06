@@ -6,7 +6,7 @@
 <title>Shift board · Learning Line</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@500&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <link rel="stylesheet" href="assets/app.css">
 <style>
@@ -20,9 +20,10 @@
   .board { display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: var(--s5); align-items: start; }
   .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s3); }
   .tile {
+    -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); box-shadow: var(--glass-shadow);
     position: relative; display: grid; gap: var(--s3); text-align: left;
     padding: var(--s4); min-height: 172px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel);
+    background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--r-panel);
     font: inherit; color: inherit; cursor: pointer;
     transition: border-color var(--t-fast) ease, transform var(--t-fast) var(--ease-out), opacity var(--t-base) ease, filter var(--t-base) ease;
   }
@@ -40,7 +41,7 @@
   .pip { width: 14px; height: 8px; border-radius: 2px; border: 1px solid var(--line-strong); background: transparent; }
   .pip.on { background: var(--ink-2); border-color: var(--ink-2); }
   .pip.over { background: var(--instruct); border-color: var(--instruct); }
-  .tile[data-state="andon"] { border-color: var(--caution); box-shadow: inset 0 0 0 2px var(--caution); }
+  .tile[data-state="andon"] { border-color: var(--caution); box-shadow: inset 0 0 0 2px var(--caution), 0 10px 30px rgba(242, 183, 5, .18); }
   .tile[data-state="andon"] .tile__flag { background: var(--caution); color: var(--ink); }
   .tile[data-state="review"] .tile__flag { background: var(--instruct); color: #fff; }
   .tile[data-state="stopped"] { border-color: var(--stop); box-shadow: inset 0 0 0 2px var(--stop); }
