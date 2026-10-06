@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Plate } from "@/components/ui/Plate";
-import { decideShift } from "@/lib/actions/shift";
+import { decideShift, verifyRejection } from "@/lib/actions/shift";
 import type { AlertView, ShiftBoardView, ShiftDecision } from "@/lib/types";
 
 import { StationTile, type TileState } from "./StationTile";
@@ -100,6 +100,7 @@ export function ShiftBoardScreen({
                 />
               ))}
             </div>
+            <ReviewQueue reviews={view.modelReviews} canVerify={canDecide} />
             <div className="legend">
               <AndonBadge state="yellow" />
               <AndonBadge state="review" />
@@ -234,5 +235,56 @@ function DecisionPanel({
       </div>
       <p className="muted rec__foot">Nothing stops the line until you choose.</p>
     </Plate>
+  );
+}
+
+/** Rejections waiting for a team leader check. Only verified rejections may update the model (4M change). */
+function ReviewQueue({ reviews, canVerify }: { reviews: ShiftBoardView["modelReviews"]; canVerify: boolean }) {
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  if (reviews.length === 0) return null;
+  return (
+    <section className="panel reviews" aria-labelledby="reviews-title">
+      <div className="panel__head">
+        <h2 id="reviews-title">Rejections to verify</h2>
+        <span className="muted">Verified rejections may update the model as a 4M change</span>
+      </div>
+      <div className="panel__body">
+        {error ? (
+          <p className="form-error" role="alert">
+            <Icon name="warning-circle" weight="bold" /> {error}
+          </p>
+        ) : null}
+        <ul className="reviews__list">
+          {reviews.map((r) => (
+            <li key={r.id}>
+              <span>
+                <strong>{r.stationId}</strong> · {r.alertIds.length} rejected alert{r.alertIds.length === 1 ? "" : "s"}
+              </span>
+              {r.status === "verified" ? (
+                <span className="reviews__done">
+                  <Icon name="check" weight="bold" /> Verified{r.verifiedByRole ? ` · ${r.verifiedByRole}` : ""}
+                </span>
+              ) : (
+                <Button
+                  variant="ghost"
+                  disabled={!canVerify || pending}
+                  onClick={() =>
+                    start(async () => {
+                      setError(null);
+                      const res = await verifyRejection(r.id);
+                      if (!res.ok) setError(res.error);
+                    })
+                  }
+                  icon={<Icon name="wrench" weight="bold" />}
+                >
+                  Verify rejection
+                </Button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import type { ReactNode } from "react";
 
-import { plantTime } from "@/components/format";
+import { DECISION_LABEL, plantTime } from "@/components/format";
 import { Trail } from "@/components/shell/Trail";
 import { Badge, LoopBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -13,7 +13,7 @@ import { Plate } from "@/components/ui/Plate";
 import { Sheet } from "@/components/ui/Sheet";
 import { confirmAlert, rejectAlert } from "@/lib/actions/alerts";
 import { submitIdea } from "@/lib/actions/ideas";
-import type { ReasonCode, StationView } from "@/lib/types";
+import type { ReasonCode, ShiftDecision, StationView } from "@/lib/types";
 
 import { BeadIllustration } from "./BeadIllustration";
 import { ScoreScale } from "./ScoreScale";
@@ -35,7 +35,7 @@ export function StationScreen({
   canDecide: boolean;
   notice?: ReactNode;
 }) {
-  const { station, openAlert: alert, reasonCodes, ideasOpen } = view;
+  const { station, openAlert: alert, reasonCodes, ideasOpen, decisionHistory } = view;
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -126,6 +126,7 @@ export function StationScreen({
                   Model <span className="mono">{alert.modelVersion}</span>
                 </span>
               </div>
+              <History items={decisionHistory} reasonCodes={reasonCodes} />
             </section>
 
             <section className="decide" aria-label="Decision">
@@ -194,6 +195,7 @@ export function StationScreen({
               seconds.
             </EmptyState>
             <IdeaRow sent={ideaSent} ideasOpen={ideasOpen} disabled={!canDecide} onOpen={() => setIdeaOpen(true)} />
+            <History items={decisionHistory} reasonCodes={reasonCodes} />
           </div>
         )}
       </main>
@@ -307,5 +309,44 @@ function IdeaRow({
         Suggest an improvement
       </Button>
     </div>
+  );
+}
+
+function History({
+  items,
+  reasonCodes,
+}: {
+  items: StationView["decisionHistory"];
+  reasonCodes: StationView["reasonCodes"];
+}) {
+  if (items.length === 0) return null;
+  const reasonLabel = (code?: string) => reasonCodes.find((r) => r.value === code)?.label ?? code ?? "";
+  return (
+    <section className="panel history" aria-labelledby="history-title">
+      <div className="panel__head">
+        <h2 id="history-title">This station, this shift</h2>
+        <Badge tone="outline">{items.length} decided</Badge>
+      </div>
+      <ul className="history__list">
+        {[...items]
+          .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+          .map((h) => (
+            <li key={h.alert.id}>
+              <span>
+                {plantTime(h.alert.createdAt).slice(0, 5)} · {h.alert.defectType?.name ?? "Bead anomaly"} ·{" "}
+                <span className="mono">{h.alert.roi}</span>
+              </span>
+              <span className="muted">
+                {h.operatorDecision.kind === "confirm"
+                  ? "Confirmed"
+                  : `Rejected: ${reasonLabel(h.operatorDecision.reasonCode).toLowerCase()}`}
+                {h.teamLeaderDecision
+                  ? ` · ${DECISION_LABEL[h.teamLeaderDecision.kind as ShiftDecision] ?? h.teamLeaderDecision.kind}`
+                  : ""}
+              </span>
+            </li>
+          ))}
+      </ul>
+    </section>
   );
 }
