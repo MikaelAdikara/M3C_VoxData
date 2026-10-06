@@ -258,13 +258,23 @@ Depth comes from frosted glass. Panels float over the gradient with blur, a whit
 ### Sheets
 - Native `<dialog>`. On phone it is a bottom sheet (drawer curve `cubic-bezier(.32,.72,0,1)`); on desktop it is a centred card. Entry uses `@starting-style`.
 
+## Dark theme
+
+Every page has a light and a dark theme. The default follows the device; the sun/moon toggle in the top bar overrides it, the choice is remembered, and it is passed to embedded frames. Dark is a **dark grey gradient, never pure black**:
+- **Ground:** radial washes of #3c3f43, #2c2e31 and #303235 over a linear gradient from #2a2c2f to #1f2123. Page base #232527.
+- **Glass:** white at 6.5% with a 12% white edge; strong glass (sheets) rgba(46, 48, 52, .95).
+- **Ink:** #ececec, ink-2 #d2d2d2, muted #a3a3a3.
+- **Primary buttons invert:** a light gradient (#f4f4f4 to #d9d9d9) with #1b1b1b text.
+- **Signal colours stay the same.** Ink on yellow signs and hazard stripes stays #1f1f1f in both themes. Green and blue text on tints lighten to #74d39d and #84bdf0.
+- **Fixed elements:** the landing hero (video under a dark wash) and the device bezels look the same in both themes.
+
 ## Landing (cover)
 
 `design/mockup/index.html` is the entry page.
 - **Hero:** grayscale factory footage (Pexels, Parker Filme) under a dark wash (#1b1b1b family). Headline "AI detects. People decide." at 76 px. White and outline pills. A dark-glass demo card loops scan, heatmap, caution plate, confirm and confirmed.
 - **The case on one A3 sheet:** a 16 px glass sheet with a title block, two columns and ruled rows (Background, Current condition, Root cause | Countermeasure, Check, Standardise).
 - **Devices:** a phone with the live Station screen and a laptop showing the shift board.
-- **Footer:** M3C 2026 and AKTI logos, the TMMIN case text and the "not affiliated with or endorsed by Toyota" line. There is never a Toyota logo.
+- **Footer:** the TMMIN case text, the "not affiliated with or endorsed by Toyota" line and the footage credit. The landing carries no logos at all: no Toyota, M3C or AKTI.
 
 ## Do's and Don'ts
 
@@ -283,4 +293,5 @@ Depth comes from frosted glass. Panels float over the gradient with blur, a whit
 - **Don't** put colour (red, purple, blue, green or any hue) in the background gradient.
 - **Don't** add eyebrows or kickers above headings, saturated or purple-neon gradients, glow halos, or em-dashes. Gradients stay soft on the ground and signal-coloured on state elements.
 - **Don't** use monospace fonts.
-- **Don't** use the Toyota emblem, Toyota Type, faces or personal names.
+- **Don't** use the Toyota emblem, Toyota Type, faces or personal names, and don't add competition or partner logos.
+- **Don't** use pure black (#000) for dark-mode backgrounds.

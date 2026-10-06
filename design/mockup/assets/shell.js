@@ -66,6 +66,7 @@ function mountShell() {
         <a class="brand" href="index.html" aria-label="Learning Line cover page"><span class="brand__name">Learning Line</span><span class="brand__site">K2-Body · Karawang II</span></a>
         <nav class="nav" aria-label="Screens">${nav}</nav>
         <div class="topbar__end">
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode"><i class="ph-bold ph-moon" aria-hidden="true"></i></button>
           <label class="role"><i class="ph ph-user-circle" aria-hidden="true"></i><span class="sr-only">Role</span><select id="role">${roleOptions}</select></label>
           <div class="clock" aria-label="Shift clock"><div class="clock__time num" id="clock">08:42</div><div class="clock__shift">Shift A</div></div>
         </div>
@@ -80,6 +81,8 @@ function mountShell() {
   body.append(el(`<nav class="tabbar" aria-label="Screens">${tabs}</nav>`));
   body.append(el(`<footer class="footer">Concept prototype · simulated data · not connected to TMMIN systems</footer>`));
   body.append(el(`<div class="toast" role="status" aria-live="polite" hidden><i class="ph-bold ph-check-circle" aria-hidden="true"></i><span></span></div>`));
+
+  if (window.LLTheme) window.LLTheme.sync();
 
   document.getElementById("role").addEventListener("change", (e) => {
     const r = ROLES.find((x) => x.id === e.target.value);

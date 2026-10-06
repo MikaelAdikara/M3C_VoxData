@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
 <link rel="preload" as="image" href="assets/video/factory-line-poster.jpg">
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/app.css">
 <link rel="stylesheet" href="assets/landing.css">
 <script>document.documentElement.classList.add("js");</script>
@@ -19,14 +21,11 @@
 <header class="cover-bar" id="bar">
   <div class="cover-bar__inner">
     <a class="brand" href="#top"><span class="brand__name">Learning Line</span><span class="brand__site">Case: PT Toyota Motor Manufacturing Indonesia (TMMIN)</span></a>
-    <div class="logos logos--bar" aria-label="M3C 2026 and AKTI">
-      <img src="assets/logos/m3c-2026.png" alt="M3C 2026" onerror="this.classList.add('missing')"><span class="logo-slot">M3C 2026</span>
-      <img src="assets/logos/akti.png" alt="AKTI" onerror="this.classList.add('missing')"><span class="logo-slot">AKTI</span>
-    </div>
     <nav class="cover-bar__nav" aria-label="Sections">
       <a href="#a3">The case</a>
       <a href="#try">Try it</a>
     </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode"><i class="ph-bold ph-moon" aria-hidden="true"></i></button>
     <a class="btn btn--light" href="screens.html">Enter the prototype</a>
   </div>
 </header>
@@ -173,10 +172,6 @@
 </main>
 
 <footer class="cover-foot">
-  <div class="logos">
-    <img src="assets/logos/m3c-2026.png" alt="M3C 2026" onerror="this.classList.add('missing')"><span class="logo-slot">M3C 2026 logo</span>
-    <img src="assets/logos/akti.png" alt="AKTI" onerror="this.classList.add('missing')"><span class="logo-slot">AKTI logo</span>
-  </div>
   <div>
     <p>M3C 2026 business case. Case company: PT Toyota Motor Manufacturing Indonesia (TMMIN). Not affiliated with or endorsed by Toyota.</p>
     <p>Concept prototype · simulated data · not connected to TMMIN systems</p>

@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/app.css">
 <style>
   .deck { max-width: 1600px; margin: 0 auto; padding: var(--s5); }
@@ -22,18 +24,18 @@
     transition: background-color var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) var(--ease-out);
   }
   .tab:active { transform: scale(.97); }
-  .tab[aria-selected="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .tab[aria-selected="true"] { background: var(--g-ink); color: var(--on-ink); border-color: var(--btn-border); }
   .stage { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s6); align-items: start; }
   .device__label { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--muted); margin-bottom: var(--s2); }
   .device__label a { font-weight: 600; }
   .phone {
-    width: 414px; height: 868px; border-radius: 48px; padding: 12px; background: var(--ink);
+    width: 414px; height: 868px; border-radius: 48px; padding: 12px; background: var(--g-charcoal);
     box-shadow: var(--shadow-2);
   }
-  .phone iframe { width: 390px; height: 844px; border: 0; border-radius: 34px; background: var(--ground); display: block; }
+  .phone iframe { width: 390px; height: 844px; border: 0; border-radius: 34px; background: var(--page-bg); display: block; }
   .laptop__screen {
     position: relative; width: 100%; aspect-ratio: 1440 / 900; overflow: hidden;
-    border: 12px solid var(--ink); border-bottom-width: 16px; border-radius: 14px 14px 0 0; background: var(--ground);
+    border: 12px solid #1f1f1f; border-bottom-width: 16px; border-radius: 14px 14px 0 0; background: var(--ground);
   }
   .laptop__screen iframe { position: absolute; top: 0; left: 0; width: 1440px; height: 900px; border: 0; transform-origin: 0 0; }
   .laptop__base { height: 14px; margin: 0 -2%; background: #3a3a3a; border-radius: 0 0 12px 12px; }
@@ -56,7 +58,7 @@
       <h1>Learning Line mockups</h1>
       <p>Five screens, phone and laptop. Concept prototype · simulated data · not connected to TMMIN systems.</p>
     </div>
-    <div class="tabs" role="tablist" aria-label="Screens" id="tabs"></div>
+    <div style="display:flex; gap: var(--s3); align-items:center; flex-wrap: wrap"><div class="tabs" role="tablist" aria-label="Screens" id="tabs"></div><button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode"><i class="ph-bold ph-moon" aria-hidden="true"></i></button></div>
   </div>
 
   <div class="stage">

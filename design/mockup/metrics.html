@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/app.css">
 <style>
   body { font-size: 15px; }
@@ -19,6 +21,8 @@
   .chart { width: 100%; height: auto; display: block; }
   .chart text { font-family: var(--font); font-size: 12px; fill: var(--muted); }
   .chart .lbl { fill: var(--ink); font-weight: 700; font-size: 13px; }
+  .c-grid { stroke: var(--line); } .c-ref, .c-line { stroke: var(--ink); } .c-dot { fill: var(--ink); }
+  .c-bar { fill: var(--ink-2); } .c-bar-over { fill: #1870b8; }
   .facts-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }
   .fact b { display: block; font-size: 30px; line-height: 1.1; }
   .fact span { color: var(--muted); font-size: 14px; }
@@ -106,14 +110,14 @@ function overrideChart() {
   const x = (i) => L + (i / (ys.length - 1)) * (W - L - R);
   const y = (v) => T + ((35 - v) / (35 - 15)) * (H - T - B);
   const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  const grid = [15, 20, 25, 30, 35].map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#e8e8e8"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}%</text>`).join("");
+  const grid = [15, 20, 25, 30, 35].map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="c-grid"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}%</text>`).join("");
   document.getElementById("override").setAttribute("viewBox", `0 0 ${W} ${H}`);
   document.getElementById("override").innerHTML = `${grid}
-    <line x1="${L}" x2="${W - R}" y1="${y(20)}" y2="${y(20)}" stroke="#252525" stroke-dasharray="6 4" stroke-width="1.5"/>
+    <line x1="${L}" x2="${W - R}" y1="${y(20)}" y2="${y(20)}" class="c-ref" stroke-dasharray="6 4" stroke-width="1.5"/>
     <text x="${W - R}" y="${y(20) + 16}" text-anchor="end" class="lbl">Gate 1: below 20%</text>
-    <polyline points="${pts}" fill="none" stroke="#252525" stroke-width="2.5" stroke-linejoin="round"/>
-    <circle cx="${x(0)}" cy="${y(31)}" r="4" fill="#252525"/><text x="${x(0) + 8}" y="${y(31) - 8}" class="lbl">31%</text>
-    <circle cx="${x(ys.length - 1)}" cy="${y(24)}" r="4" fill="#252525"/><text x="${x(ys.length - 1) - 4}" y="${y(24) - 10}" text-anchor="end" class="lbl">24%</text>
+    <polyline points="${pts}" class="c-line" fill="none" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="${x(0)}" cy="${y(31)}" r="4" class="c-dot"/><text x="${x(0) + 8}" y="${y(31) - 8}" class="lbl">31%</text>
+    <circle cx="${x(ys.length - 1)}" cy="${y(24)}" r="4" class="c-dot"/><text x="${x(ys.length - 1) - 4}" y="${y(24) - 10}" text-anchor="end" class="lbl">24%</text>
     <text x="${L}" y="${H - 8}">30 days ago</text><text x="${W - R}" y="${H - 8}" text-anchor="end">Today</text>`;
 }
 function budgetChart() {
@@ -125,14 +129,14 @@ function budgetChart() {
   const y = (v) => T + ((max - v) / max) * (H - T - B);
   const bars = data.map(([n, v], i) => {
     const bx = L + i * bw + bw * 0.22, w = bw * 0.56, over = v > 2;
-    return `<rect x="${bx}" y="${y(v)}" width="${w}" height="${Math.max(0, y(0) - y(v))}" fill="${over ? "#0066b1" : "#333333"}" rx="2"/>
+    return `<rect x="${bx}" y="${y(v)}" width="${w}" height="${Math.max(0, y(0) - y(v))}" class="${over ? "c-bar-over" : "c-bar"}" rx="2"/>
       ${v ? `<text x="${bx + w / 2}" y="${y(v) - 6}" text-anchor="middle" class="lbl">${v}</text>` : ""}
       <text x="${bx + w / 2}" y="${H - 10}" text-anchor="middle">${n}</text>`;
   }).join("");
-  const grid = [0, 1, 2, 3, 4].map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#e8e8e8"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("");
+  const grid = [0, 1, 2, 3, 4].map((v) => `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="c-grid"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`).join("");
   document.getElementById("budget").setAttribute("viewBox", `0 0 ${W} ${H}`);
   document.getElementById("budget").innerHTML = `${grid}${bars}
-    <line x1="${L}" x2="${W - R}" y1="${y(2)}" y2="${y(2)}" stroke="#252525" stroke-dasharray="6 4" stroke-width="1.5"/>
+    <line x1="${L}" x2="${W - R}" y1="${y(2)}" y2="${y(2)}" class="c-ref" stroke-dasharray="6 4" stroke-width="1.5"/>
     <text x="${W - R}" y="${y(2) - 6}" text-anchor="end" class="lbl">Budget 2</text>`;
 }
 document.addEventListener("shell:ready", () => { overrideChart(); budgetChart(); });
