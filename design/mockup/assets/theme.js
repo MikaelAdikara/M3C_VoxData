@@ -20,13 +20,13 @@
 
   function tellFrames(t) {
     document.querySelectorAll("iframe").forEach((f) => {
-      try { f.contentWindow.postMessage({ llTheme: t }, "*"); } catch (e) { /* frame not ready */ }
+      try { f.contentWindow.postMessage({ llTheme: t }, "*"); } catch { /* frame not ready */ }
     });
   }
 
   function apply(t) {
     root.dataset.theme = t;
-    try { localStorage.setItem(KEY, t); } catch (e) { /* storage unavailable */ }
+    try { localStorage.setItem(KEY, t); } catch { /* storage unavailable */ }
     sync();
     tellFrames(t);
   }

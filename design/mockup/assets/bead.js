@@ -14,10 +14,9 @@ const DEFECTS = {
 };
 
 let beadSeq = 0;
-function beadSVG(type = "BEAD_BREAK", opts = {}) {
+function beadSVG(type = "BEAD_BREAK") {
   const d = DEFECTS[type] || DEFECTS.BEAD_BREAK;
   const id = `b${beadSeq++}`;
-  const label = opts.label !== false;
   return `
   <svg viewBox="0 0 320 200" role="img" aria-label="Illustration of a sealer bead on a door seam, ${type.replace("_", " ").toLowerCase()}${d.clean ? "" : ", suspect region highlighted"}" data-bead="${id}" data-at="${d.at}">
     <defs>

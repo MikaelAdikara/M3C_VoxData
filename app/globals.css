@@ -1,4 +1,6 @@
-/* Learning Line mockup: visual system
+@import "tailwindcss";
+
+/* Learning Line: visual system ("The Plant Sign", see docs/DESIGN.md)
    World: Japanese plant safety signage on frosted glass. Colour carries state only:
    stop = red, caution = yellow, safe/validated = green, instruction/standard = blue.
    Surfaces are translucent glass over a monochrome silver gradient. */
@@ -60,7 +62,7 @@
   --instruct-tint: #e1edf8;
 
   /* Type */
-  --font: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --font: var(--font-source-sans), "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
 
   /* Shape */
   --r-panel: 8px;
@@ -312,6 +314,7 @@ p { margin: 0; }
   max-width: 1440px; margin: 0 auto;
   padding: var(--s5) var(--s5) var(--s7);
 }
+.page > *, .panel, .panel__body { min-width: 0; }
 .page__head {
   display: flex; align-items: end; justify-content: space-between; gap: var(--s4);
   margin-bottom: var(--s5); flex-wrap: wrap;
@@ -496,6 +499,7 @@ p { margin: 0; }
 
 /* ---------- Tables (document style) ---------- */
 
+.table-wrap { overflow-x: auto; max-width: 100%; }
 .table { width: 100%; border-collapse: collapse; font-size: 15px; }
 .table th {
   text-align: left; font-weight: 700; font-size: 13px; color: var(--muted);
@@ -560,6 +564,21 @@ dialog.sheet::backdrop { background: rgba(37, 37, 37, .32); -webkit-backdrop-fil
   transition: transform var(--t-base) var(--ease-out), opacity var(--t-base) var(--ease-out);
 }
 .toast[hidden] { display: flex; opacity: 0; transform: translate(-50%, 16px); pointer-events: none; }
+
+/* KPI as a ruled row (never a big-number card) */
+.kpi { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s2) var(--s5); align-items: baseline; padding: var(--s3) 0; border-top: 1px solid var(--line); }
+.kpi__label { font-weight: 600; }
+.kpi__label small { display: block; font-weight: 400; font-size: 12.5px; color: var(--muted); }
+.kpi__nums { display: grid; grid-template-columns: repeat(3, minmax(72px, auto)); gap: var(--s4); margin: 0; text-align: right; }
+.kpi__nums dt { font-size: 12px; color: var(--muted); }
+.kpi__nums dd { margin: 0; font-size: 18px; font-weight: 700; }
+@media (max-width: 767px) { .kpi { grid-template-columns: 1fr; } .kpi__nums { text-align: left; } }
+
+/* Empty state */
+.empty { display: grid; justify-items: start; gap: var(--s2); padding: var(--s5); border: 1px dashed var(--line-strong); border-radius: var(--r-panel); }
+.empty > i { font-size: 28px; color: var(--muted); }
+.empty__title { font-weight: 700; font-size: 17px; }
+.empty__text { color: var(--muted); max-width: 60ch; }
 
 /* Quiet the rest while a decision is pending */
 [data-quiet="true"] .quietable:not([data-focus="true"]):not([data-state]) { background: var(--ground); border-color: transparent; }
@@ -638,4 +657,26 @@ dialog.sheet::backdrop { background: rgba(37, 37, 37, .32); -webkit-backdrop-fil
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
   .btn:active, .choice:active, .icon-btn:active { transform: none; }
+}
+
+/* Tailwind v4 theme: utilities map onto the same semantic tokens, so
+   classes like bg-surface or text-muted follow the light/dark theme. */
+@theme inline {
+  --font-sans: var(--font);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-ground: var(--ground);
+  --color-panel: var(--panel);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-stop: var(--stop);
+  --color-caution: var(--caution);
+  --color-safe: var(--safe);
+  --color-instruct: var(--instruct);
+  --radius-input: var(--r-input);
+  --radius-panel: var(--r-panel);
+  --radius-pill: var(--r-pill);
+  --ease-out: var(--ease-out);
 }

@@ -9,7 +9,7 @@ if (reduceMotion && video) { video.removeAttribute("autoplay"); video.pause(); v
 /* Demo: scan → heatmap → caution plate → confirm press → confirmed. */
 const demo = document.getElementById("demo");
 const media = document.getElementById("demo-media");
-media.insertAdjacentHTML("afterbegin", beadSVG("BEAD_BREAK", { label: false }));
+media.insertAdjacentHTML("afterbegin", beadSVG("BEAD_BREAK"));
 placeBeads(media);
 
 const plate = document.getElementById("demo-plate");
@@ -57,8 +57,8 @@ if (reduceMotion) {
     btn.setAttribute("aria-pressed", String(paused));
     btn.setAttribute("aria-label", paused ? "Play video and demo" : "Pause video and demo");
     btn.querySelector("i").className = paused ? "ph-bold ph-play" : "ph-bold ph-pause";
-    if (paused) { stop(); setStep(0); setStep(2); video && video.pause(); }
-    else { start(); video && video.play(); }
+    if (paused) { stop(); setStep(0); setStep(2); if (video) video.pause(); }
+    else { start(); if (video) video.play(); }
   });
 }
 
