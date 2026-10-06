@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
+import { Icon } from "@/components/ui/Icon";
 
 /**
  * Native <dialog>: bottom sheet on phones, centred card on desktop
@@ -34,7 +35,7 @@ export function Sheet({
       <div className="sheet__head">
         <h2>{title}</h2>
         <button type="button" className="icon-btn" aria-label="Close" onClick={onClose}>
-          <i className="ph ph-x" aria-hidden="true" />
+          <Icon name="x" />
         </button>
       </div>
       <div className="sheet__body">{children}</div>

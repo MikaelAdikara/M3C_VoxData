@@ -1,12 +1,13 @@
+import type { IconName } from "@/components/ui/Icon";
 import type { Role } from "@/lib/types";
 
-export const SCREENS = [
-  { href: "/station", label: "Station", icon: "ph-monitor" },
-  { href: "/shift-board", label: "Shift board", icon: "ph-squares-four" },
-  { href: "/kaizen", label: "Kaizen", icon: "ph-clipboard-text" },
-  { href: "/knowledge", label: "Knowledge", icon: "ph-books" },
-  { href: "/metrics", label: "Metrics", icon: "ph-chart-line" },
-] as const;
+export const SCREENS: { href: string; label: string; icon: IconName }[] = [
+  { href: "/station", label: "Station", icon: "monitor" },
+  { href: "/shift-board", label: "Shift board", icon: "squares-four" },
+  { href: "/kaizen", label: "Kaizen", icon: "clipboard-text" },
+  { href: "/knowledge", label: "Knowledge", icon: "books" },
+  { href: "/metrics", label: "Metrics", icon: "chart-line" },
+];
 
 export const ROLES: { role: Role; label: string; home: string }[] = [
   { role: "operator", label: "Operator · st-04", home: "/station" },

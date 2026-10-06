@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Icon } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import type { ReasonCodeOption } from "@/lib/types";
@@ -13,7 +14,7 @@ export function SheetDemo({ reasonCodes }: { reasonCodes: ReasonCodeOption[] }) 
 
   return (
     <>
-      <Button variant="ghost" onClick={() => setOpen(true)} icon={<i className="ph-bold ph-x" aria-hidden="true" />}>
+      <Button variant="ghost" onClick={() => setOpen(true)} icon={<Icon name="x" weight="bold" />}>
         Reject: false alarm
       </Button>
       <Sheet

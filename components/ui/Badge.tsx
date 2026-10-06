@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { Icon } from "@/components/ui/Icon";
 import type { Loop } from "@/lib/types";
 
 export type BadgeTone = "neutral" | "outline" | "stop" | "caution" | "safe" | "instruct" | "ai";
@@ -23,9 +24,9 @@ export function Badge({
 }
 
 const ANDON = {
-  yellow: { tone: "caution", icon: "ph-fill ph-bell-ringing", label: "Yellow andon" },
-  stopped: { tone: "stop", icon: "ph-fill ph-hand-palm", label: "Stopped by team leader" },
-  review: { tone: "instruct", icon: "ph-bold ph-wrench", label: "Model review needed" },
+  yellow: { tone: "caution", icon: "bell-ringing", weight: "fill", label: "Yellow andon" },
+  stopped: { tone: "stop", icon: "hand-palm", weight: "fill", label: "Stopped by team leader" },
+  review: { tone: "instruct", icon: "wrench", weight: "bold", label: "Model review needed" },
 } as const;
 
 /**
@@ -35,7 +36,7 @@ const ANDON = {
 export function AndonBadge({ state }: { state: keyof typeof ANDON }) {
   const a = ANDON[state];
   return (
-    <Badge tone={a.tone} icon={<i className={a.icon} aria-hidden="true" />}>
+    <Badge tone={a.tone} icon={<Icon name={a.icon} weight={a.weight} />}>
       {a.label}
     </Badge>
   );

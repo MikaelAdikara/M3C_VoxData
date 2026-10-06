@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
+import { Icon, type IconName } from "@/components/ui/Icon";
 
 export type PlateTone = "caution" | "stop" | "safe" | "instruct" | "neutral";
 
-const DEFAULT_ICON: Record<PlateTone, string> = {
-  caution: "ph-warning",
-  stop: "ph-hand-palm",
-  safe: "ph-seal-check",
-  instruct: "ph-note-pencil",
-  neutral: "ph-info",
+const DEFAULT_ICON: Record<PlateTone, IconName> = {
+  caution: "warning",
+  stop: "hand-palm",
+  safe: "seal-check",
+  instruct: "note-pencil",
+  neutral: "info",
 };
 
 /**
@@ -26,7 +27,7 @@ export function Plate({
   tone: PlateTone;
   title: ReactNode;
   subtitle?: ReactNode;
-  icon?: string;
+  icon?: IconName;
   as?: "h2" | "h3" | "p";
   children?: ReactNode;
 }) {
@@ -34,7 +35,7 @@ export function Plate({
     <article className="plate" data-tone={tone}>
       <div className="plate__band">
         <span className="plate__icon">
-          <i className={`ph-fill ${icon ?? DEFAULT_ICON[tone]}`} aria-hidden="true" />
+          <Icon name={icon ?? DEFAULT_ICON[tone]} weight="fill" />
         </span>
         <Heading className="plate__title">
           {title}

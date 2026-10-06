@@ -1,12 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Source_Sans_3 } from "next/font/google";
-import Script from "next/script";
 import type { ReactNode } from "react";
 
 import { NavLinks } from "@/components/shell/NavLinks";
 import { themeBootScript } from "@/components/shell/ThemeToggle";
 import { Footer, TopBar } from "@/components/shell/TopBar";
-import { getShiftBoardView } from "@/lib/queries";
+import { getCurrentRole, getShiftBoardView } from "@/lib/queries";
 
 import "./globals.css";
 
@@ -29,7 +28,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const board = await getShiftBoardView();
+  const [role, board] = await Promise.all([getCurrentRole(), getShiftBoardView()]);
 
   return (
     <html lang="en" className={sourceSans.variable} suppressHydrationWarning>
@@ -37,11 +36,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        <TopBar shiftLabel={board.shift.label} site="K2-Body · Karawang II" />
+        <TopBar role={role} shiftLabel={board.shift.label} site="K2-Body · Karawang II" />
         {children}
         <Footer />
         <NavLinks variant="tabbar" />
-        <Script src="https://unpkg.com/@phosphor-icons/web@2.1.1" strategy="afterInteractive" />
       </body>
     </html>
   );

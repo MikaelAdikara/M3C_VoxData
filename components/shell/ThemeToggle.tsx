@@ -2,6 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 
+import { Icon } from "@/components/ui/Icon";
+
 export const THEME_KEY = "ll-theme";
 
 /** Runs before paint (inlined in the root layout) so a stored theme never flashes. */
@@ -47,7 +49,7 @@ export function ThemeToggle() {
       aria-pressed={dark}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
     >
-      <i className={`ph-bold ${dark ? "ph-sun" : "ph-moon"}`} aria-hidden="true" />
+      <Icon name={dark ? "sun" : "moon"} weight="bold" />
     </button>
   );
 }

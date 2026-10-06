@@ -1,12 +1,14 @@
 import Link from "next/link";
 
+import type { Role } from "@/lib/types";
+
 import { NavLinks } from "./NavLinks";
 import { RoleSwitcher } from "./RoleSwitcher";
 import { ShiftClock } from "./ShiftClock";
 import { ThemeToggle } from "./ThemeToggle";
 
 /** Sticky top bar: red brand strip, product name, screens, theme, role, shift clock. */
-export function TopBar({ shiftLabel, site }: { shiftLabel: string; site: string }) {
+export function TopBar({ role, shiftLabel, site }: { role: Role; shiftLabel: string; site: string }) {
   return (
     <header className="topbar">
       <div className="topbar__inner">
@@ -17,7 +19,7 @@ export function TopBar({ shiftLabel, site }: { shiftLabel: string; site: string 
         <NavLinks variant="top" />
         <div className="topbar__end">
           <ThemeToggle />
-          <RoleSwitcher />
+          <RoleSwitcher current={role} />
           <ShiftClock shiftLabel={shiftLabel} />
         </div>
       </div>

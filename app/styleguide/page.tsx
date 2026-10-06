@@ -4,6 +4,7 @@ import { AndonBadge, Badge, LoopBadge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { DataTable } from "@/components/ui/DataTable";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { Icon } from "@/components/ui/Icon";
 import { KpiTile } from "@/components/ui/KpiTile";
 import { Plate } from "@/components/ui/Plate";
 import { getShiftBoardView, reasonCodes } from "@/lib/queries";
@@ -30,9 +31,9 @@ export default async function StyleguidePage() {
         <section className="panel" aria-labelledby="sg-buttons">
           <div className="panel__head"><h2 id="sg-buttons">Buttons</h2></div>
           <div className="panel__body" style={{ display: "flex", flexWrap: "wrap", gap: "var(--s3)" }}>
-            <Button icon={<i className="ph-bold ph-check" aria-hidden="true" />}>Confirm defect</Button>
+            <Button icon={<Icon name="check" weight="bold" />}>Confirm defect</Button>
             <Button variant="ghost">Contain</Button>
-            <Button variant="stop" icon={<i className="ph-bold ph-hand-palm" aria-hidden="true" />}>Stop and fix</Button>
+            <Button variant="stop" icon={<Icon name="hand-palm" weight="bold" />}>Stop and fix</Button>
             <Button variant="quiet">Undo</Button>
             <Button disabled>Disabled</Button>
             <ButtonLink href="/station" size="xl">Open station</ButtonLink>
@@ -45,10 +46,10 @@ export default async function StyleguidePage() {
             <AndonBadge state="yellow" />
             <AndonBadge state="review" />
             <AndonBadge state="stopped" />
-            <Badge tone="stop" icon={<i className="ph-bold ph-drop" aria-hidden="true" />}>Leak-critical</Badge>
-            <Badge tone="safe" icon={<i className="ph-bold ph-seal-check" aria-hidden="true" />}>Validated</Badge>
+            <Badge tone="stop" icon={<Icon name="drop" weight="bold" />}>Leak-critical</Badge>
+            <Badge tone="safe" icon={<Icon name="seal-check" weight="bold" />}>Validated</Badge>
             <Badge tone="outline">Draft</Badge>
-            <Badge tone="ai" icon={<i className="ph ph-sparkle" aria-hidden="true" />}>Drafted by AI, check</Badge>
+            <Badge tone="ai" icon={<Icon name="sparkle" />}>Drafted by AI, check</Badge>
             <LoopBadge loop="shift" />
             <LoopBadge loop="kaizen" />
             <LoopBadge loop="launch" />
