@@ -133,6 +133,16 @@ export interface ModelReview {
   stationId: string;
   alertIds: string[];
   status: ReviewStatus;
+  verifiedByRole?: Actor;
+  verifiedAt?: string;
+  eligibleForModelUpdate: boolean;
+}
+
+export interface RecommendationView {
+  decision: ShiftDecision;
+  text: string;
+  suggestedBy: "system";
+  confirmedRepeatCount: number;
 }
 
 export interface AlertView {
@@ -148,6 +158,7 @@ export interface AlertView {
   mask: string;
   createdAt: string;
   status: AlertStatus;
+  recommendation: RecommendationView | null;
 }
 
 export interface ReasonCodeOption {

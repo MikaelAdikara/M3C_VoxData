@@ -3,17 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 
+import {
+  isRole,
+  ROLE_COOKIE_MAX_AGE_SECONDS,
+  ROLE_COOKIE_NAME,
+} from "@/lib/role-cookie";
 import type { ActionResult, Role } from "@/lib/types";
-
-export const ROLE_COOKIE_NAME = "learning-line-role";
-
-const roles = new Set<Role>([
-  "operator",
-  "team_leader",
-  "engineer",
-  "senior_expert",
-  "management",
-]);
 
 function refreshShell() {
   try {
@@ -24,7 +19,7 @@ function refreshShell() {
 }
 
 export async function setRole(role: Role): Promise<ActionResult> {
-  if (!roles.has(role)) {
+  if (!isRole(role)) {
     refreshShell();
     return { ok: false, error: "Invalid role." };
   }
@@ -36,7 +31,7 @@ export async function setRole(role: Role): Promise<ActionResult> {
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 12,
+      maxAge: ROLE_COOKIE_MAX_AGE_SECONDS,
     });
     refreshShell();
     return { ok: true };

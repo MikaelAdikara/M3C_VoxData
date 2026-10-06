@@ -1,14 +1,21 @@
+import { cookies } from "next/headers";
+
+import { DEFAULT_ROLE, isRole, ROLE_COOKIE_NAME } from "@/lib/role-cookie";
+import { getFalseAlarmBudgetState } from "@/lib/rules/budget";
+import { calculateOverrideRate } from "@/lib/rules/metrics";
+import { getShiftRecommendation } from "@/lib/rules/recommend";
+import { getConfirmedRepeatState, isConfirmedAlert } from "@/lib/rules/repeat";
 import { getStore } from "@/lib/store";
 import type {
   Alert,
   AlertView,
   DefectType,
   ReasonCodeOption,
+  RecommendationView,
+  Role,
   ShiftBoardView,
   StationView,
 } from "@/lib/types";
-
-export const FALSE_ALARM_BUDGET = 2;
 
 export const reasonCodes: ReasonCodeOption[] = [
   { value: "reflection", label: "Reflection" },
@@ -18,7 +25,11 @@ export const reasonCodes: ReasonCodeOption[] = [
   { value: "other", label: "Other" },
 ];
 
-function toAlertView(alert: Alert, defectTypes: Map<string, DefectType>): AlertView {
+function toAlertView(
+  alert: Alert,
+  defectTypes: Map<string, DefectType>,
+  recommendation: RecommendationView | null = null,
+): AlertView {
   return {
     id: alert.id,
     stationId: alert.stationId,
@@ -32,7 +43,17 @@ function toAlertView(alert: Alert, defectTypes: Map<string, DefectType>): AlertV
     mask: alert.mask,
     createdAt: alert.createdAt,
     status: alert.status,
+    recommendation,
   };
+}
+
+export async function getCurrentRole(): Promise<Role> {
+  try {
+    const value = (await cookies()).get(ROLE_COOKIE_NAME)?.value;
+    return isRole(value) ? value : DEFAULT_ROLE;
+  } catch {
+    return DEFAULT_ROLE;
+  }
 }
 
 export async function getStationView(stationId: string): Promise<StationView | null> {
@@ -72,22 +93,51 @@ export async function getShiftBoardView(): Promise<ShiftBoardView> {
     shift: snapshot.currentShift,
     stations: snapshot.stations.map((station) => {
       const stationAlerts = shiftAlerts.filter((alert) => alert.stationId === station.id);
-      const confirmedCount = stationAlerts.filter((alert) => alert.status === "confirmed").length;
-      const rejectedCount = stationAlerts.filter((alert) => alert.status === "rejected").length;
-      const decidedCount = confirmedCount + rejectedCount;
+      const confirmedCount = stationAlerts.filter((alert) =>
+        isConfirmedAlert(alert, snapshot.decisions),
+      ).length;
+      const budget = getFalseAlarmBudgetState(
+        shiftAlerts,
+        snapshot.decisions,
+        station.id,
+        snapshot.currentShift,
+      );
 
       return {
         station,
         openAlerts: stationAlerts.filter((alert) => alert.status === "open").length,
         confirmedCount,
-        rejectedCount,
-        falseAlarmBudget: FALSE_ALARM_BUDGET,
-        modelReviewNeeded: rejectedCount > FALSE_ALARM_BUDGET,
-        overrideRate: decidedCount === 0 ? 0 : rejectedCount / decidedCount,
+        rejectedCount: budget.count,
+        falseAlarmBudget: budget.budget,
+        modelReviewNeeded: budget.exceeded,
+        overrideRate: calculateOverrideRate(confirmedCount, budget.count),
       };
     }),
     pendingDecisions: shiftAlerts
-      .filter((alert) => alert.status === "confirmed")
-      .map((alert) => toAlertView(alert, defectTypesById)),
+      .filter(
+        (alert) =>
+          alert.status === "confirmed" &&
+          !snapshot.decisions.some(
+            (decision) =>
+              decision.alertId === alert.id &&
+              ["stop_fix", "contain", "continue"].includes(decision.kind),
+          ),
+      )
+      .map((alert) => {
+        const defectType = alert.defectTypeId ? defectTypesById.get(alert.defectTypeId) : undefined;
+        const repeatCount = alert.defectTypeId
+          ? getConfirmedRepeatState(
+              shiftAlerts,
+              snapshot.decisions,
+              alert.stationId,
+              alert.defectTypeId,
+              snapshot.currentShift,
+            ).count
+          : 0;
+        const recommendation = defectType
+          ? getShiftRecommendation(defectType.criticality, repeatCount)
+          : null;
+        return toAlertView(alert, defectTypesById, recommendation);
+      }),
   };
 }

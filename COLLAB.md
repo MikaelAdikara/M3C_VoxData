@@ -97,7 +97,7 @@ Fase berikutnya **tidak boleh dimulai** sebelum tag di kolom "Butuh" ada di remo
 |---|---|---|---|---|
 | BE-0 | BE | Scaffold Next.js (App Router) + TS strict + Tailwind v4 + Vitest; folder sesuai ARCHITECTURE §2; `lib/types.ts` lengkap (§2.1); memory store + seed (SEED_DATA.md); `getStationView`, `getShiftBoardView`, `setRole`; stub `page.tsx` polos untuk semua route; script `dev`/`test`/`lint`/`typecheck` jalan | – | DONE |
 | UI-0 | UI | Token Plant Sign (gradien abu + kaca, light/dark) di `globals.css` + `@theme inline`; `layout.tsx`: top bar (strip merah, nav, theme toggle, role switcher, shift clock), tab bar HP, footer label; primitive `components/ui/`: Button/ButtonLink, Badge, AndonBadge, LoopBadge, Plate (sign plate), DataTable, KpiTile, Sheet, EmptyState; `components/shell/Trail`; preview di `/styleguide` | `handoff/be-0` | DONE |
-| BE-1 | BE | `lib/rules` repeat/budget/recommend/override + test; action §2.3 fase BE-1; mekanisme refresh 2 detik | `handoff/ui-0` | TODO |
+| BE-1 | BE | `lib/rules` repeat/budget/recommend/override + test; action §2.3 fase BE-1; mekanisme refresh 2 detik | `handoff/ui-0` | DONE |
 | UI-1 | UI | `/station`: AlertCard + HeatmapImage, score vs threshold, DecisionBar, ReasonCodeSheet, status "what happens next", Suggest idea. `/shift-board`: grid StationTile (counts, budget meter, flag "model review needed"), RecommendationBox + 3 tombol keputusan + note | `handoff/be-1` | TODO |
 | BE-2 | BE | Ticket auto-open (repeat ×3), A3, status flow, cards + validate/return, assistant (retrieve, guardrail, offline mode, rate limit) + test; `getKaizenView`, `getTicketView`, `getKnowledgeView` | `handoff/ui-1` | TODO |
 | UI-2 | UI | `/kaizen`: Pareto, daftar tiket. `/kaizen/[id]`: TicketHeader + status stepper, A3Form 6 blok, label "Drafted by AI, check". `/knowledge`: list + filter, CardView + riwayat revisi, Validate/Return, AssistantPanel (citation chip, offline label, no-card state + Route to owner engineer) | `handoff/be-2` | TODO |
@@ -166,15 +166,15 @@ Tambahkan baris baru di bawah. Penerima mengubah status menjadi `done (commit ab
 
 | Tgl | Request | Untuk fase | Status |
 |---|---|---|---|
-| 2026-10-06 | **Bug build:** `lib/actions/role.ts` adalah file `"use server"` tapi meng-export `const ROLE_COOKIE_NAME`. `next build` gagal ("Only async functions are allowed to be exported in a 'use server' file") begitu client mengimpor `setRole`. Pindahkan konstanta ke modul lain (mis. `lib/role-cookie.ts`). Sampai ini beres, role switcher UI hanya berpindah layar tanpa memanggil `setRole`. | BE-1 | open |
-| 2026-10-06 | Tambah query `getCurrentRole(): Promise<Role>` di `lib/queries.ts` (membaca cookie role), supaya UI tidak membaca cookie sendiri. | BE-1 | open |
-| 2026-10-06 | Tambah dependency `@phosphor-icons/react` ke `package.json`. UI-0 sementara memuat Phosphor web dari CDN (unpkg) di `layout.tsx`. | BE-1 | open |
+| 2026-10-06 | **Bug build:** `lib/actions/role.ts` adalah file `"use server"` tapi meng-export `const ROLE_COOKIE_NAME`. `next build` gagal ("Only async functions are allowed to be exported in a 'use server' file") begitu client mengimpor `setRole`. Pindahkan konstanta ke modul lain (mis. `lib/role-cookie.ts`). Sampai ini beres, role switcher UI hanya berpindah layar tanpa memanggil `setRole`. | BE-1 | done (`handoff/be-1`) |
+| 2026-10-06 | Tambah query `getCurrentRole(): Promise<Role>` di `lib/queries.ts` (membaca cookie role), supaya UI tidak membaca cookie sendiri. | BE-1 | done (`handoff/be-1`) |
+| 2026-10-06 | Tambah dependency `@phosphor-icons/react` ke `package.json`. UI-0 sementara memuat Phosphor web dari CDN (unpkg) di `layout.tsx`. | BE-1 | done (`handoff/be-1`) |
 
 ### Request ke UI (dari BE)
 
 | Tgl | Request | Untuk fase | Status |
 |---|---|---|---|
-| | | | |
+| 2026-10-06 | Pada UI-1, hubungkan role switcher ke `setRole`, baca awal melalui `getCurrentRole`, ganti CDN ikon dengan `@phosphor-icons/react`, dan jalankan `router.refresh()` sekitar tiap 2 detik pada `/station` serta `/shift-board`. | UI-1 | open |
 
 ---
 
@@ -188,3 +188,6 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 | 2026-10-06 | BE | BE-0 menambahkan kontrak tipe lengkap, `getStationView(stationId)`, `getShiftBoardView()`, dan `setRole(role)` | UI-0 memakai view model dari `lib/queries.ts`, tipe dari `lib/types.ts`, dan action dari `lib/actions/role.ts` |
 | 2026-10-06 | UI | Mockup HTML 5 layar di `design/mockup/` + `PRODUCT.md`; `design/**`, `PRODUCT.md`, `.impeccable/**` jadi milik UI | Tidak ada; BE boleh membuka `design/mockup/` untuk melihat bentuk data yang dibutuhkan tiap layar |
 | 2026-10-06 | UI | UI-0 selesai: shell + primitive + `/styleguide`. Desain diganti ke "The Plant Sign" (lihat `docs/DESIGN.md`), bukan top bar navy. | Tidak ada perubahan kontrak. Lihat 3 request di §6. |
+| 2026-10-06 | BE | Konstanta/validasi cookie role dipindah ke `lib/role-cookie.ts`; `lib/actions/role.ts` kini hanya mengekspor async `setRole`; `getCurrentRole()` ditambah dengan default aman `operator` | UI dapat memakai role cookie tanpa membaca cookie langsung; regresi build server action selesai |
+| 2026-10-06 | BE | Menambah action BE-1: `confirmAlert`, `rejectAlert`, `submitIdea`, `decideShift`, `verifyRejection`; `AlertView.recommendation` membawa keputusan, teks, sumber sistem, dan hitungan repeat | UI-1 memanggil action sesuai peran; rekomendasi hanya panduan dan keputusan shift tetap tindakan team leader |
+| 2026-10-06 | BE | Action me-revalidate `/station` dan `/shift-board`; live view memakai `router.refresh()` UI sekitar tiap 2 detik; dependency `@phosphor-icons/react` tersedia | UI-1 memasang polling ringan dan mengganti CDN ikon tanpa menghitung aturan bisnis |

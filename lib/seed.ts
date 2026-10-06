@@ -333,6 +333,7 @@ export function createSeedData(): StoreSnapshot {
         stationId: "st-02",
         alertIds: currentAlerts.slice(0, 3).map((alert) => alert.id),
         status: "pending",
+        eligibleForModelUpdate: false,
       },
     ],
   };

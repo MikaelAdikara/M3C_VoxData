@@ -1,4 +1,5 @@
 import {
+  boolean,
   integer,
   jsonb,
   pgTable,
@@ -96,4 +97,7 @@ export const modelReviews = pgTable("model_reviews", {
   stationId: text("station_id").notNull(),
   alertIds: text("alert_ids").array().notNull(),
   status: text("status").notNull(),
+  verifiedByRole: text("verified_by_role"),
+  verifiedAt: timestamp("verified_at", { withTimezone: true, mode: "string" }),
+  eligibleForModelUpdate: boolean("eligible_for_model_update").notNull().default(false),
 });

@@ -1,11 +1,33 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getShiftBoardView, getStationView } from "@/lib/queries";
+const { getRoleCookie } = vi.hoisted(() => ({ getRoleCookie: vi.fn() }));
+
+vi.mock("next/headers", () => ({
+  cookies: vi.fn(async () => ({ get: getRoleCookie })),
+}));
+
+import { getCurrentRole, getShiftBoardView, getStationView } from "@/lib/queries";
 import { resetMemoryStore } from "@/lib/store/memory";
 
 describe("BE-0 view models", () => {
   beforeEach(async () => {
+    getRoleCookie.mockReset();
     await resetMemoryStore();
+  });
+
+  it("uses operator as the deterministic default role", async () => {
+    getRoleCookie.mockReturnValue(undefined);
+    await expect(getCurrentRole()).resolves.toBe("operator");
+  });
+
+  it("returns a valid role from the server cookie", async () => {
+    getRoleCookie.mockReturnValue({ value: "team_leader" });
+    await expect(getCurrentRole()).resolves.toBe("team_leader");
+  });
+
+  it("falls back safely when the role cookie is invalid", async () => {
+    getRoleCookie.mockReturnValue({ value: "admin" });
+    await expect(getCurrentRole()).resolves.toBe("operator");
   });
 
   it("returns the latest open alert and UI-ready reason codes for st-04", async () => {

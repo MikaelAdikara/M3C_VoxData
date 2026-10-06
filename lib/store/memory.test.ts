@@ -38,4 +38,30 @@ describe("deterministic memory store", () => {
     await store.reset();
     expect((await store.getSnapshot()).stations).toHaveLength(8);
   });
+
+  it("serializes mutations and commits only store-owned drafts", async () => {
+    const store = new MemoryStore();
+    const first = store.mutate(async (draft) => {
+      await Promise.resolve();
+      draft.ideas.push({
+        id: "idea-test-1",
+        stationId: "st-04",
+        text: "First",
+        status: "submitted",
+        createdAt: draft.currentShift.startsAt,
+      });
+    });
+    const second = store.mutate((draft) => {
+      draft.ideas.push({
+        id: "idea-test-2",
+        stationId: "st-04",
+        text: "Second",
+        status: "submitted",
+        createdAt: draft.currentShift.startsAt,
+      });
+    });
+    await Promise.all([first, second]);
+    const snapshot = await store.getSnapshot();
+    expect(snapshot.ideas.slice(-2).map((idea) => idea.id)).toEqual(["idea-test-1", "idea-test-2"]);
+  });
 });

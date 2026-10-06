@@ -8,6 +8,7 @@ function cloneSnapshot(snapshot: StoreSnapshot): StoreSnapshot {
 
 export class MemoryStore implements LearningLineStore {
   private state: StoreSnapshot;
+  private mutationQueue: Promise<void> = Promise.resolve();
 
   constructor(seed: StoreSnapshot = createSeedData()) {
     this.state = cloneSnapshot(seed);
@@ -17,9 +18,25 @@ export class MemoryStore implements LearningLineStore {
     return cloneSnapshot(this.state);
   }
 
+  async mutate<T>(mutation: (draft: StoreSnapshot) => T | Promise<T>): Promise<T> {
+    const operation = this.mutationQueue.then(async () => {
+      const draft = cloneSnapshot(this.state);
+      const result = await mutation(draft);
+      this.state = draft;
+      return result;
+    });
+
+    this.mutationQueue = operation.then(
+      () => undefined,
+      () => undefined,
+    );
+    return operation;
+  }
+
   async reset(): Promise<StoreSnapshot> {
+    await this.mutationQueue;
     this.state = createSeedData();
-    return this.getSnapshot();
+    return cloneSnapshot(this.state);
   }
 }
 

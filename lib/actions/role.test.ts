@@ -11,7 +11,8 @@ vi.mock("next/headers", () => ({
 
 vi.mock("next/cache", () => ({ revalidatePath }));
 
-import { ROLE_COOKIE_NAME, setRole } from "@/lib/actions/role";
+import { setRole } from "@/lib/actions/role";
+import { ROLE_COOKIE_NAME } from "@/lib/role-cookie";
 
 describe("setRole", () => {
   beforeEach(() => {
@@ -36,5 +37,9 @@ describe("setRole", () => {
     });
     expect(setCookie).not.toHaveBeenCalled();
     expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
+  });
+
+  it("keeps the server-action module limited to async action exports", async () => {
+    expect(Object.keys(await import("@/lib/actions/role"))).toEqual(["setRole"]);
   });
 });
