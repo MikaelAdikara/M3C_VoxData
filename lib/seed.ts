@@ -160,6 +160,7 @@ function createTickets(): Ticket[] {
       ownerRole: "role:engineer@body",
       status: "closed",
       a3: emptyA3,
+      aiPrefilledFields: [],
       createdAt: new Date(SEED_NOW - (50 - index) * DAY_MS).toISOString(),
       closedAt: new Date(SEED_NOW - (31 - index) * DAY_MS).toISOString(),
     })),
@@ -171,6 +172,7 @@ function createTickets(): Ticket[] {
       ownerRole: "role:engineer@body",
       status: "a3_in_progress",
       a3: { ...emptyA3, background: "Three thin-bead alerts at st-04 in shift A." },
+      aiPrefilledFields: ["background"],
       createdAt: new Date(SEED_NOW - 4 * DAY_MS).toISOString(),
     },
     {
@@ -181,6 +183,7 @@ function createTickets(): Ticket[] {
       ownerRole: "role:engineer@body",
       status: "countermeasure_trial",
       a3: emptyA3,
+      aiPrefilledFields: [],
       createdAt: new Date(SEED_NOW - 8 * DAY_MS).toISOString(),
     },
   ];
@@ -336,5 +339,6 @@ export function createSeedData(): StoreSnapshot {
         eligibleForModelUpdate: false,
       },
     ],
+    routedQuestions: [],
   };
 }

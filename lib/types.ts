@@ -90,6 +90,8 @@ export interface A3 {
   standardise: string;
 }
 
+export type A3Field = keyof A3;
+
 export interface Ticket {
   id: string;
   stationId: string;
@@ -98,6 +100,7 @@ export interface Ticket {
   ownerRole: Actor;
   status: TicketStatus;
   a3: A3;
+  aiPrefilledFields: A3Field[];
   createdAt: string;
   closedAt?: string;
 }
@@ -117,6 +120,9 @@ export interface KnowledgeCard {
   validatedByRole?: Actor;
   validatedAt?: string;
   sourceTicketId?: string;
+  returnedComment?: string;
+  returnedByRole?: Actor;
+  returnedAt?: string;
 }
 
 export interface Idea {
@@ -136,6 +142,15 @@ export interface ModelReview {
   verifiedByRole?: Actor;
   verifiedAt?: string;
   eligibleForModelUpdate: boolean;
+}
+
+export interface RoutedQuestion {
+  id: string;
+  question: string;
+  requestedByRole: Actor;
+  ownerRole: Actor;
+  status: "routed";
+  createdAt: string;
 }
 
 export interface RecommendationView {
@@ -171,6 +186,22 @@ export interface StationView {
   openAlert: AlertView | null;
   reasonCodes: ReasonCodeOption[];
   ideasOpen: number;
+  decisionHistory: StationDecisionHistoryItem[];
+}
+
+export interface DecisionView {
+  kind: DecisionKind;
+  actor: Actor;
+  reasonCode?: ReasonCode;
+  note?: string;
+  createdAt: string;
+}
+
+export interface StationDecisionHistoryItem {
+  alert: AlertView;
+  operatorDecision: DecisionView;
+  teamLeaderDecision: DecisionView | null;
+  occurredAt: string;
 }
 
 export interface StationTileView {
@@ -187,6 +218,17 @@ export interface ShiftBoardView {
   shift: Shift;
   stations: StationTileView[];
   pendingDecisions: AlertView[];
+  modelReviews: ModelReviewView[];
+}
+
+export interface ModelReviewView {
+  id: string;
+  stationId: string;
+  alertIds: string[];
+  status: ReviewStatus;
+  verifiedByRole?: Actor;
+  verifiedAt?: string;
+  eligibleForModelUpdate: boolean;
 }
 
 export interface TicketSummary {
@@ -207,10 +249,27 @@ export interface TicketView {
   ticket: Ticket;
   triggerAlerts: AlertView[];
   a3: A3;
-  aiPrefilledFields: (keyof A3)[];
+  aiPrefilledFields: A3Field[];
+  validation: {
+    requiredFieldsComplete: boolean;
+    draftCardId: string | null;
+    canRequest: boolean;
+  };
 }
 
-export type CardView = KnowledgeCard;
+export interface CardRevisionView {
+  revision: number;
+  status: CardStatus;
+  validatedByRole?: Actor;
+  validatedAt?: string;
+  returnedComment?: string;
+  returnedByRole?: Actor;
+  returnedAt?: string;
+}
+
+export interface CardView extends KnowledgeCard {
+  revisions: CardRevisionView[];
+}
 
 export interface KnowledgeFilters {
   process?: string;
@@ -264,4 +323,5 @@ export interface StoreSnapshot {
   cards: KnowledgeCard[];
   ideas: Idea[];
   modelReviews: ModelReview[];
+  routedQuestions: RoutedQuestion[];
 }

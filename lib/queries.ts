@@ -5,16 +5,28 @@ import { getFalseAlarmBudgetState } from "@/lib/rules/budget";
 import { calculateOverrideRate } from "@/lib/rules/metrics";
 import { getShiftRecommendation } from "@/lib/rules/recommend";
 import { getConfirmedRepeatState, isConfirmedAlert } from "@/lib/rules/repeat";
+import { isA3Complete } from "@/lib/rules/lifecycle";
 import { getStore } from "@/lib/store";
 import type {
   Alert,
   AlertView,
+  CardStatus,
+  CardView,
+  Decision,
+  DecisionView,
   DefectType,
+  DefectTypeId,
+  KaizenView,
+  KnowledgeCard,
+  KnowledgeFilters,
+  KnowledgeView,
   ReasonCodeOption,
   RecommendationView,
   Role,
   ShiftBoardView,
+  StationDecisionHistoryItem,
   StationView,
+  TicketView,
 } from "@/lib/types";
 
 export const reasonCodes: ReasonCodeOption[] = [
@@ -47,6 +59,38 @@ function toAlertView(
   };
 }
 
+function toDecisionView(decision: Decision): DecisionView {
+  return {
+    kind: decision.kind,
+    actor: decision.actor,
+    reasonCode: decision.reasonCode,
+    note: decision.note,
+    createdAt: decision.createdAt,
+  };
+}
+
+function isWithinRange(createdAt: string, startsAt: string, endsAt: string): boolean {
+  const timestamp = Date.parse(createdAt);
+  return timestamp >= Date.parse(startsAt) && timestamp <= Date.parse(endsAt);
+}
+
+function toCardView(card: KnowledgeCard, revisions: readonly KnowledgeCard[]): CardView {
+  return {
+    ...card,
+    revisions: [...revisions]
+      .sort((left, right) => right.revision - left.revision)
+      .map((item) => ({
+        revision: item.revision,
+        status: item.status,
+        validatedByRole: item.validatedByRole,
+        validatedAt: item.validatedAt,
+        returnedComment: item.returnedComment,
+        returnedByRole: item.returnedByRole,
+        returnedAt: item.returnedAt,
+      })),
+  };
+}
+
 export async function getCurrentRole(): Promise<Role> {
   try {
     const value = (await cookies()).get(ROLE_COOKIE_NAME)?.value;
@@ -65,6 +109,30 @@ export async function getStationView(stationId: string): Promise<StationView | n
   const openAlert = snapshot.alerts
     .filter((alert) => alert.stationId === stationId && alert.status === "open")
     .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+  const shiftAlerts = snapshot.alerts.filter(
+    (alert) =>
+      alert.stationId === stationId &&
+      isWithinRange(alert.createdAt, snapshot.currentShift.startsAt, snapshot.currentShift.endsAt),
+  );
+  const decisionHistory = shiftAlerts
+    .map((alert): StationDecisionHistoryItem | null => {
+      const alertDecisions = snapshot.decisions.filter((item) => item.alertId === alert.id);
+      const operatorDecision = alertDecisions.find(
+        (decision) => decision.kind === "confirm" || decision.kind === "reject",
+      );
+      if (!operatorDecision) return null;
+      const teamLeaderDecision = alertDecisions.find((decision) =>
+        ["stop_fix", "contain", "continue"].includes(decision.kind),
+      );
+      return {
+        alert: toAlertView(alert, defectTypesById),
+        operatorDecision: toDecisionView(operatorDecision),
+        teamLeaderDecision: teamLeaderDecision ? toDecisionView(teamLeaderDecision) : null,
+        occurredAt: teamLeaderDecision?.createdAt ?? operatorDecision.createdAt,
+      };
+    })
+    .filter((item): item is StationDecisionHistoryItem => item !== null)
+    .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt));
 
   return {
     station,
@@ -73,6 +141,7 @@ export async function getStationView(stationId: string): Promise<StationView | n
     ideasOpen: snapshot.ideas.filter(
       (idea) => idea.stationId === stationId && idea.status === "submitted",
     ).length,
+    decisionHistory,
   };
 }
 
@@ -139,5 +208,112 @@ export async function getShiftBoardView(): Promise<ShiftBoardView> {
           : null;
         return toAlertView(alert, defectTypesById, recommendation);
       }),
+    modelReviews: snapshot.modelReviews
+      .filter((review) =>
+        review.alertIds.some((alertId) => shiftAlerts.some((alert) => alert.id === alertId)),
+      )
+      .map((review) => ({
+        id: review.id,
+        stationId: review.stationId,
+        alertIds: [...review.alertIds],
+        status: review.status,
+        verifiedByRole: review.verifiedByRole,
+        verifiedAt: review.verifiedAt,
+        eligibleForModelUpdate: review.eligibleForModelUpdate,
+      })),
+  };
+}
+
+export async function getKaizenView(): Promise<KaizenView> {
+  const snapshot = await getStore().getSnapshot();
+  const defectTypesById = new Map(snapshot.defectTypes.map((item) => [item.id, item]));
+  const end = Date.parse(snapshot.currentShift.endsAt);
+  const start = end - 30 * 86_400_000;
+  const counts = new Map<DefectTypeId, number>();
+  for (const alert of snapshot.alerts) {
+    const createdAt = Date.parse(alert.createdAt);
+    if (
+      alert.defectTypeId &&
+      createdAt >= start &&
+      createdAt <= end &&
+      isConfirmedAlert(alert, snapshot.decisions)
+    ) {
+      counts.set(alert.defectTypeId, (counts.get(alert.defectTypeId) ?? 0) + 1);
+    }
+  }
+
+  return {
+    pareto: [...counts.entries()]
+      .map(([defectTypeId, count]) => ({ defectType: defectTypesById.get(defectTypeId)!, count }))
+      .filter((item) => item.defectType !== undefined)
+      .sort((left, right) => right.count - left.count),
+    tickets: snapshot.tickets
+      .filter((ticket) => ticket.status !== "closed")
+      .map((ticket) => ({
+        id: ticket.id,
+        stationId: ticket.stationId,
+        defectType: defectTypesById.get(ticket.defectTypeId)!,
+        ownerRole: ticket.ownerRole,
+        status: ticket.status,
+        createdAt: ticket.createdAt,
+      }))
+      .filter((ticket) => ticket.defectType !== undefined)
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+  };
+}
+
+export async function getTicketView(id: string): Promise<TicketView | null> {
+  const snapshot = await getStore().getSnapshot();
+  const ticket = snapshot.tickets.find((item) => item.id === id);
+  if (!ticket) return null;
+  const defectTypesById = new Map(snapshot.defectTypes.map((item) => [item.id, item]));
+  const draft = snapshot.cards
+    .filter((card) => card.sourceTicketId === ticket.id && card.status === "draft")
+    .sort((left, right) => right.revision - left.revision)[0];
+  const requiredFieldsComplete = isA3Complete(ticket.a3);
+  return {
+    ticket,
+    triggerAlerts: ticket.triggerAlertIds
+      .map((alertId) => snapshot.alerts.find((alert) => alert.id === alertId))
+      .filter((alert): alert is Alert => alert !== undefined)
+      .map((alert) => toAlertView(alert, defectTypesById)),
+    a3: ticket.a3,
+    aiPrefilledFields: [...ticket.aiPrefilledFields],
+    validation: {
+      requiredFieldsComplete,
+      draftCardId: draft?.id ?? null,
+      canRequest:
+        ticket.status === "countermeasure_trial" && requiredFieldsComplete && draft === undefined,
+    },
+  };
+}
+
+export async function getKnowledgeView(filters: KnowledgeFilters = {}): Promise<KnowledgeView> {
+  const snapshot = await getStore().getSnapshot();
+  const grouped = new Map<string, KnowledgeCard[]>();
+  for (const card of snapshot.cards) {
+    grouped.set(card.id, [...(grouped.get(card.id) ?? []), card]);
+  }
+  const currentCards = [...grouped.values()].map((revisions) =>
+    [...revisions].sort((left, right) => right.revision - left.revision)[0],
+  );
+  const cards = currentCards
+    .filter((card) => !filters.process || card.process === filters.process)
+    .filter((card) => !filters.stationId || card.stationIds.includes(filters.stationId))
+    .filter((card) => !filters.status || card.status === filters.status)
+    .map((card) => toCardView(card, grouped.get(card.id) ?? []))
+    .sort((left, right) => left.id.localeCompare(right.id));
+  const statuses: CardStatus[] = ["draft", "validated", "retired"];
+
+  return {
+    cards,
+    filters: {
+      processes: Array.from(new Set(currentCards.map((card) => card.process))).sort(),
+      stations: snapshot.stations.filter((station) =>
+        currentCards.some((card) => card.stationIds.includes(station.id)),
+      ),
+      statuses,
+      selected: filters,
+    },
   };
 }

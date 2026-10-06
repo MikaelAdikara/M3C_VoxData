@@ -75,6 +75,9 @@ export async function verifyRejection(reviewId: string): Promise<ActionResult> {
       if (review.status !== "pending") {
         return { ok: false, error: "Rejection review has already been verified." };
       }
+      if (review.alertIds.length === 0) {
+        return { ok: false, error: "Rejection review has no alerts to verify." };
+      }
       const allRejected = review.alertIds.every((alertId) => {
         const alert = draft.alerts.find((item) => item.id === alertId);
         return (

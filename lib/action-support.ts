@@ -39,6 +39,15 @@ export function nextSimulatedTimestamp(snapshot: StoreSnapshot): string {
     ...snapshot.alerts.map((item) => Date.parse(item.createdAt)),
     ...snapshot.decisions.map((item) => Date.parse(item.createdAt)),
     ...snapshot.ideas.map((item) => Date.parse(item.createdAt)),
+    ...snapshot.tickets.map((item) => Date.parse(item.createdAt)),
+    ...snapshot.cards.flatMap((item) =>
+      [item.validatedAt, item.returnedAt].filter(Boolean).map((value) => Date.parse(value!)),
+    ),
+    ...snapshot.modelReviews
+      .map((item) => item.verifiedAt)
+      .filter(Boolean)
+      .map((value) => Date.parse(value!)),
+    ...snapshot.routedQuestions.map((item) => Date.parse(item.createdAt)),
   ].filter((timestamp) => timestamp >= shiftStart && timestamp <= shiftEnd);
   const latest = timestamps.length > 0 ? Math.max(...timestamps) : shiftStart;
   return new Date(Math.min(latest + 1_000, shiftEnd)).toISOString();

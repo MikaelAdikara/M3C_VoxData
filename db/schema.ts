@@ -58,6 +58,7 @@ export const tickets = pgTable("tickets", {
   ownerRole: text("owner_role").notNull(),
   status: text("status").notNull(),
   a3: jsonb("a3").$type<A3>().notNull(),
+  aiPrefilledFields: text("ai_prefilled_fields").array().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
   closedAt: timestamp("closed_at", { withTimezone: true, mode: "string" }),
 });
@@ -79,6 +80,9 @@ export const cards = pgTable(
     validatedByRole: text("validated_by_role"),
     validatedAt: timestamp("validated_at", { withTimezone: true, mode: "string" }),
     sourceTicketId: text("source_ticket_id"),
+    returnedComment: text("returned_comment"),
+    returnedByRole: text("returned_by_role"),
+    returnedAt: timestamp("returned_at", { withTimezone: true, mode: "string" }),
   },
   (table) => [primaryKey({ columns: [table.id, table.revision] })],
 );
@@ -100,4 +104,13 @@ export const modelReviews = pgTable("model_reviews", {
   verifiedByRole: text("verified_by_role"),
   verifiedAt: timestamp("verified_at", { withTimezone: true, mode: "string" }),
   eligibleForModelUpdate: boolean("eligible_for_model_update").notNull().default(false),
+});
+
+export const routedQuestions = pgTable("routed_questions", {
+  id: text("id").primaryKey(),
+  question: text("question").notNull(),
+  requestedByRole: text("requested_by_role").notNull(),
+  ownerRole: text("owner_role").notNull(),
+  status: text("status").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
 });
