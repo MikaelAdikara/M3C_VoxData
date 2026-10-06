@@ -64,8 +64,8 @@
   ],
   "narrative": {
     "northStar": "The Plant Sign",
-    "overview": "Learning Line reads like the safety signage of a Japanese car plant on frosted glass: a soft steel gradient under translucent panels, and colour only when something is abnormal or final, keeping each colour's plant meaning (red stop, yellow caution, green safe, blue instruction). Floor screens are large and sparse; desk screens are denser, ruled and tabular.",
-    "keyCharacteristics": ["Soft steel gradient ground, frosted glass panels, charcoal ink", "Safety colours carry state only", "Sign plate signature component", "Pill buttons, 8 px panels, ruled tables, tabular numerals", "Five-step abnormality trail"],
+    "overview": "Learning Line reads like the safety signage of a Japanese car plant on frosted glass: a monochrome silver gradient under translucent panels, and colour only when something is abnormal or final, keeping each colour's plant meaning (red stop, yellow caution, green safe, blue instruction). Floor screens are large and sparse; desk screens are denser, ruled and tabular.",
+    "keyCharacteristics": ["Monochrome silver gradient ground, frosted glass panels, charcoal ink", "Safety colours carry state only", "Sign plate signature component", "Pill buttons, 8 px panels, ruled tables, tabular numerals", "Five-step abnormality trail"],
     "rules": [
       { "name": "The Sign Rule", "body": "A colour means what it means on a plant sign; otherwise the screen is grey and ink.", "section": "colors" },
       { "name": "The One Red Rule", "body": "Toyota Red only for brand strip, stop and leak-critical.", "section": "colors" },

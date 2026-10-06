@@ -9,11 +9,10 @@ colors:
   line: "rgba(37, 37, 37, .11)"
   line-strong: "rgba(37, 37, 37, .30)"
   glass-edge: "rgba(255, 255, 255, .75)"
-  steel-blue: "#bfd2e8"
-  blush: "#f0cdd2"
-  mint: "#c7e2da"
-  lilac-mist: "#d9d4ec"
-  base-steel: "#e9eef3"
+  silver-light: "#ffffff"
+  silver-mid: "#d6d6d6"
+  silver-deep: "#d1d1d1"
+  base-silver: "#ececec"
   ink: "#252525"
   ink-2: "#333333"
   muted: "#6e6e6e"
@@ -133,14 +132,14 @@ Reference build: `design/mockup/` (open `design/mockup/index.html`). Product tru
 
 **Creative North Star: "The Plant Sign"**
 
-Learning Line reads like the safety signage of a Japanese car plant, set on frosted glass. A soft steel gradient (pale steel blue, blush, mint, a trace of lilac) lies under translucent glass panels; it stays light and low-contrast so industrial screens remain calm. Colour appears only when something is abnormal or final, and each colour keeps the meaning it has on a plant sign: red stop, yellow caution, green safe or validated, blue instruction or standard. The result should feel like a Toyota tool: precise, plain, unhurried. It must not look like a marketing site or a generic SaaS dashboard.
+Learning Line reads like the safety signage of a Japanese car plant, set on frosted glass. A monochrome silver gradient (white highlights and soft grey shadows, no hue) lies under translucent glass panels, so the screens stay clean and calm and colour belongs only to state. Colour appears only when something is abnormal or final, and each colour keeps the meaning it has on a plant sign: red stop, yellow caution, green safe or validated, blue instruction or standard. The result should feel like a Toyota tool: precise, plain, unhurried. It must not look like a marketing site or a generic SaaS dashboard.
 
 Density follows the user. Operator and team-leader screens are large and sparse: one decision at a time, with targets usable in gloves. Engineer and management screens pack ruled modules and tables more tightly. One visual grammar holds across both.
 
 The visual language takes inspiration from Toyota but is not Toyota branding. There is no Toyota emblem, no Toyota Type, and nothing that suggests an official Toyota product.
 
 **Key Characteristics:**
-- Soft steel gradient ground, frosted glass panels, charcoal ink.
+- Monochrome silver gradient ground, frosted glass panels, charcoal ink.
 - Safety colours carry state and nothing else.
 - The sign plate is the signature component.
 - Gradient pill buttons, 8 px glass panels, ruled tables, tabular numerals.
@@ -160,7 +159,7 @@ Restrained neutrals with four signal colours that are never decorative.
 - **Instruct Blue** (#0066b1): instructions and standards, such as model review needed, draft cards awaiting validation, links and the focus ring.
 
 ### Ground and glass
-- **Steel gradient**: radial washes of Steel Blue (#bfd2e8), Blush (#f0cdd2), Mint (#c7e2da) and Lilac Mist (#d9d4ec) over a Base Steel linear gradient (#e9eef3 to #e1e6ec). It is painted on a fixed layer behind the page.
+- **Silver gradient**: monochrome radial washes of white (#ffffff, #f4f4f4) and grey (#d6d6d6, #d1d1d1) over a base linear gradient (#ececec to #e0e0e0). No hue in the background, ever. It is painted on a fixed layer behind the page.
 - **Glass** (white at 52%): panels, plates, tiles and inputs. Uses `backdrop-filter: blur(22px) saturate(180%)`, a 1 px white edge at 75% and an inner top highlight.
 - **Strong glass** (white at 86%): sheets and dialogs.
 - **Panel tint** (ink at 7%): neutral badges and the selected-row background.
@@ -267,6 +266,7 @@ Depth comes from frosted glass. Panels float over the gradient with blur, a whit
 - **Don't** colour loops, categories, selections or progress with signal colours.
 - **Don't** fade content with opacity to de-emphasise it.
 - **Don't** use KPI-card rows (a big number over a small label). Put metrics in ruled tables.
+- **Don't** put colour (red, purple, blue, green or any hue) in the background gradient.
 - **Don't** add eyebrows or kickers above headings, saturated or purple-neon gradients, glow halos, or em-dashes. Gradients stay soft on the ground and signal-coloured on state elements.
 - **Don't** use monospace fonts.
 - **Don't** use the Toyota emblem, Toyota Type, faces or personal names.
