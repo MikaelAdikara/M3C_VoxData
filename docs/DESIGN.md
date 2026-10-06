@@ -16,6 +16,10 @@ colors:
   ink: "#252525"
   ink-2: "#333333"
   muted: "#6e6e6e"
+  muted-strong: "#5f5f5f"
+  on-video-ground: "#1b1b1b"
+  media-ground: "#3a3a3a"
+  on-video-bar: "rgba(20, 20, 20, .22)"
   stop-red: "#eb0a1e"
   stop-red-hover: "#c10a16"
   caution-yellow: "#f2b705"
@@ -63,7 +67,9 @@ typography:
     fontFeature: "tnum"
 rounded:
   input: "4px"
+  tile: "6px"
   panel: "8px"
+  feature: "16px"
   pill: "999px"
 spacing:
   s1: "4px"
@@ -212,7 +218,7 @@ Depth comes from frosted glass. Panels float over the gradient with blur, a whit
 ## Shapes
 
 - Interactive elements (buttons, badges, chips, the role switcher) are full pills.
-- Panels and plates use 8 px corners. Inputs use 4 px.
+- Panels and plates use 8 px corners; icon tiles 6 px; inputs 4 px. Feature surfaces (sheets and dialogs, the landing hero demo card and the landing A3 sheet) use 16 px.
 - Tables have no radius and use horizontal rules only: a 2 px ink header rule and 1 px row rules.
 
 ## Components
@@ -251,6 +257,14 @@ Depth comes from frosted glass. Panels float over the gradient with blur, a whit
 
 ### Sheets
 - Native `<dialog>`. On phone it is a bottom sheet (drawer curve `cubic-bezier(.32,.72,0,1)`); on desktop it is a centred card. Entry uses `@starting-style`.
+
+## Landing (cover)
+
+`design/mockup/index.html` is the entry page.
+- **Hero:** grayscale factory footage (Pexels, Parker Filme) under a dark wash (#1b1b1b family). Headline "AI detects. People decide." at 76 px. White and outline pills. A dark-glass demo card loops scan, heatmap, caution plate, confirm and confirmed.
+- **The case on one A3 sheet:** a 16 px glass sheet with a title block, two columns and ruled rows (Background, Current condition, Root cause | Countermeasure, Check, Standardise).
+- **Devices:** a phone with the live Station screen and a laptop showing the shift board.
+- **Footer:** M3C 2026 and AKTI logos, the TMMIN case text and the "not affiliated with or endorsed by Toyota" line. There is never a Toyota logo.
 
 ## Do's and Don'ts
 

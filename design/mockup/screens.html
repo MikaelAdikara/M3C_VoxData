@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Learning Line mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .deck { max-width: 1600px; margin: 0 auto; padding: var(--s5); }
+  .deck__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--s4); margin-bottom: var(--s5); }
+  .deck__head h1 { font-size: 28px; }
+  .deck__head p { color: var(--muted); margin-top: 2px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: var(--s2); }
+  .tab {
+    min-height: 44px; padding: 0 var(--s4); border-radius: var(--r-pill);
+    border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+    font: 600 15px var(--font); cursor: pointer; display: inline-flex; align-items: center; gap: var(--s2);
+    transition: background-color var(--t-fast) ease, color var(--t-fast) ease, transform var(--t-fast) var(--ease-out);
+  }
+  .tab:active { transform: scale(.97); }
+  .tab[aria-selected="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .stage { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--s6); align-items: start; }
+  .device__label { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--muted); margin-bottom: var(--s2); }
+  .device__label a { font-weight: 600; }
+  .phone {
+    width: 414px; height: 868px; border-radius: 48px; padding: 12px; background: var(--ink);
+    box-shadow: var(--shadow-2);
+  }
+  .phone iframe { width: 390px; height: 844px; border: 0; border-radius: 34px; background: var(--ground); display: block; }
+  .laptop__screen {
+    position: relative; width: 100%; aspect-ratio: 1440 / 900; overflow: hidden;
+    border: 12px solid var(--ink); border-bottom-width: 16px; border-radius: 14px 14px 0 0; background: var(--ground);
+  }
+  .laptop__screen iframe { position: absolute; top: 0; left: 0; width: 1440px; height: 900px; border: 0; transform-origin: 0 0; }
+  .laptop__base { height: 14px; margin: 0 -2%; background: #3a3a3a; border-radius: 0 0 12px 12px; }
+  .note { margin-top: var(--s5); font-size: 14px; color: var(--muted); }
+  @media (max-width: 1100px) {
+    .stage { grid-template-columns: 1fr; justify-items: center; }
+    .laptop { width: 100%; }
+  }
+  @media (max-width: 430px) {
+    .deck { padding: var(--s4); }
+    .phone { width: 100%; height: auto; aspect-ratio: 414 / 868; padding: 8px; border-radius: 36px; }
+    .phone iframe { width: 100%; height: 100%; border-radius: 28px; }
+  }
+</style>
+</head>
+<body>
+<main class="deck">
+  <div class="deck__head">
+    <div>
+      <h1>Learning Line mockups</h1>
+      <p>Five screens, phone and laptop. Concept prototype · simulated data · not connected to TMMIN systems.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Screens" id="tabs"></div>
+  </div>
+
+  <div class="stage">
+    <section class="device" aria-label="Phone">
+      <div class="device__label"><span>Phone · 390 px</span></div>
+      <div class="phone"><iframe id="f-phone" title="Phone view"></iframe></div>
+    </section>
+    <section class="device laptop" aria-label="Laptop">
+      <div class="device__label"><span>Laptop · 1440 px</span><span><a href="index.html">Cover page</a> · <a id="open-full" href="#" target="_blank" rel="noopener">Open full screen</a></span></div>
+      <div class="laptop__screen" id="laptop"><iframe id="f-laptop" title="Laptop view" tabindex="-1"></iframe></div>
+      <div class="laptop__base"></div>
+    </section>
+  </div>
+  <p class="note">Both frames run the same responsive page. Click inside a frame to try the decisions.</p>
+</main>
+<script>
+  const SCREENS = [
+    ["station", "Station alert", "ph-monitor"],
+    ["shift-board", "Shift board", "ph-squares-four"],
+    ["kaizen", "Kaizen + A3", "ph-clipboard-text"],
+    ["knowledge", "Knowledge", "ph-books"],
+    ["metrics", "Loop metrics", "ph-chart-line"],
+  ];
+  const tabs = document.getElementById("tabs");
+  const phone = document.getElementById("f-phone");
+  const laptopFrame = document.getElementById("f-laptop");
+  const laptop = document.getElementById("laptop");
+
+  function fit() { laptopFrame.style.transform = `scale(${laptop.clientWidth / 1440})`; }
+  new ResizeObserver(fit).observe(laptop);
+
+  function show(id) {
+    const url = `${id}.html`;
+    phone.src = url; laptopFrame.src = url;
+    document.getElementById("open-full").href = url;
+    tabs.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", t.dataset.id === id));
+    history.replaceState(null, "", `#${id}`);
+  }
+  SCREENS.forEach(([id, label, icon]) => {
+    const b = document.createElement("button");
+    b.className = "tab"; b.role = "tab"; b.dataset.id = id;
+    b.innerHTML = `<i class="ph ${icon}" aria-hidden="true"></i>${label}`;
+    b.addEventListener("click", () => show(id));
+    tabs.append(b);
+  });
+  show((location.hash || "#station").slice(1));
+  fit();
+</script>
+</body>
+</html>

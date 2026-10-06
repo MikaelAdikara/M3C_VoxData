@@ -2,25 +2,23 @@
 version: 1
 slug: "design-mockup-index-html"
 primary_target: "design/mockup/index.html"
-related_targets: ["design/mockup/station.html","design/mockup/shift-board.html","design/mockup/kaizen.html","design/mockup/knowledge.html","design/mockup/metrics.html"]
+related_targets: []
 ---
 
-# Surface brief: Learning Line mockup (5 screens, phone + laptop)
+# Surface brief: Learning Line landing (cover)
 
-Scope: static HTML mockup of Station alert, Shift board, Kaizen cockpit + A3 ticket, Knowledge + assistant, Loop metrics, plus a presenter page showing each in phone (390) and laptop (1440) frames. Visitor mode: Operate.
-
-Audience and job: operator (confirm or reject an alert), team leader (stop and fix, contain, continue), engineer (A3, request validation), senior expert (validate card), management (Gate 1 indicators). Content only from docs/SEED_DATA.md. Constraint: red only for brand strip and stop/critical; no Toyota logo or Toyota Type.
+Scope: `design/mockup/index.html`, the entry page before the five prototype screens (which move to `screens.html`). Visitor mode: Persuade. Audience: M3C judges opening the Appendix C link, plus TMMIN reviewers. Job: in ten seconds know the problem, how it works, and how to enter. Constraints: no Toyota logo or Toyota footage; M3C 2026 x AKTI logos (team supplies files) plus the text "Case: PT Toyota Motor Manufacturing Indonesia (TMMIN)"; monochrome silver ground with glass; colour only for state; facts only from the Executive Summary and SEED_DATA.
 
 ## Direction contract
 
-THESIS: Colour means what it means on a Japanese plant sign: red stop, yellow caution, green safe or validated, blue instruction or standard. It refuses the grey dashboard with one brand accent and KPI cards.
+THESIS: The case told as a Toyota A3, with the product as the countermeasure. It refuses the SaaS landing template (hero, three feature cards, logo wall, pricing).
 
-OWN-WORLD: Neutral grey ground #F2F2F2, white work surfaces, ink #252525. JIS-style safety colours do the state jobs and nothing else. Source Sans 3 bold gothic headings, Source Code Pro for IDs only, tabular numerals on one strict grid. Pill buttons, 8 px panels, ruled tables. The signature move is the sign plate: a state panel with a solid colour band, a pictogram and a plain verb ("CAUTION · Bead break"), used only where a decision is pending or a state is final. Raises: strict numeric grid (ikeda); a still base layer with only the active case above it (orienteering); bead images registered at one scale (botanical); a pending decision quiets the rest (streaming); denser ruled modules on engineer screens (Japanese density).
+OWN-WORLD: The Plant Sign world from docs/DESIGN.md: a monochrome silver gradient, frosted glass, charcoal ink, safety colours only for state, Source Sans 3 and pill CTAs. The hero is grayscale factory footage under a dark wash, and the demo card sits on dark glass.
 
-STORY: The visitor sees an abnormality reach the station that made it, then watches each human decision move it along the trail: operator, team leader, Kaizen ticket, validated card.
+STORY: First the visitor sees the line and the promise "AI detects. People decide." and watches one alert get decided. Then they read the case left to right as an A3: background, condition, root cause, countermeasure (three loops with real screens), check (Gate 1), standardise. Finally a closing "Decide one alert yourself" band shows the live Station screen in a phone frame, and they enter the prototype.
 
-FIRST VIEWPORT: Top bar: thin red strip, "Learning Line", screen tabs, role switcher, shift clock. Under it the abnormality trail (5 steps, current one marked). Station: bead illustration with heatmap left (60%), yellow caution sign plate with region, score 0.83 vs threshold 0.61, model v1.3, and two 72 px pill buttons right. On phone the plate and buttons stack under the image.
+FIRST VIEWPORT: Full-bleed grayscale factory video. A glass top bar holds "Learning Line", the TMMIN case text and an "Enter the prototype" pill. Left: headline at 72 px, a subline of 12 words or fewer, a white "Enter the prototype" pill and a ghost "See how it works". Right: a dark glass demo card that loops through camera scan, heatmap, caution plate, "Confirm defect", then "Confirmed by operator".
 
-FORM: Japanese safety signage (JIS colour semantics), position 6 on the ordered list, seed key 9dd9d578.
+FORM: A3 report structure (dealt lead card, seed key 29e6a5ab), inside the Plant Sign world (seed key 9dd9d578).
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
