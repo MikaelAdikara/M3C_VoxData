@@ -128,8 +128,9 @@ git tag -l 'handoff/*'            # tag "Butuh" untuk fase ini ada?
 npm run lint && npm run typecheck && npm run test
 git add <hanya file milikmu> COLLAB.md
 git commit -m "ui: UI-1 station + shift board"      # prefix be: / ui: / docs:
-git tag handoff/ui-1
-git push origin main --follow-tags
+git tag -a handoff/ui-1 -m "UI-1 done"
+git push origin main
+git push origin handoff/ui-1         # tag wajib di-push terpisah
 ```
 
 Lalu ubah status fase di §3 menjadi `DONE`. Status boleh ikut commit yang sama.
@@ -191,3 +192,4 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 | 2026-10-06 | BE | Konstanta/validasi cookie role dipindah ke `lib/role-cookie.ts`; `lib/actions/role.ts` kini hanya mengekspor async `setRole`; `getCurrentRole()` ditambah dengan default aman `operator` | UI dapat memakai role cookie tanpa membaca cookie langsung; regresi build server action selesai |
 | 2026-10-06 | BE | Menambah action BE-1: `confirmAlert`, `rejectAlert`, `submitIdea`, `decideShift`, `verifyRejection`; `AlertView.recommendation` membawa keputusan, teks, sumber sistem, dan hitungan repeat | UI-1 memanggil action sesuai peran; rekomendasi hanya panduan dan keputusan shift tetap tindakan team leader |
 | 2026-10-06 | BE | Action me-revalidate `/station` dan `/shift-board`; live view memakai `router.refresh()` UI sekitar tiap 2 detik; dependency `@phosphor-icons/react` tersedia | UI-1 memasang polling ringan dan mengganti CDN ikon tanpa menghitung aturan bisnis |
+| 2026-10-06 | UI | Prosedur handoff (§4, AGENTS.md, CLAUDE.md): tag dibuat `git tag -a` dan di-push terpisah (`git push origin handoff/<fase>`), karena `--follow-tags` tidak membawa tag lightweight. | BE: pakai perintah baru untuk `handoff/be-1` |

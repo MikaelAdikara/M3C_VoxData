@@ -31,7 +31,7 @@ Check the "Butuh" column in `COLLAB.md` §3. If the required `handoff/ui-*` tag 
 2. Stage only files you own, plus `COLLAB.md`. Check with `git diff --name-only --cached`.
 3. Commit with prefix `be:`. Set the phase row in `COLLAB.md` §3 to `DONE`.
 4. Log any change to `lib/types.ts`, `lib/queries.ts` or `lib/actions/*` in `COLLAB.md` §7.
-5. Run `git tag handoff/be-N && git push origin main --follow-tags`.
+5. Run `git tag -a handoff/be-N -m "BE-N done" && git push origin main && git push origin handoff/be-N` (push the tag explicitly; `--follow-tags` skips lightweight tags).
 
 ## Contract reminders
 
