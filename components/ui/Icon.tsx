@@ -35,6 +35,11 @@ import {
   Wrench,
   X,
   XCircle,
+  BookOpen,
+  Flag,
+  PenNib,
+  Ruler,
+  Fingerprint,
 } from "@phosphor-icons/react/ssr";
 import type { IconWeight } from "@phosphor-icons/react";
 
@@ -75,6 +80,11 @@ const ICONS = {
   wrench: Wrench,
   x: X,
   "x-circle": XCircle,
+  "book-open": BookOpen,
+  "flag": Flag,
+  "pen-nib": PenNib,
+  "ruler": Ruler,
+  "fingerprint": Fingerprint,
 } as const;
 
 export type IconName = keyof typeof ICONS;

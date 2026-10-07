@@ -13,6 +13,7 @@ import "./globals.css";
 import "./styles/cctv.css";
 import "./styles/line.css";
 import "./styles/dock.css";
+import "./styles/prov.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
