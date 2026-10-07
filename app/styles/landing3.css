@@ -53,7 +53,7 @@
 .sec { padding-top: 140px; }
 
 /* ---------- 1. Hero: centered words over a full-width line ---------- */
-.hero3 { position: relative; min-height: min(100dvh, 980px); overflow: hidden; display: grid; }
+.hero3 { position: relative; min-height: clamp(780px, 100dvh, 980px); overflow: hidden; display: grid; }
 .hero3 .stage { position: absolute; inset: 0; height: auto; border: 0; border-radius: 0; box-shadow: none; }
 .hero3::before {
   content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
@@ -202,6 +202,10 @@
 .stamp--pending { color: var(--paper-muted, #5a5a5a); border-style: dashed; opacity: .9 !important; transform: rotate(-5deg) !important; animation: none !important; mix-blend-mode: normal; }
 .tag2__log li:not([data-on="true"]) .stamp--pending { opacity: 0 !important; }
 .tag2__log li[data-pending="true"] .stamp--pending { opacity: .9 !important; }
+/* Station labels would collide with the headline at some window sizes; on the cover the
+   tag on the waiting body carries the andon instead. */
 .hero3 .line-label { display: none; }
-.hero3 .line-label:has(em[data-tone="caution"]), .hero3 .line-label:has(em[data-tone="stop"]) { display: inline-flex; }
 .cover-bar[data-light="true"] .btn--ghost { color: var(--ink); }
+/* keep the device frames in shape while the captures load */
+.laptop img { aspect-ratio: 1440 / 900; background: var(--panel); object-fit: cover; }
+.phone img { aspect-ratio: 390 / 844; background: var(--panel); object-fit: cover; }

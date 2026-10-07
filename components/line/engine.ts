@@ -64,8 +64,8 @@ export function createLineEngine(opts: {
   interactive?: boolean;
   /** Camera position and target, for the landing hero framing. */
   home?: { pos: [number, number, number]; target: [number, number, number] };
-  /** Fraction of the stage height the scene moves down (room for a headline). */
-  shiftY?: number;
+  /** Fraction of the stage height the scene moves down (room for a headline); a function is re-read on resize. */
+  shiftY?: number | (() => number);
   onSelect?: (id: string) => void;
   /** Override the body model URLs (the static mockup serves them from another path). */
   modelBase?: string;
@@ -515,7 +515,8 @@ export function createLineEngine(opts: {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.fov = w / h < 1.2 ? 50 : w / h < 1.7 ? 37 : 30;
-    if (opts.shiftY && !narrow()) camera.setViewOffset(w, h, 0, -h * opts.shiftY, w, h);
+    const shiftY = typeof opts.shiftY === "function" ? opts.shiftY() : opts.shiftY;
+    if (shiftY && (!narrow() || !interactive)) camera.setViewOffset(w, h, 0, -h * shiftY, w, h);
     else camera.clearViewOffset();
     camera.updateProjectionMatrix();
     needsRender = true;

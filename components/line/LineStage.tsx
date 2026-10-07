@@ -65,13 +65,13 @@ export function LineStage({
         tag: tagRef.current,
         stations,
         interactive: !hero,
-        ...(hero ? { home: { pos: [-27, 13, 27] as [number, number, number], target: [2, 0, 0] as [number, number, number] }, shiftY: 0.33 } : {}),
+        ...(hero ? { home: { pos: [-27, 13, 27] as [number, number, number], target: [2, 0, 0] as [number, number, number] }, shiftY: heroShift } : {}),
         onSelect: (id) => onSelectRef.current(id),
       });
       if (!engine) { setFailed(true); return; }
       engineRef.current = engine;
       setPaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
-      engine.setState(toEngineState(line, selected));
+      engine.setState(toEngineState(line, selected, hero));
     });
     return () => {
       disposed = true;
@@ -83,8 +83,17 @@ export function LineStage({
   }, [stationKey]);
 
   useEffect(() => {
-    engineRef.current?.setState(toEngineState(line, selected));
-  }, [line, selected]);
+    if (!hero) return;
+    const id = window.setInterval(() => {
+      const tag = tagRef.current;
+      if (tag && !tag.hidden) tag.style.visibility = tagClear(tag) ? "visible" : "hidden";
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [hero]);
+
+  useEffect(() => {
+    engineRef.current?.setState(toEngineState(line, selected, hero));
+  }, [line, selected, hero]);
 
   const stopped = line.line.state === "stopped";
   const bodies = line.line.bodiesCompleted;
@@ -166,13 +175,37 @@ export function LineStage({
   );
 }
 
-function toEngineState(line: LineView, selected: string | null): EngineState {
+/**
+ * Cover framing: push the model down so the line starts below the call-to-action
+ * buttons whatever the window shape (0.33 suits a 1440×900 window).
+ */
+function heroShift() {
+  const stage = document.querySelector(".hero3 .stage");
+  const cta = document.querySelector(".hero3__ctas");
+  if (!stage || !cta) return 0.33;
+  const s = stage.getBoundingClientRect();
+  const frac = (cta.getBoundingClientRect().bottom - s.top) / s.height;
+  return Math.min(0.62, Math.max(0.22, 0.33 + (frac - 0.55) * 1.6));
+}
+
+/** On the cover, hide the tag whenever it would sit on the headline, buttons or live strip. */
+function tagClear(tag: HTMLElement) {
+  const t = tag.getBoundingClientRect();
+  return ![...document.querySelectorAll(".hero3__inner h1, .hero3__inner p, .hero3__ctas .btn, .live")].some((e) => {
+    const b = e.getBoundingClientRect();
+    return !(t.right < b.left || t.left > b.right || t.bottom < b.top || t.top > b.bottom);
+  });
+}
+
+function toEngineState(line: LineView, selected: string | null, hero = false): EngineState {
   const f = line.flaggedBody;
   const note = !f ? "" : f.state === "held_for_repair" ? "Held for repair" : f.state === "awaiting_team_leader" ? "Waiting for team leader" : f.state === "released" ? "Released" : "Flagged";
   return {
     stations: Object.fromEntries(line.stations.map((s) => [s.station.id, s.state])),
     line: line.line.state,
-    flagged: f ? { bodyId: f.bodyId, stationId: f.detectedAtStationId, note: `${note} · detected at ${f.detectedAtStationId}` } : null,
+    flagged: f
+      ? { bodyId: f.bodyId, stationId: f.detectedAtStationId, note: hero ? `Yellow andon at ${f.detectedAtStationId} · ${note.toLowerCase()}` : `${note} · detected at ${f.detectedAtStationId}` }
+      : null,
     selected,
   };
 }
