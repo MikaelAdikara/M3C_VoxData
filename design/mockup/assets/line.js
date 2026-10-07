@@ -3,8 +3,12 @@
    station, and the team leader's decision is visible on the line itself.
    Static mockup; all data simulated. Time is compressed for the demo. */
 
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+/* Loaded as a classic script so the mockup also works when opened straight
+   from disk (file://), where Chrome blocks module files. three.js itself comes
+   from the CDN through the page's import map. */
+(async () => {
+const THREE = await import("three");
+const { OrbitControls } = await import("three/addons/controls/OrbitControls.js");
 
 /* ---------- Data (mockup copy of the shift-board state) ---------- */
 const STATIONS = [
@@ -630,3 +634,4 @@ function flaggedAt() {
 
 window.LLLine = { select, decide, resetView, setPaused, state, STATIONS, flaggedAt, takt: () => ({ cycleT, CYCLE }) };
 document.dispatchEvent(new CustomEvent("line:ready"));
+})();

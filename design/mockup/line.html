@@ -232,6 +232,6 @@ let shellReady = false, lineReady = !!window.LLLine;
 document.addEventListener("shell:ready", () => { shellReady = true; if (lineReady) wire(); });
 document.addEventListener("line:ready", () => { lineReady = true; if (shellReady) wire(); });
 </script>
-<script type="module" src="assets/line.js"></script>
+<script src="assets/line.js"></script>
 </body>
 </html>
