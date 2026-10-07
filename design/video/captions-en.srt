@@ -7,11 +7,11 @@ This is Learning Line, a concept prototype for TMMIN Karawang.
 We follow one sealer defect from the camera to a revised standard, and show who decides at every step.
 
 3
-00:00:12,500 --> 00:00:17,500
+00:00:12,500 --> 00:00:17,000
 A repurposed camera checks every sealer bead.
 
 4
-00:00:17,500 --> 00:00:23,500
+00:00:17,000 --> 00:00:23,500
 The model learned only from good beads, so it flags anything that departs from them and marks where.
 
 5
@@ -19,73 +19,77 @@ The model learned only from good beads, so it flags anything that departs from t
 The alert goes to the station that made the defect, not to final inspection.
 
 6
-00:00:30,500 --> 00:00:36,000
+00:00:30,500 --> 00:00:34,500
 The operator confirms. A false alarm would be rejected with a reason,
 
 7
-00:00:36,000 --> 00:00:44,000
-and only a rejection the team leader verifies can update the model, as a controlled 4M change.
+00:00:34,500 --> 00:00:40,000
+and only a rejection the team leader verifies can update the model.
 
 8
-00:00:44,500 --> 00:00:51,500
+00:00:40,500 --> 00:00:47,500
 The confirmation raises a yellow andon for the team leader, with a suggestion:
 
 9
-00:00:51,500 --> 00:00:56,000
+00:00:47,500 --> 00:00:51,500
 stop and fix, because the defect is leak-critical.
 
 10
-00:00:56,000 --> 00:01:01,000
-The system never stops the line. The team leader decides and logs a note.
+00:00:51,500 --> 00:00:59,000
+The system never stops the line. The team leader does, logs a note, and restarts it after the repair.
 
 11
-00:01:01,000 --> 00:01:08,000
+00:00:59,000 --> 00:01:08,000
 Station 2 is over its false-alarm budget, so its model goes to review, but confirmed defects are never hidden.
 
 12
-00:01:08,500 --> 00:01:15,500
-When the same defect is confirmed a third time in a shift, a Kaizen ticket opens on its own, with the three alerts attached.
+00:01:08,500 --> 00:01:14,500
+Every station camera is on one wall.
 
 13
-00:01:15,500 --> 00:01:22,000
-AI only drafts the background and the current condition, and says so.
+00:01:14,500 --> 00:01:20,000
+The shift timeline replays each alert frame next to the decision people made, and faces are masked at the edge.
 
 14
-00:01:22,000 --> 00:01:28,000
-The engineer writes the root cause at the line.
+00:01:20,500 --> 00:01:30,000
+When the same defect is confirmed a third time in a shift, a Kaizen ticket opens on its own, with the three alerts attached.
 
 15
-00:01:28,500 --> 00:01:33,000
-Here is a ticket that has finished its countermeasure trial.
+00:01:30,000 --> 00:01:38,000
+AI only drafts the background and the current condition, and says so.
 
 16
-00:01:33,000 --> 00:01:42,000
-The engineer requests validation, and a draft knowledge card goes to the senior expert, who validates it.
+00:01:38,500 --> 00:01:43,000
+Here is a ticket that has finished its countermeasure trial.
 
 17
-00:01:42,000 --> 00:01:55,000
-It now revises the standard, and yokoten carries it to every station running the same process.
+00:01:43,000 --> 00:01:50,000
+The engineer requests validation, and the senior expert validates the knowledge card.
 
 18
-00:01:55,500 --> 00:02:05,000
-The assistant answers only from validated knowledge cards, and cites the card it used.
+00:01:50,000 --> 00:01:58,000
+It now revises the standard, and yokoten carries it to every station running the same process.
 
 19
-00:02:05,000 --> 00:02:20,000
-When no card covers a question, it says so, and routes it to the owner engineer instead of guessing.
+00:01:58,500 --> 00:02:07,000
+From any screen, the assistant answers only from validated knowledge cards, and cites the card it used.
 
 20
-00:02:20,500 --> 00:02:27,000
-Management watches the Gate 1 indicators: false alarms per station,
+00:02:07,000 --> 00:02:18,000
+When no card covers a question, it says so, and routes it to the owner engineer instead of guessing.
 
 21
-00:02:27,000 --> 00:02:38,000
-the override rate moving from thirty-one toward twenty-four percent in the simulated history, still short of Gate 1, and how fast a problem becomes a standard.
+00:02:18,500 --> 00:02:25,000
+Management watches the Gate 1 indicators as distance to target.
 
 22
+00:02:25,000 --> 00:02:38,000
+Every number says where it comes from: the thirty-one percent baseline is case data, the move toward twenty-four is simulated history, and Gate 1 is not reached yet.
+
+23
 00:02:38,500 --> 00:02:43,500
 AI detects and drafts. People decide.
 
-23
+24
 00:02:43,500 --> 00:02:50,000
 Learning Line, a concept prototype on simulated data.

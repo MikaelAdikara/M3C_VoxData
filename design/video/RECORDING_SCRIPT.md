@@ -2,7 +2,7 @@
 
 Target **2:50**, batas keras **3:00**. Narasi (voice-over) dalam **bahasa Inggris**, karena ES juga berbahasa Inggris. Instruksi di dokumen ini dalam bahasa Indonesia.
 
-Urutan klik sudah diuji end-to-end di aplikasi pada 7 Okt 2026, dan semua ID serta angka di bawah sesuai dengan yang tampil di layar.
+Urutan klik sudah diuji end-to-end di aplikasi versi UI-4 pada 7 Okt 2026. Semua ID, label, dan angka di bawah sesuai dengan yang tampil di layar.
 
 Subtitle siap pakai ada di `captions-en.srt`, dengan timing yang sama dengan tabel di bawah.
 
@@ -10,12 +10,13 @@ Subtitle siap pakai ada di `captions-en.srt`, dengan timing yang sama dengan tab
 
 ## 1. Persiapan alat (sekali saja)
 
-- [ ] **URL:** pakai URL live (`https://m3c-learning-line-mvp.vercel.app`) setelah Bonfi mematikan Deployment Protection dan deploy ulang UI-3. Kalau belum siap, rekam di lokal (`npm run build && npm start`, lalu buka `http://localhost:3000`).
+- [ ] **URL:** pakai URL live (`https://m3c-learning-line-mvp.vercel.app`) setelah Bonfi mematikan Deployment Protection dan deploy ulang versi UI-4. Kalau belum siap, rekam di lokal: `npm run build && npm start`, lalu buka `http://localhost:3000`.
 - [ ] **Browser:** Chrome, jendela **1920×1080**, zoom 100%. Sembunyikan bookmark bar (Cmd+Shift+B). Pakai profil kosong tanpa ekstensi atau avatar.
 - [ ] **Tema:** terang. Kalau tombol di bar atas menampilkan matahari, klik sekali sampai muncul ikon bulan.
 - [ ] **Mac:** aktifkan Do Not Disturb, tutup aplikasi lain, dan sembunyikan ikon desktop.
-- [ ] **Perekam layar:** QuickTime (File → New Screen Recording, atau Cmd+Shift+5), rekam jendela Chrome saja.
+- [ ] **Perekam layar:** QuickTime (Cmd+Shift+5), rekam jendela Chrome saja.
 - [ ] **Larangan:** tidak ada wajah, nama, atau logo kampus. Kursor tetap terlihat.
+- [ ] **3D:** buka cover dan Shift board sekali sebelum merekam supaya maket dan model mobil sudah ter-cache. Saat merekam, jangan klik tombol jeda di maket.
 
 ## 2. Persiapan data (di luar kamera, ±3 menit)
 
@@ -37,6 +38,8 @@ Lakukan tepat sebelum merekam. Setelah langkah ini **jangan tekan Reset lagi**.
 4. Pastikan tombol **Request validation** aktif (tidak abu-abu), tapi **jangan diklik**.
 5. Buka `/` (cover page). Rekaman dimulai dari sini.
 
+Catatan: di awal, cover menampilkan **st-05** dengan yellow andon. Itu bagian dari data seed (satu keputusan yang memang sedang menunggu). Tidak perlu diubah.
+
 ## 3. Shot list
 
 Tip umum:
@@ -46,17 +49,18 @@ Tip umum:
 
 | Waktu | Layar | Aksi di layar | Voice-over (EN) |
 |---|---|---|---|
-| 0:00–0:12 | Cover `/` | Diam di hero. Biarkan kartu demo berputar sekali (scan, lalu heatmap, lalu papan kuning). | "This is Learning Line, a concept prototype for TMMIN Karawang. We follow one sealer defect from the camera to a revised standard, and show who decides at every step." |
-| 0:12–0:30 | `/simulator` lalu Station | Footer: **Demo control** → klik **Inject true defect** → ganti role ke **Operator · st-04**. Arahkan kursor ke heatmap, lalu ke skor 0.83 vs threshold 0.61. | "A repurposed camera checks every sealer bead. The model learned only from good beads, so it flags anything that departs from them and marks where. The alert goes to the station that made the defect, not to final inspection." |
-| 0:30–0:44 | Station | Klik **Confirm defect**. Papan berubah jadi "Confirmed: yellow andon sent". | "The operator confirms. A false alarm would be rejected with a reason, and only a rejection the team leader verifies can update the model, as a controlled 4M change." |
-| 0:44–1:08 | Shift board | Ganti role ke **Team leader**. Tunjuk tile st-04 (yellow andon), lalu saran "Stop and fix: leak-critical". Ketik catatan `Nozzle check, body held` dan klik **Stop and fix**. Terakhir tunjuk tile st-02 ("Model review needed"). | "The confirmation raises a yellow andon for the team leader, with a suggestion: stop and fix, because the defect is leak-critical. The system never stops the line. The team leader decides and logs a note. Station 2 is over its false-alarm budget, so its model goes to review, but confirmed defects are never hidden." |
-| 1:08–1:28 | `/simulator` lalu Kaizen | Footer: **Demo control** → **Inject repeat ×3** → ganti role ke **Engineer** → klik **KZ-SEAL-009** (paling atas). Tunjuk tiga gambar pemicu dan label "Drafted by AI, check". | "When the same defect is confirmed a third time in a shift, a Kaizen ticket opens on its own, with the three alerts attached. AI only drafts the background and the current condition, and says so. The engineer writes the root cause at the line." |
-| 1:28–1:55 | Kaizen → Knowledge | Breadcrumb **Kaizen cockpit** → klik **KZ-SEAL-008** → **Request validation**. Ganti role ke **Senior expert** → filter **Draft** → klik **KC-SEAL-051** → **Validate card**. Papan berubah hijau: "Validated: safe to reuse". | "Here is a ticket that has finished its countermeasure trial. The engineer requests validation, and a draft knowledge card goes to the senior expert, who validates it. It now revises the standard, and yokoten carries it to every station running the same process." |
-| 1:55–2:20 | Knowledge, assistant | Klik saran kedua "Bead break near the right door…". Tunjuk chip **KC-SEAL-021 r2**. Lalu klik saran keempat "How do we fix paint orange peel?" → **Route to owner engineer**. | "The assistant answers only from validated knowledge cards, and cites the card it used. When no card covers a question, it says so, and routes it to the owner engineer instead of guessing." |
-| 2:20–2:38 | Metrics | Ganti role ke **Management**. Tunjuk baris false alarms, override 31% → 24%, lalu grafik dengan garis Gate 1. | "Management watches the Gate 1 indicators: false alarms per station, the override rate moving from thirty-one toward twenty-four percent in the simulated history, still short of Gate 1, and how fast a problem becomes a standard." |
-| 2:38–2:50 | Cover `/` | Klik **Cover page** di footer. Diam di hero. | "AI detects and drafts. People decide. Learning Line, a concept prototype on simulated data." |
+| 0:00–0:12 | Cover `/` | Diam di hero. Biarkan kamera maket bergerak pelan; arahkan kursor ke label "Yellow andon" dan kartu kuning body yang menunggu. | "This is Learning Line, a concept prototype for TMMIN Karawang. We follow one sealer defect from the camera to a revised standard, and show who decides at every step." |
+| 0:12–0:30 | `/simulator` lalu Station | Footer: **Demo control** → **Inject true defect** → ganti role ke **Operator · st-04**. Tunjuk frame kamera ("Alert frame 08:42:17 · simulated") dan heatmap, lalu skor **0.83** vs threshold **0.61**. Klik **Live** sebentar, lalu kembali ke **Alert frame**. | "A repurposed camera checks every sealer bead. The model learned only from good beads, so it flags anything that departs from them and marks where. The alert goes to the station that made the defect, not to final inspection." |
+| 0:30–0:40 | Station | Klik **Confirm defect**. Papan berubah jadi konfirmasi dan yellow andon. | "The operator confirms. A false alarm would be rejected with a reason, and only a rejection the team leader verifies can update the model." |
+| 0:40–1:08 | Shift board · Line | Ganti role ke **Team leader**. Tunjuk lampu kuning st-04 di maket dan saran "Stop and fix". Ketik catatan `Nozzle check, body held`, klik **Stop and fix**: lampu jadi merah, papan "Line: Stopped by team leader". Ketik `Nozzle replaced, bead rechecked` di Repair note, klik **Repair done · restart line**. Terakhir tunjuk lampu biru st-02. | "The confirmation raises a yellow andon for the team leader, with a suggestion: stop and fix, because the defect is leak-critical. The system never stops the line. The team leader does, logs a note, and restarts it after the repair. Station 2 is over its false-alarm budget, so its model goes to review, but confirmed defects are never hidden." |
+| 1:08–1:20 | Cameras `/cameras` | Klik **Cameras** di nav. Panel fokus sudah di **Sealer 04** dengan frame alert. Tunjuk garis waktu shift dan daftar event (alert, confirmed, team leader), lalu chip "Faces masked at edge". | "Every station camera is on one wall. The shift timeline replays each alert frame next to the decision people made, and faces are masked at the edge." |
+| 1:20–1:38 | `/simulator` lalu Kaizen | Footer: **Demo control** → **Inject repeat ×3** → ganti role ke **Engineer** → klik **KZ-SEAL-009** (paling atas). Tunjuk tiga gambar pemicu dan label "Drafted by AI, check". | "When the same defect is confirmed a third time in a shift, a Kaizen ticket opens on its own, with the three alerts attached. AI only drafts the background and the current condition, and says so." |
+| 1:38–1:58 | Kaizen → Knowledge | Breadcrumb **Kaizen cockpit** → **KZ-SEAL-008** → **Request validation**. Ganti role ke **Senior expert** → filter **Draft** → **KC-SEAL-051** → **Validate card**. Papan berubah hijau: "Validated: safe to reuse". | "Here is a ticket that has finished its countermeasure trial. The engineer requests validation, and the senior expert validates the knowledge card. It now revises the standard, and yokoten carries it to every station running the same process." |
+| 1:58–2:18 | Metrics + dock | Ganti role ke **Management**. Klik **Ask the line** (kanan bawah) → saran kedua "Bead break near the right door…" → tunjuk chip **KC-SEAL-021 r2**. Lalu saran keempat "How do we fix paint orange peel?" → **Route to owner engineer**. Tutup dock. | "From any screen, the assistant answers only from validated knowledge cards, and cites the card it used. When no card covers a question, it says so, and routes it to the owner engineer instead of guessing." |
+| 2:18–2:38 | Metrics | Tunjuk lintasan Gate 1 baris "Operators overriding alerts" (31% → 24%, zona Gate 1 di bawah 20%) dan chip **Case data / Target / Simulated**. Scroll ke grafik 30 hari. | "Management watches the Gate 1 indicators as distance to target. Every number says where it comes from: the thirty-one percent baseline is case data, the move toward twenty-four is simulated history, and Gate 1 is not reached yet." |
+| 2:38–2:50 | Cover `/` | Klik **Cover page** di footer. Scroll ke "One defect. Five pairs of hands."; kartu menampilkan cap **Flagged, Confirmed, Decided**. | "AI detects and drafts. People decide. Learning Line, a concept prototype on simulated data." |
 
-Narasi totalnya ±330 kata. Dengan tempo tenang (±2,1 kata per detik), panjangnya sekitar 2:40, jadi masih ada sisa untuk jeda klik.
+Narasi totalnya ±340 kata. Dengan tempo tenang (±2,1 kata per detik), panjangnya sekitar 2:42, jadi masih ada sisa untuk jeda klik. Uji klik penuh di aplikasi memakan ±65 detik, sehingga semua jeda muat.
 
 ## 4. Cara merekam suara
 
