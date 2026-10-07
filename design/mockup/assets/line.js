@@ -300,13 +300,77 @@ function makeBodyGeometry() {
   return g;
 }
 
+/* Body-in-white shells from CC-BY models (design/ASSETS.md), recoloured to the
+   palette. Loaded over http only; from file:// the drawn body stays. */
+const BODY_MODELS = ["body-urban", "body-kiri", "body-van", "body-hatch"].map((n) => `assets/models/${n}.glb`);
+let templates = [];
+const bodyEdge = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 });
+edgeMats.push(bodyEdge);
+
+function makeShell(variant) {
+  if (templates.length) {
+    const shell = templates[variant % templates.length].clone(true);
+    shell.traverse((o) => {
+      if (o.isMesh) { o.material = materials.body; o.castShadow = true; o.receiveShadow = true; }
+      if (o.isLineSegments) o.material = bodyEdge;
+    });
+    return shell;
+  }
+  const shell = REAL ? realBody.clone() : withEdges(new THREE.Mesh(bodyGeo, materials.body), 24);
+  shell.position.y = 0.28;
+  return shell;
+}
+
+function principalYaw(root) {
+  root.updateMatrixWorld(true);
+  const v = new THREE.Vector3(); const pts = []; let mx = 0, mz = 0;
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const pos = o.geometry.getAttribute("position");
+    for (let i = 0; i < pos.count; i += 7) { v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld); pts.push([v.x, v.z]); mx += v.x; mz += v.z; }
+  });
+  if (!pts.length) return 0;
+  mx /= pts.length; mz /= pts.length;
+  let cxx = 0, czz = 0, cxz = 0;
+  for (const [x, z] of pts) { cxx += (x - mx) ** 2; czz += (z - mz) ** 2; cxz += (x - mx) * (z - mz); }
+  return 0.5 * Math.atan2(2 * cxz, cxx - czz);
+}
+
+async function loadModels() {
+  if (location.protocol === "file:") return;
+  try {
+    const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
+    const loader = new GLTFLoader();
+    const loaded = await Promise.all(BODY_MODELS.map((u) => loader.loadAsync(u)));
+    templates = loaded.map((gltf) => {
+      const src = gltf.scene;
+      src.rotation.y = principalYaw(src);
+      const pivot = new THREE.Group();
+      pivot.add(src);
+      pivot.updateMatrixWorld(true);
+      const s1 = new THREE.Box3().setFromObject(pivot).getSize(new THREE.Vector3());
+      pivot.scale.setScalar(4.5 / s1.x);
+      pivot.updateMatrixWorld(true);
+      const box3 = new THREE.Box3().setFromObject(pivot);
+      const c = box3.getCenter(new THREE.Vector3());
+      src.position.sub(new THREE.Vector3(c.x, box3.min.y - 0.32, c.z).divideScalar(pivot.scale.x));
+      src.traverse((o) => { if (o.isMesh) o.add(new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 30), bodyEdge)); });
+      return pivot;
+    });
+    bodies.forEach((b) => { b.group.remove(b.shell); b.shell = makeShell(b.variant); b.group.add(b.shell); });
+    applyTheme();
+  } catch (err) {
+    console.warn("Body models unavailable; keeping the drawn bodies.", err);
+  }
+}
+
 const bodies = [];
 let bodySerial = 31484;              // K2-27-031484 enters first; 031487 sits at st-04
 function newBody(slot) {
   const id = `K2-27-0${bodySerial++}`;
   const g = new THREE.Group();
-  const shell = REAL ? realBody.clone() : withEdges(new THREE.Mesh(bodyGeo, materials.body), 24);
-  shell.position.y = 0.28;
+  const variant = bodySerial;
+  const shell = makeShell(variant);
   g.add(shell);
   [-0.62, 0.62].forEach((z) => {
     const rail = box(4.7, 0.1, 0.16, materials.steel);
@@ -315,7 +379,7 @@ function newBody(slot) {
   });
   g.position.set(xAt(slot), 0.18, 0);
   scene.add(g);
-  const b = { id, slot, group: g, shell, tag: null };
+  const b = { id, slot, group: g, shell, variant, tag: null };
   bodies.push(b);
   return b;
 }
@@ -473,8 +537,10 @@ function placeLabels() {
     tagEl.style.transform = `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px) translate(-50%, -100%)`;
     tagEl.innerHTML = `<span class="mono">${FLAGGED}</span><span>${state.flaggedNote}</span>`;
     tagEl.hidden = false;
-    if (REAL) fb.shell.traverse((m) => { if (m.isMesh) m.material = flagMat; });
-    else { fb.shell.children[0].material = flagEdge; fb.shell.material = flagMat; }
+    fb.shell.traverse((m) => {
+      if (m.isMesh) m.material = flagMat;
+      if (m.isLineSegments) m.material = flagEdge;
+    });
   } else tagEl.hidden = true;
 }
 const flagEdge = new THREE.LineBasicMaterial({ color: 0x6b4f00, transparent: true, opacity: 0.8 });
@@ -743,6 +809,7 @@ function resetView() { flyTo(framing()); }
 function setPaused(p) { state.paused = p; requestRender(); }
 
 init();
+loadModels();
 
 function flaggedAt() {
   const b = bodies.find((x) => x.id === FLAGGED);

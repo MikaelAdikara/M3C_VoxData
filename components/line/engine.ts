@@ -6,6 +6,12 @@
  */
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+/* Body-in-white shells extracted from CC-BY models (see design/ASSETS.md):
+   Urban '10 and Kiri '10 by Daniel Zhabotinsky, Generic passenger car pack by Comrade1280.
+   Colour is ours: steel from the palette, caution yellow only for the flagged body. */
+const BODY_MODELS = ["/models/body-urban.glb", "/models/body-kiri.glb", "/models/body-van.glb", "/models/body-hatch.glb"];
 
 export type LineStationState = "running" | "yellow_andon" | "model_review" | "contained" | "stopped";
 export interface EngineStation { id: string; name: string; type: "sealer" | "body" | "paint" | "final_inspection" }
@@ -48,6 +54,8 @@ export function createLineEngine(opts: {
   /** Fraction of the stage height the scene moves down (room for a headline). */
   shiftY?: number;
   onSelect?: (id: string) => void;
+  /** Override the body model URLs (the static mockup serves them from another path). */
+  bodyModels?: string[];
 }): LineEngine | null {
   const { stage, canvas, labels, tag, stations } = opts;
   let renderer: THREE.WebGLRenderer;
@@ -270,21 +278,107 @@ export function createLineEngine(opts: {
     return geo;
   })();
 
-  interface Body { slot: number; group: THREE.Group; shell: THREE.Mesh; flagged: boolean }
+  // shared edge material for body shells, themed with the rest
+  const bodyEdge = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 });
+  edgeMats.push(bodyEdge);
+  let templates: THREE.Group[] = [];
+  let serial = 0;
+
+  interface Body { slot: number; group: THREE.Group; shell: THREE.Object3D; variant: number; flagged: boolean }
   const bodies: Body[] = [];
-  function newBody(slot: number) {
-    const g = new THREE.Group();
+
+  function makeShell(variant: number): THREE.Object3D {
+    if (templates.length) {
+      const shell = templates[variant % templates.length].clone(true);
+      shell.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh) { (o as THREE.Mesh).material = M.body; o.castShadow = true; o.receiveShadow = true; }
+        if ((o as THREE.LineSegments).isLineSegments) (o as THREE.LineSegments).material = bodyEdge;
+      });
+      return shell;
+    }
     const shell = withEdges(new THREE.Mesh(bodyGeo, M.body), 24);
     shell.position.y = 0.28;
+    return shell;
+  }
+  function paintShell(b: Body) {
+    b.shell.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh) (o as THREE.Mesh).material = b.flagged ? M.flag : M.body;
+      if ((o as THREE.LineSegments).isLineSegments) (o as THREE.LineSegments).material = b.flagged ? flagEdge : bodyEdge;
+    });
+  }
+
+  function newBody(slot: number) {
+    const g = new THREE.Group();
+    const variant = serial++;
+    const shell = makeShell(variant);
     g.add(shell);
     [-0.62, 0.62].forEach((z) => { const rail = box(4.7, 0.1, 0.16, M.steel); rail.position.set(0, 0.24, z); g.add(rail); });
     g.position.set(xAt(slot), 0.18, 0);
     scene.add(g);
-    const b: Body = { slot, group: g, shell, flagged: false };
+    const b: Body = { slot, group: g, shell, variant, flagged: false };
     bodies.push(b);
     return b;
   }
   stations.forEach((_, i) => { if (i !== 5) newBody(i); });
+
+  /** Yaw that turns a model's long side (principal axis on the floor) onto +x. */
+  function principalYaw(root: THREE.Object3D) {
+    root.updateMatrixWorld(true);
+    const v = new THREE.Vector3();
+    let n = 0, mx = 0, mz = 0, cxx = 0, czz = 0, cxz = 0;
+    const pts: [number, number][] = [];
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const pos = m.geometry.getAttribute("position");
+      for (let i = 0; i < pos.count; i += 7) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld);
+        pts.push([v.x, v.z]); mx += v.x; mz += v.z; n++;
+      }
+    });
+    if (!n) return 0;
+    mx /= n; mz /= n;
+    for (const [x, z] of pts) { cxx += (x - mx) ** 2; czz += (z - mz) ** 2; cxz += (x - mx) * (z - mz); }
+    return 0.5 * Math.atan2(2 * cxz, cxx - czz);
+  }
+
+  // Load the model shells; until they arrive (or if they fail) the drawn body stays.
+  async function loadModels() {
+    try {
+      const loader = new GLTFLoader();
+      const loaded = await Promise.all((opts.bodyModels ?? BODY_MODELS).map((u) => loader.loadAsync(u)));
+      templates = loaded.map((gltf) => {
+        const src = gltf.scene;
+        src.rotation.y = principalYaw(src);                       // long side along the line
+        const pivot = new THREE.Group();
+        pivot.add(src);
+        pivot.updateMatrixWorld(true);
+        const s1 = new THREE.Box3().setFromObject(pivot).getSize(new THREE.Vector3());
+        pivot.scale.setScalar(4.5 / s1.x);
+        pivot.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(pivot);
+        const c = box.getCenter(new THREE.Vector3());
+        src.position.sub(new THREE.Vector3(c.x, box.min.y - 0.32, c.z).divideScalar(pivot.scale.x));
+        src.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (m.isMesh) m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 30), bodyEdge));
+        });
+        return pivot;
+      });
+      if (disposed) return;
+      bodies.forEach((b) => {
+        b.group.remove(b.shell);
+        b.shell = makeShell(b.variant);
+        b.group.add(b.shell);
+        paintShell(b);
+      });
+      needsRender = true;
+    } catch {
+      /* keep the drawn bodies */
+    }
+  }
+
+  let disposed = false;
 
   /* ---------- state ---------- */
   let state: EngineState = { stations: {}, line: "running", flagged: null, selected: null };
@@ -494,6 +588,7 @@ export function createLineEngine(opts: {
   const mq = matchMedia("(prefers-color-scheme: dark)");
   mq.addEventListener("change", applyTheme);
   raf = requestAnimationFrame(frame);
+  void loadModels();
 
   return {
     setState(next) {
@@ -507,14 +602,13 @@ export function createLineEngine(opts: {
       });
       // the flagged body is drawn at the bay where it was detected; position afterwards is presentation
       if (next.flagged && next.flagged.bodyId !== prevFlag) {
-        bodies.forEach((b) => { b.flagged = false; b.shell.material = M.body; (b.shell.children[0] as THREE.LineSegments).material = edgeMats[0]; });
+        bodies.forEach((b) => { b.flagged = false; paintShell(b); });
         const idx = stations.findIndex((s) => s.id === next.flagged!.stationId);
         const b = bodies.find((x) => x.slot === idx) ?? newBody(idx);
         b.flagged = true;
-        b.shell.material = M.flag;
-        (b.shell.children[0] as THREE.LineSegments).material = flagEdge;
+        paintShell(b);
       }
-      if (!next.flagged) bodies.forEach((b) => { b.flagged = false; b.shell.material = M.body; });
+      if (!next.flagged) bodies.forEach((b) => { if (b.flagged) { b.flagged = false; paintShell(b); } });
       tag.innerHTML = next.flagged ? `<span class="mono">${next.flagged.bodyId}</span><span>${next.flagged.note}</span>` : "";
       if (next.selected !== prevSel && narrow()) flyTo(framing(next.selected));
       needsRender = true;
@@ -522,6 +616,7 @@ export function createLineEngine(opts: {
     setPaused(p) { paused = p; needsRender = true; },
     resetView() { flyTo(framing()); },
     dispose() {
+      disposed = true;
       cancelAnimationFrame(raf);
       ro.disconnect(); io.disconnect(); mo.disconnect();
       mq.removeEventListener("change", applyTheme);

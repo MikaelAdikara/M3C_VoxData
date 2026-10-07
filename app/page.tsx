@@ -147,8 +147,7 @@ export default async function CoverPage() {
         </p>
         <p>Concept prototype · simulated data · not connected to TMMIN systems</p>
         <p>
-          Camera test clips: Engin Altundağ and Parker Filme via Pexels, in black and white. Line model and bead images are
-          our own illustrations. <Link href="/simulator">Demo control</Link>
+          Camera test clips: Engin Altundağ and Parker Filme via Pexels, in black and white. Car bodies adapted from models by Daniel Zhabotinsky and Comrade1280 (CC BY 4.0, Sketchfab); line model and bead images are our own illustrations. <Link href="/simulator">Demo control</Link>
         </p>
       </footer>
     </>

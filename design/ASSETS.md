@@ -34,3 +34,15 @@ Original work (bead illustrations, sealer scene, icons from Phosphor under MIT) 
 | "Autoshop 01" HDRI by Oliksiy Yakovlyev (image-based light in `landing3-real.html`) | Poly Haven CDN, loaded at runtime | CC0 |
 
 The line model, the car bodies on skids, the andon towers, the sealer bead illustration (SVG lighting filters) and the abnormality tag are drawn from scratch. No 3D models, textures or images were downloaded for them.
+
+## Car bodies on the line (3D)
+
+Only the body shell of each model is used, as body-in-white: glass, lights, wheels, number plates, badges and interior were removed, textures dropped, and the colour is set in code from our palette (steel grey; caution yellow only for the body waiting on a decision). Processed with glTF-Transform (prune, weld, join, quantize) into `public/models/` and `design/mockup/assets/models/`, 90 to 140 KB each.
+
+| File | Source | Author | License |
+|---|---|---|---|
+| `body-urban.glb` | "Urban '10 - Low poly model", sketchfab.com/3d-models/urban-10-low-poly-model-2866efdfa943484391ef8313768e074d | Daniel Zhabotinsky | CC BY 4.0 |
+| `body-kiri.glb` | "Kiri '10 - Low poly model", sketchfab.com/3d-models/kiri-10-low-poly-model-7fd6e15785fa4aa9bfd6e31eb7c97ba6 | Daniel Zhabotinsky | CC BY 4.0 |
+| `body-van.glb`, `body-hatch.glb` | "Generic passenger car pack", sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5 | Comrade1280 | CC BY 4.0 |
+
+All are fictional, unbranded designs. No model of a real Toyota product is used. The raw downloads stay out of the repository.
