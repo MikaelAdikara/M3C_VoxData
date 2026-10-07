@@ -9,6 +9,8 @@ Tujuannya satu: backend dan UI dikerjakan bergantian tanpa saling menimpa file.
 
 ---
 
+> Panduan giliran ringkas (siapa sedang bekerja, kapan boleh push): **`HANDOFF.md`**.
+
 ## 1. Kepemilikan file
 
 Setiap path punya **satu pemilik**. Yang bukan pemilik **tidak boleh** membuat, mengubah, atau menghapus file di path itu.
@@ -105,7 +107,7 @@ Fase berikutnya **tidak boleh dimulai** sebelum tag di kolom "Butuh" ada di remo
 | UI-3 | UI | `/metrics` (KPI + tooltip sumber, Gate 1 panel), `/simulator`; polish tablet 10" & laptop, kontras AA, keyboard, loading/empty/error state, cek istilah ES, `docs/screenshots/` | `handoff/be-3` | DONE |
 | FINAL | Berdua | DEMO_SCRIPT dijalankan di URL live setelah Reset; rekam video ≤ 3 menit (UI); link ke Appendix C | `handoff/ui-3` | TODO |
 | BE-4 | BE | Dependency 3D/motion/chart; `getCameraView()` + `createCameraTicket`; `getPilotView()` (pilot data); lihat `design/MASTER_PLAN.md` | `handoff/ui-3` | TODO |
-| UI-4 | UI | Modul CCTV (`CameraFeed`, `/cameras` wall + timeline + health, Station pakai feed), andon line 3D, kanban trail, takt/gemba board, grafik pilot, landing v2 | `handoff/be-4` | TODO |
+| UI-4 | UI | Pindahkan mockup `design/mockup/` ke aplikasi: modul CCTV (`/cameras`, Station pakai feed), shift board "The Line" 3D, landing v3 (+ varian realistis), Metrics v2 dengan provenance, dock "Ask the line", ilustrasi bead baru. Hub: `design/mockup/plan.html` | `handoff/be-4` | TODO |
 
 > Karena file tidak overlap, BE **boleh** menyiapkan BE-(n+1) di lokal selama UI-n berjalan. Tapi push hanya boleh setelah tag `handoff/ui-n` ada, supaya urutan di `main` tetap rapi.
 
@@ -220,3 +222,4 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 | 2026-10-07 | BE | BE-3 dideploy ke `https://m3c-learning-line-mvp.vercel.app` dengan `DATABASE_URL` Production Secret; `demo_states` terinisialisasi otomatis dan reset → true defect → repeat ×3 ticket → reset bertahan pada request Production terpisah; assistant tanpa key tetap offline dan grounded | BE-3 selesai. Deployment memakai Vercel Authentication protection; UI-3 memakai URL Production dan kontrak BE-3 yang sudah tercatat |
 | 2026-10-07 | UI | UI-3 selesai: `/` cover page (hero video grayscale + demo, A3 kasus, penutup; app chrome disembunyikan via `ChromeGate`), `/metrics` (Gate 1, grafik override baseline→now dengan target, false alarm per stasiun), `/simulator` (4 skenario + alur demo), tiket memakai `TicketView.defectType`, link Demo control di footer, `docs/screenshots/` (laptop/tablet/HP, terang/gelap). | Tidak ada perubahan kontrak. Request FINAL di §6 soal Vercel protection. |
 | 2026-10-07 | UI | Master plan UI-4 (`design/MASTER_PLAN.md`): modul CCTV sealer terinspirasi prinsip netra, andon line 3D, kanban trail, takt/gemba board. 3 request BE-4 di §6. UI membuat prototipe di `design/mockup/` dulu. | BE: kerjakan BE-4 setelah FINAL siap; UI-4 menunggu `handoff/be-4`. |
+| 2026-10-07 | UI | Mockup UI-4 lengkap di `design/mockup/` (hub `plan.html`): cameras, The Line 3D, landing v3 + varian realistis, metrics v2, dock assistant, bead realistis. Tambah `HANDOFF.md` (panduan giliran). | Giliran BE: kerjakan BE-4 (syarat `handoff/ui-3` sudah ada). UI menunggu `handoff/be-4`. |
