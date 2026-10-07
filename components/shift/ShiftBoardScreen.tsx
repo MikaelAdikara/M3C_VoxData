@@ -4,14 +4,15 @@ import { useState, useTransition } from "react";
 import type { ReactNode } from "react";
 
 import { DECISION_LABEL, plantTime } from "@/components/format";
+import { LineStage } from "@/components/line/LineStage";
 import { Trail } from "@/components/shell/Trail";
 import { AndonBadge, LoopBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Plate } from "@/components/ui/Plate";
-import { decideShift, verifyRejection } from "@/lib/actions/shift";
-import type { AlertView, ShiftBoardView, ShiftDecision } from "@/lib/types";
+import { decideShift, restartLine, verifyRejection } from "@/lib/actions/shift";
+import type { AlertView, LineView, ShiftBoardView, ShiftDecision } from "@/lib/types";
 
 import { StationTile, type TileState } from "./StationTile";
 
@@ -29,13 +30,18 @@ type Logged = { stationId: string; decision: ShiftDecision; note: string };
  */
 export function ShiftBoardScreen({
   view,
+  line,
   canDecide,
   notice,
 }: {
   view: ShiftBoardView;
+  /** BE-4 line view; when present the board opens on the 3D line. */
+  line?: LineView;
   canDecide: boolean;
   notice?: ReactNode;
 }) {
+  const [mode, setMode] = useState<"line" | "grid">(line ? "line" : "grid");
+  const [focusStation, setFocusStation] = useState<string | null>(null);
   // Newest confirmation first: the andon the team leader just heard.
   const pending = [...view.pendingDecisions].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const pendingByStation = new Map(pending.map((a) => [a.stationId, a]));
@@ -74,7 +80,19 @@ export function ShiftBoardScreen({
               {view.stations[0]?.falseAlarmBudget ?? 2} per station per shift
             </p>
           </div>
-          <LoopBadge loop="shift" />
+          <div className="cam-head">
+            {line ? (
+              <div className="seg" role="radiogroup" aria-label="Board view">
+                {(["line", "grid"] as const).map((m) => (
+                  <label key={m}>
+                    <input type="radio" name="board-view" checked={mode === m} onChange={() => setMode(m)} />
+                    <span>{m === "line" ? "Line" : "Grid"}</span>
+                  </label>
+                ))}
+              </div>
+            ) : null}
+            <LoopBadge loop="shift" />
+          </div>
         </div>
 
         {notice}
@@ -86,6 +104,17 @@ export function ShiftBoardScreen({
               <b className="num">{totals.confirmed}</b> confirmed · <b className="num">{totals.rejected}</b>{" "}
               rejected · override rate <b className="num">{override}%</b>
             </p>
+            {mode === "line" && line ? (
+              <LineStage
+                line={line}
+                selected={selected?.stationId ?? focusStation ?? null}
+                onSelect={(id) => {
+                  setFocusStation(id);
+                  const a = pendingByStation.get(id);
+                  if (a) setSelectedId(a.id);
+                }}
+              />
+            ) : (
             <div className="grid">
               {view.stations.map((t) => (
                 <StationTile
@@ -100,6 +129,7 @@ export function ShiftBoardScreen({
                 />
               ))}
             </div>
+            )}
             <ReviewQueue reviews={view.modelReviews} canVerify={canDecide} />
             <div className="legend">
               <AndonBadge state="yellow" />
@@ -109,6 +139,7 @@ export function ShiftBoardScreen({
           </section>
 
           <aside className="rec" aria-label="Team leader decision">
+            {line?.line.state === "stopped" ? <RestartPanel line={line} canDecide={canDecide} /> : null}
             {logged ? (
               <div className="rec__logged" role="status">
                 <Plate
@@ -286,5 +317,42 @@ function ReviewQueue({ reviews, canVerify }: { reviews: ShiftBoardView["modelRev
         </ul>
       </div>
     </section>
+  );
+}
+
+function RestartPanel({ line, canDecide }: { line: LineView; canDecide: boolean }) {
+  const [note, setNote] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const held = line.line.heldBodyId;
+
+  return (
+    <Plate tone="stop" title="Line stopped" subtitle={`Stopped by team leader${line.line.stoppedAt ? ` · ${plantTime(line.line.stoppedAt).slice(0, 5)}` : ""}`}>
+      {held ? <p className="next"><Icon name="hand-palm" weight="bold" /><span>Body <span className="mono">{held}</span> held for repair.</span></p> : null}
+      <div className="field" style={{ marginTop: "var(--s3)" }}>
+        <label htmlFor="restart-note">Repair note</label>
+        <input id="restart-note" className="input" maxLength={120} placeholder="For example: nozzle replaced, bead rechecked" value={note} onChange={(e) => setNote(e.target.value)} disabled={!canDecide} />
+      </div>
+      {error ? <p className="form-error" role="alert">{error}</p> : null}
+      <div className="rec__btns">
+        <Button
+          size="xl"
+          block
+          icon={<Icon name="play" weight="bold" />}
+          disabled={!canDecide || pending}
+          onClick={() => {
+            setError(null);
+            if (!note.trim()) { setError("Add a one-line repair note first."); return; }
+            start(async () => {
+              const r = await restartLine(note);
+              if (!r.ok) setError(r.error);
+            });
+          }}
+        >
+          Repair done · restart line
+        </Button>
+      </div>
+      <p className="muted" style={{ fontSize: 14, marginTop: "var(--s3)" }}>Only the team leader restarts the line.</p>
+    </Plate>
   );
 }

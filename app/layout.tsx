@@ -10,6 +10,7 @@ import { getCurrentRole, getShiftBoardView } from "@/lib/queries";
 
 import "./globals.css";
 import "./styles/cctv.css";
+import "./styles/line.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
