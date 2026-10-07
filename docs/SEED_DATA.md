@@ -72,4 +72,14 @@ Use `validated_by_role: "role:senior-expert@body"`; dates within the last 6 mont
 
 ## 7. Images
 
-`scripts/make-beads.ts` generates SVGs: a grey panel with a seam path and a bead stroke, with variants for each defect type (gap in the stroke, thinner stroke, offset path, blob) plus a matching heatmap mask (radial gradient, orange) over the defect region. Label every image "illustration".
+The BE-4 prototype generator is `scripts/generate-pilot-assets.mjs`. It writes deterministic SVGs and illustrative overlays for BEAD_THIN, BEAD_MISSING, BEAD_OFFSET and false-alarm REFLECTION into the separate local `M3C-Pilot-Data/generated/` workspace. It does not publish files into application `public/`; UI-4 owns that review and placement. These overlays are not trained-model ground truth. Alert `image`/`mask` stay empty until approved public assets exist, and `visualScenarioId` identifies the intended scene.
+
+## 8. BE-4 operational seed and provenance
+
+- `SEED_VERSION = "m3c-gate1-v1"`. The canonical reset snapshot has a stable SHA-256 fingerprint and a reference clock of 14 Mar 2027 08:45 WIB. The fingerprint is computed from canonically sorted JSON keys and survives a JSONB round trip.
+- The simulated K2-Body production counter starts at **68 bodies completed**; ~300 per shift is an ES Appendix D assumption, and 1.5 min takt is the lower bound of the ES Section 2.2 range. The counter is not MES data. UI may advance it through the backend action only while the line is running.
+- The line is running at reset. st-05 has an operator-confirmed alert awaiting a team-leader decision. Injecting and confirming the st-04 bead-break alert creates its yellow andon; a team-leader `stop_fix` decision then stops the simulated line. Restart requires a team-leader repair note.
+- Eight camera endpoints are seeded across st-01…st-06, the paint body-map tablet, and final inspection. st-02 needs attention because of the reflection/false-alarm review. st-06 has a recording gap from 06:12 and is offline. The paint tablet has no CCTV stream.
+- Historical alert decisions supply the simulated 30-day override trajectory, approximately 31% on the first day to 24% on the final day. The **31% baseline** is case data from the Casebook survey; the subsequent trajectory is simulation, not measured pilot improvement. The 59 limit samples per defect type remain a Gate 1 target and have **not** been evaluated by a trained model.
+- Approved public visuals are mapped as `good → NORMAL`, `gap → BEAD_BREAK` visual reference only, and `overlap → BEAD_EXCESS` visual reference only. `bead_rolloff`, `bead_falloff`, `not_adhered`, `nozzle_drag`, and `swirl` stay external-only or require domain review. Public visuals do not affect alerts, KPI values, or model-performance claims.
+- Landing mockup figures that are absent from the case/ES seed table above (such as 106, 19.1%, and 9 to ~5 months) require source verification before UI-4 labels them case data. BE-4's overview ledger exposes only documented case and target values.

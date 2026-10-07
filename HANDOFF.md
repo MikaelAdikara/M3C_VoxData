@@ -8,11 +8,11 @@ Ringkasan praktis dari `COLLAB.md` §3–§4: siapa sedang bekerja, kapan boleh 
 
 | | |
 |---|---|
-| **Giliran** | **BE → mengerjakan BE-4** |
-| Syarat BE-4 | `handoff/ui-3` ✅ sudah ada di remote |
-| Isi BE-4 | Lihat `COLLAB.md` §3 (baris BE-4) dan §6 (5 request bertanggal 2026-10-07): dependency 3D/motion/chart, `getCameraView()` + `createCameraTicket`, `getPilotView()`, provenance + seed fingerprint, limit samples (opsional) |
+| **Giliran** | **UI → mengerjakan UI-4 setelah tag `handoff/be-4` tersedia di remote** |
+| Syarat UI-4 | `handoff/be-4` menjadi penanda handoff BE-4 selesai |
+| Isi UI-4 | Lihat `COLLAB.md` §3 (baris UI-4), §6 (request UI-4), dan §8 (kontrak BE-4); implementasikan mockup UI-4 dengan view/action backend yang tersedia |
 | Referensi visual | `design/mockup/plan.html` (hub semua mockup) dan `design/MASTER_PLAN.md` |
-| UI sementara | **Menunggu `handoff/be-4`.** Boleh terus membuat mockup di `design/` (bukan kode aplikasi). |
+| Status BE-4 | Dependency terpasang; lint, typecheck, 103 test, build, `db:seed`, dan smoke BE-4 lulus. Dataset mentah pilot tetap di workspace terpisah. |
 | Paralel | **FINAL** (rekam video, Appendix C) bisa jalan kapan saja karena tidak mengubah kode |
 
 > Perbarui tabel ini setiap kali giliran berpindah, di commit yang sama dengan tag handoff.

@@ -11,7 +11,7 @@ Mirrors the reference architecture in the Executive Summary (Figures D3–D6) at
 | AI | `@anthropic-ai/sdk`, server-only route `/api/assistant`, model from `ANTHROPIC_MODEL` | Assistant grounded in validated cards |
 | Retrieval | Keyword + field scoring over cards (BM25-style), no vector DB | Small corpus (≈ 12 cards), fully explainable |
 | Tests | Vitest | Rules and guardrails are the claims judges will probe |
-| Images | Generated SVG bead illustrations with defect masks (`scripts/make-beads.ts`) | No real plant images |
+| Images | UI-owned illustrations and reviewed public references; BE generates local prototype SVGs in `M3C-Pilot-Data` | No TMMIN plant images or model ground truth |
 
 ## 2. Folder layout
 
@@ -19,15 +19,15 @@ Mirrors the reference architecture in the Executive Summary (Figures D3–D6) at
 app/
   station/page.tsx       shift-board/page.tsx   kaizen/page.tsx   kaizen/[id]/page.tsx
   knowledge/page.tsx     metrics/page.tsx       simulator/page.tsx
-  api/assistant/route.ts api/events/route.ts    (server actions live next to pages)
+  api/assistant/route.ts
 components/              ui primitives + domain components (AlertCard, HeatmapImage, StationTile, A3Form, CardView)
 lib/
   store/                 index.ts (interface) · memory.ts · drizzle.ts
   rules/                 repeat.ts · budget.ts · recommend.ts · metrics.ts  (+ *.test.ts)
   assistant/             retrieve.ts · prompt.ts · offline.ts  (+ *.test.ts)
-  namespace.ts           UNS topic helpers (Figure D4)
+  actions/               server actions (BE-owned, separate from app pages)
 db/ schema.ts · seed.ts
-public/beads/            generated images and masks
+scripts/                 deterministic local pilot asset generation and smoke check
 docs/
 ```
 
@@ -63,7 +63,7 @@ model_reviews(id, station_id, alert_ids[], status)   -- queue of verified reject
 
 ## 5. Event format (Figure D4)
 
-Each alert is also emitted as a UNS-style event on `/api/events` (server-sent events) so the shift board and metrics update live:
+The Executive Summary proposes the following UNS-style event envelope. The prototype does **not** implement `/api/events` or SSE; Station and Shift board refresh their server views about every 2 seconds. UI-4 must not assume an event stream exists:
 
 ```json
 {
@@ -89,3 +89,11 @@ Each alert is also emitted as a UNS-style event on `/api/events` (server-sent ev
 ## 7. Security and privacy
 
 Server-only secrets; no client exposure of `ANTHROPIC_API_KEY`. Role switcher instead of accounts (demo). No personal data stored. Rate-limit `/api/assistant` (e.g. 20 requests per minute per IP) to protect the key on a public URL.
+
+## 8. BE-4 snapshot and UI parity
+
+`demo_states.snapshot` is the active persistence contract. `MemoryStore` and `DrizzleStore` expose the same `StoreSnapshot`; Postgres updates are row-locked in a transaction. On read or mutation, `normalizeSnapshot()` fills new BE-4 fields for older JSONB snapshots and strips unpublished `/beads/*` references. Reset writes a canonical deterministic seed; `getSimulatorView()` exposes its version and SHA-256 fingerprint plus the current state's fingerprint.
+
+The snapshot adds camera configuration/health, recording gaps, camera maintenance tickets, and line operation (running/stopped, held body, repair/restart note, simulated body counter). Camera events are derived from existing alerts and decisions, with only recording gaps stored separately. Maintenance tickets are distinct from defect/Kaizen tickets. A team leader's `stop_fix` decision alone stops the simulated line; `restartLine(repairNote)` records the team leader's repair completion. The prototype has no MES body tracking, so current physical body location is unknown.
+
+`getCameraView()`, `getLineView()`, `getTrailView()`, `getPilotView()`, `getMetricsView()`, `getOverviewView()`, and `getSimulatorView()` are server-side screen contracts. They reuse canonical alerts, decisions, tickets, cards, ideas, and seed case/target constants. Public visual references and generated illustrations are identified by semantic asset IDs; runtime views contain no unreviewed URL or raw dataset dependency. The UI resolves approved media under `public/` and keeps source labels visible. The assistant continues to use validated cards only.
