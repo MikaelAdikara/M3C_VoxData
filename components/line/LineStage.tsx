@@ -65,7 +65,7 @@ export function LineStage({
         tag: tagRef.current,
         stations,
         interactive: !hero,
-        ...(hero ? { home: { pos: [-34, 17, 33] as [number, number, number], target: [1, 0, -2] as [number, number, number] }, shiftY: 0.3 } : {}),
+        ...(hero ? { home: { pos: [-27, 13, 27] as [number, number, number], target: [2, 0, 0] as [number, number, number] }, shiftY: 0.33 } : {}),
         onSelect: (id) => onSelectRef.current(id),
       });
       if (!engine) { setFailed(true); return; }

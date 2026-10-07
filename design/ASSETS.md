@@ -37,12 +37,14 @@ The line model, the car bodies on skids, the andon towers, the sealer bead illus
 
 ## Car bodies on the line (3D)
 
-Only the body shell of each model is used, as body-in-white: glass, lights, wheels, number plates, badges and interior were removed, textures dropped, and the colour is set in code from our palette (steel grey; caution yellow only for the body waiting on a decision). Processed with glTF-Transform (prune, weld, join, quantize) into `public/models/` and `design/mockup/assets/models/`, 90 to 140 KB each.
+Bodies change the way they do in a real plant: bare steel through the body stations (`body-*.glb`), painted after the paint station, and finished with glass and tyres at final inspection (`car-*.glb`, materials renamed by role: paint, glass, light, trim, tyre). Paint colours are the four achromatic car colours (white, silver, grey, black); caution yellow only marks the body waiting on a decision. The scene is lit by three.js RoomEnvironment (built in, no download).
+
+For the bare shells, only the body shell of each model is used, as body-in-white: glass, lights, wheels, number plates, badges and interior were removed, textures dropped, and the colour is set in code from our palette (steel grey; caution yellow only for the body waiting on a decision). Processed with glTF-Transform (prune, weld, join, quantize) into `public/models/` and `design/mockup/assets/models/`, 90 to 140 KB each.
 
 | File | Source | Author | License |
 |---|---|---|---|
-| `body-urban.glb` | "Urban '10 - Low poly model", sketchfab.com/3d-models/urban-10-low-poly-model-2866efdfa943484391ef8313768e074d | Daniel Zhabotinsky | CC BY 4.0 |
-| `body-kiri.glb` | "Kiri '10 - Low poly model", sketchfab.com/3d-models/kiri-10-low-poly-model-7fd6e15785fa4aa9bfd6e31eb7c97ba6 | Daniel Zhabotinsky | CC BY 4.0 |
-| `body-van.glb`, `body-hatch.glb` | "Generic passenger car pack", sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5 | Comrade1280 | CC BY 4.0 |
+| `body-urban.glb`, `car-urban.glb` | "Urban '10 - Low poly model", sketchfab.com/3d-models/urban-10-low-poly-model-2866efdfa943484391ef8313768e074d | Daniel Zhabotinsky | CC BY 4.0 |
+| `body-kiri.glb`, `car-kiri.glb` | "Kiri '10 - Low poly model", sketchfab.com/3d-models/kiri-10-low-poly-model-7fd6e15785fa4aa9bfd6e31eb7c97ba6 | Daniel Zhabotinsky | CC BY 4.0 |
+| `body-van.glb`, `body-hatch.glb`, `car-van.glb`, `car-hatch.glb` | "Generic passenger car pack", sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5 | Comrade1280 | CC BY 4.0 |
 
 All are fictional, unbranded designs. No model of a real Toyota product is used. The raw downloads stay out of the repository.

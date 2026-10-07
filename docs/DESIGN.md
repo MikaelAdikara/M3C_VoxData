@@ -263,9 +263,10 @@ Depth comes from frosted glass. Panels float over the gradient with blur, a whit
 - Used on `/cameras` (wall 2×2/3×3/4×4, focus panel, shift timeline, camera health) and on Station (Alert frame / Live switch).
 
 ### The Line (shift board and cover)
-- K2-Body as an engineer's scale model in three.js, loaded only on the client. Grey floor and lane, steel gantries, one four-lamp andon tower per station (red, yellow, green, blue from top).
-- Car bodies are body-in-white shells (fictional, unbranded CC BY models) recoloured from the palette: steel grey with thin edge lines; only the body waiting on a decision turns caution yellow. If the models fail to load, a drawn body stays.
-- Lamps carry state: yellow andon breathes, red when the team leader has stopped the line, blue for model review, dim green when running. Labels show the station and, when abnormal, a state chip.
+- K2-Body as a lit plant scene in three.js, loaded only on the client. Physically based materials under a room environment, soft sun shadows, an epoxy-grey floor with painted walkway lines, dark steel conveyor, light-grey gantries, white robot casings. No outline strokes.
+- Bodies follow the real process: bare steel (body-in-white) through st-01 to st-06, painted after `paint-bm` in one of four achromatic car colours (white, silver, grey, black), and finished with dark glass and tyres at `final-01`. Models are fictional, unbranded CC BY cars; colour is always ours. If the models fail to load, a drawn body stays.
+- The body waiting on a team-leader decision turns caution yellow and leaves the line into a marked repair bay beside the station where it was detected; the line keeps running, because the system never stops it. Its tag says the state ("Waiting for team leader", "Held for repair").
+- Lamps carry state: yellow andon breathes, red when the team leader has stopped the line, blue for model review, dim green when running. Labels show the station and, when abnormal, a state chip; on the cover only abnormal stations are labelled.
 - A station strip under the model is the keyboard path and the fallback when WebGL is missing. A pause button stops all motion; reduced motion starts paused. Wheel never zooms the page.
 
 ### Provenance Chip
@@ -288,7 +289,7 @@ Every page has a light and a dark theme. The default follows the device; the sun
 - **Ink:** #ececec, ink-2 #d2d2d2, muted #a3a3a3.
 - **Primary buttons invert:** a light gradient (#f4f4f4 to #d9d9d9) with #1b1b1b text.
 - **Signal colours stay the same.** Ink on yellow signs and hazard stripes stays #1f1f1f in both themes. Green and blue text on tints lighten to #74d39d and #84bdf0.
-- **Fixed elements:** camera feeds, the cover camera band and the device bezels look the same in both themes. The 3D line switches to a darker steel palette with higher exposure.
+- **Fixed elements:** camera feeds, the cover camera band and the device bezels look the same in both themes. The 3D line switches to a darker floor and steel with a dimmer environment.
 
 ## Landing (cover)
 
