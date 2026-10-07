@@ -43,7 +43,7 @@ export default async function KnowledgePage({ searchParams }: { searchParams: Pr
       <div className="page__head">
         <div>
           <h1 className="page__title">Knowledge cards</h1>
-          <p className="page__sub">{all.cards.length} cards · the assistant reads validated cards only</p>
+          <p className="page__sub">{all.cards.length} cards · the assistant reads validated knowledge cards only</p>
         </div>
         <LoopBadge loop="kaizen" />
       </div>

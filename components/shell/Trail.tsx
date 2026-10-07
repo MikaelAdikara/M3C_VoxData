@@ -12,7 +12,7 @@ const STEPS: { id: Exclude<TrailStep, "done">; step: string; who: string; icon: 
 
 /**
  * The abnormality trail: where one case stands and who decides next.
- * Yellow only marks a pending operator or team-leader decision.
+ * Yellow only marks a pending operator or team leader decision.
  */
 export function Trail({ current, label }: { current: TrailStep; label: string }) {
   const idx = current === "done" ? STEPS.length : STEPS.findIndex((s) => s.id === current);

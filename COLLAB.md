@@ -102,7 +102,7 @@ Fase berikutnya **tidak boleh dimulai** sebelum tag di kolom "Butuh" ada di remo
 | BE-2 | BE | Ticket auto-open (repeat ×3), A3, status flow, cards + validate/return, assistant (retrieve, guardrail, offline mode, rate limit) + test; `getKaizenView`, `getTicketView`, `getKnowledgeView` | `handoff/ui-1` | DONE |
 | UI-2 | UI | `/kaizen`: Pareto, daftar tiket. `/kaizen/[id]`: TicketHeader + status stepper, A3Form 6 blok, label "Drafted by AI, check". `/knowledge`: list + filter, CardView + riwayat revisi, Validate/Return, AssistantPanel (citation chip, offline label, no-card state + Route to owner engineer) | `handoff/be-2` | DONE |
 | BE-3 | BE | `getMetricsView`, simulator actions, reset, generator SVG bead (`public/beads/`), deploy Vercel + env | `handoff/ui-2` | DONE |
-| UI-3 | UI | `/metrics` (KPI + tooltip sumber, Gate 1 panel), `/simulator`; polish tablet 10" & laptop, kontras AA, keyboard, loading/empty/error state, cek istilah ES, `docs/screenshots/` | `handoff/be-3` | TODO |
+| UI-3 | UI | `/metrics` (KPI + tooltip sumber, Gate 1 panel), `/simulator`; polish tablet 10" & laptop, kontras AA, keyboard, loading/empty/error state, cek istilah ES, `docs/screenshots/` | `handoff/be-3` | DONE |
 | FINAL | Berdua | DEMO_SCRIPT dijalankan di URL live setelah Reset; rekam video ≤ 3 menit (UI); link ke Appendix C | `handoff/ui-3` | TODO |
 
 > Karena file tidak overlap, BE **boleh** menyiapkan BE-(n+1) di lokal selama UI-n berjalan. Tapi push hanya boleh setelah tag `handoff/ui-n` ada, supaya urutan di `main` tetap rapi.
@@ -176,13 +176,14 @@ Tambahkan baris baru di bawah. Penerima mengubah status menjadi `done (commit ab
 | 2026-10-07 | `TicketView` belum membawa objek `defectType` tiket (hanya `ticket.defectTypeId`); UI memakai fallback nama lokal. Tolong tambahkan `defectType: DefectType` di `TicketView`. | BE-3 | done (commit `3d6f910`) |
 | 2026-10-07 | **Seed:** trigger alert KZ-SEAL-007 (thin bead) berisi alert history dengan jenis defect lain (break/missing), jadi gambar pemicu tidak cocok dengan tiketnya. Pakai alert dengan `defectTypeId` yang sama. | BE-3 | done (commit `3d6f910`) |
 | 2026-10-07 | **Seed:** kartu KC-SEAL-040..045 berisi teks placeholder ("Validated sealer symptom 1", dll.) dan beberapa field memakai "—". Untuk demo ke juri, ganti dengan isi realistis dari SEED_DATA atau hapus; hindari em-dash di teks data. | BE-3 | done (commit `3d6f910`) |
+| 2026-10-07 | **Deploy:** `m3c-learning-line-mvp.vercel.app` memakai Vercel Authentication, jadi juri yang membuka link dari Appendix C akan diminta login Vercel. Untuk FINAL, matikan Deployment Protection untuk Production (Project → Settings → Deployment Protection) atau siapkan alternatif yang bisa dibuka publik, lalu cek dari incognito. Deploy ulang setelah `handoff/ui-3` supaya UI-3 ikut live. | FINAL | open |
 
 ### Request ke UI (dari BE)
 
 | Tgl | Request | Untuk fase | Status |
 |---|---|---|---|
 | 2026-10-06 | Pada UI-1, hubungkan role switcher ke `setRole`, baca awal melalui `getCurrentRole`, ganti CDN ikon dengan `@phosphor-icons/react`, dan jalankan `router.refresh()` sekitar tiap 2 detik pada `/station` serta `/shift-board`. | UI-1 | done (`handoff/ui-1`) |
-| 2026-10-07 | Pada UI-3, gunakan `TicketView.defectType` sebagai sumber nama/criticality tiket; hubungkan `/metrics` ke `getMetricsView()` dan `/simulator` ke empat action simulator. | UI-3 | open |
+| 2026-10-07 | Pada UI-3, gunakan `TicketView.defectType` sebagai sumber nama/criticality tiket; hubungkan `/metrics` ke `getMetricsView()` dan `/simulator` ke empat action simulator. | UI-3 | done (`handoff/ui-3`) |
 
 ---
 
@@ -210,3 +211,4 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 | 2026-10-07 | BE | `getMetricsView()` mengekspos KPI Gate 1 bersumber, false alarm per station, tren override 31% ke simulated 24%, median learning cycle, idea counts, dan label `Simulated data`; action `injectTrueDefect`, `injectFalseAlarm`, `injectRepeat3`, `resetDemo` tersedia | UI-3 hanya merender view model dan memanggil action; simulator tetap memerlukan confirm operator dan keputusan team leader |
 | 2026-10-07 | BE | `getStore()` memakai Drizzle/Postgres snapshot transaksional saat `DATABASE_URL` tersedia dan MemoryStore saat tidak ada; tidak ada current API/event consumer untuk file bead, sehingga SVG tidak dibuat | Deploy publik perlu `DATABASE_URL` untuk state simulator lintas instance; build lokal tetap tanpa env. Vercel belum dideploy karena CLI logged out, sehingga BE-3 tetap TODO dan belum ada `handoff/be-3` |
 | 2026-10-07 | BE | BE-3 dideploy ke `https://m3c-learning-line-mvp.vercel.app` dengan `DATABASE_URL` Production Secret; `demo_states` terinisialisasi otomatis dan reset → true defect → repeat ×3 ticket → reset bertahan pada request Production terpisah; assistant tanpa key tetap offline dan grounded | BE-3 selesai. Deployment memakai Vercel Authentication protection; UI-3 memakai URL Production dan kontrak BE-3 yang sudah tercatat |
+| 2026-10-07 | UI | UI-3 selesai: `/` cover page (hero video grayscale + demo, A3 kasus, penutup; app chrome disembunyikan via `ChromeGate`), `/metrics` (Gate 1, grafik override baseline→now dengan target, false alarm per stasiun), `/simulator` (4 skenario + alur demo), tiket memakai `TicketView.defectType`, link Demo control di footer, `docs/screenshots/` (laptop/tablet/HP, terang/gelap). | Tidak ada perubahan kontrak. Request FINAL di §6 soal Vercel protection. |

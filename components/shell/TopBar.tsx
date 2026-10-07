@@ -28,5 +28,10 @@ export function TopBar({ role, shiftLabel, site }: { role: Role; shiftLabel: str
 }
 
 export function Footer() {
-  return <footer className="footer">Concept prototype · simulated data · not connected to TMMIN systems</footer>;
+  return (
+    <footer className="footer">
+      Concept prototype · simulated data · not connected to TMMIN systems ·{" "}
+      <Link href="/simulator">Demo control</Link> · <Link href="/">Cover page</Link>
+    </footer>
+  );
 }

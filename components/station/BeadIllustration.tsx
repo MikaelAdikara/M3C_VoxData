@@ -90,7 +90,7 @@ export function BeadIllustration({
       />
       {d?.blob && heat ? <ellipse cx={heat.x} cy={heat.y} rx="12" ry="8" fill="#d9d3c3" /> : null}
       {showHeat && heat ? (
-        <g transform={`translate(${heat.x.toFixed(1)} ${heat.y.toFixed(1)})`}>
+        <g data-heat transform={`translate(${heat.x.toFixed(1)} ${heat.y.toFixed(1)})`}>
           <circle r="34" fill={`url(#${id}-heat)`} />
           <rect x="-26" y="-22" width="52" height="44" rx="3" fill="none" stroke="#f2b705" strokeWidth="2" strokeDasharray="5 4" />
         </g>

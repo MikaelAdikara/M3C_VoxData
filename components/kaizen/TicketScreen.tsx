@@ -13,7 +13,7 @@ import { Icon } from "@/components/ui/Icon";
 import { advanceTicket, requestValidation, updateA3 } from "@/lib/actions/kaizen";
 import type { A3Field, TicketStatus, TicketView } from "@/lib/types";
 
-import { A3_BLOCKS, DEFECT_DISPLAY, TICKET_LABEL, TICKET_STEPS } from "./labels";
+import { A3_BLOCKS, TICKET_LABEL, TICKET_STEPS } from "./labels";
 
 const ADVANCE_LABEL: Partial<Record<TicketStatus, string>> = {
   open: "Start the A3",
@@ -35,8 +35,7 @@ export function TicketScreen({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const stepIndex = TICKET_STEPS.findIndex((s) => s.status === ticket.status);
-  // The ticket's own defect type, not the trigger alerts' (they can differ in seed data).
-  const defect = triggerAlerts.find((a) => a.defectType?.id === ticket.defectTypeId)?.defectType ?? DEFECT_DISPLAY[ticket.defectTypeId];
+  const { defectType: defect } = view;
   const editable = canEdit && ["open", "a3_in_progress", "countermeasure_trial"].includes(ticket.status);
   const advanceLabel = ADVANCE_LABEL[ticket.status];
   const advanceReady =

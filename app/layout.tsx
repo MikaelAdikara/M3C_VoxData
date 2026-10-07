@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Source_Sans_3 } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { ChromeGate } from "@/components/shell/ChromeGate";
 import { NavLinks } from "@/components/shell/NavLinks";
 import { themeBootScript } from "@/components/shell/ThemeToggle";
 import { Footer, TopBar } from "@/components/shell/TopBar";
@@ -36,10 +37,14 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
       <body>
-        <TopBar role={role} shiftLabel={board.shift.label} site="K2-Body · Karawang II" />
+        <ChromeGate>
+          <TopBar role={role} shiftLabel={board.shift.label} site="K2-Body · Karawang II" />
+        </ChromeGate>
         {children}
-        <Footer />
-        <NavLinks variant="tabbar" />
+        <ChromeGate>
+          <Footer />
+          <NavLinks variant="tabbar" />
+        </ChromeGate>
       </body>
     </html>
   );

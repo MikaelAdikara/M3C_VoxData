@@ -1,4 +1,4 @@
-import type { A3Field, CardStatus, Criticality, DefectTypeId, TicketStatus } from "@/lib/types";
+import type { A3Field, CardStatus, TicketStatus } from "@/lib/types";
 
 export const TICKET_STEPS: { status: TicketStatus; label: string }[] = [
   { status: "open", label: "Open" },
@@ -35,11 +35,3 @@ export function orNotYet(value: string) {
   return v === "" || v === "—" || v === "-" ? "Not yet" : v;
 }
 
-/** Display fallback for a ticket's defect type (TicketView carries only the id). */
-export const DEFECT_DISPLAY: Record<DefectTypeId, { name: string; criticality: Criticality }> = {
-  BEAD_BREAK: { name: "Broken bead", criticality: "leak_critical" },
-  BEAD_MISSING: { name: "Missing bead", criticality: "leak_critical" },
-  BEAD_THIN: { name: "Thin bead", criticality: "non_critical" },
-  BEAD_OFFSET: { name: "Bead off path", criticality: "non_critical" },
-  BEAD_EXCESS: { name: "Excess sealer", criticality: "non_critical" },
-};
