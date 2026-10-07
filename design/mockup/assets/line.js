@@ -539,6 +539,7 @@ let controls;
 const interactive = stage.dataset.interactive !== "false";
 const controlsAllowed = interactive && matchMedia("(pointer: fine)").matches;
 const viewShift = Number(stage.dataset.shift || 0);   // fraction of width the scene moves right
+const viewShiftY = Number(stage.dataset.shiftY || 0); // fraction of height the scene moves down
 
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
@@ -546,7 +547,7 @@ function resize() {
   camera.aspect = w / h;
   // keep the whole line in frame on narrow stages
   camera.fov = w / h < 1.2 ? 50 : w / h < 1.7 ? 37 : 30;
-  if (viewShift && !narrow()) camera.setViewOffset(w, h, -w * viewShift, 0, w, h);
+  if ((viewShift || viewShiftY) && !narrow()) camera.setViewOffset(w, h, -w * viewShift, -h * viewShiftY, w, h);
   else camera.clearViewOffset();
   camera.updateProjectionMatrix();
   requestRender();

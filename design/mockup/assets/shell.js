@@ -64,7 +64,7 @@ function mountShell() {
   const top = el(`
     <header class="topbar">
       <div class="topbar__inner">
-        <a class="brand" href="landing2.html" aria-label="Learning Line cover page"><span class="brand__name">Learning Line</span><span class="brand__site">K2-Body · Karawang II</span></a>
+        <a class="brand" href="landing3.html" aria-label="Learning Line cover page"><span class="brand__name">Learning Line</span><span class="brand__site">K2-Body · Karawang II</span></a>
         <nav class="nav" aria-label="Screens">${nav}</nav>
         <div class="topbar__end">
           <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode"><i class="ph-bold ph-moon" aria-hidden="true"></i></button>

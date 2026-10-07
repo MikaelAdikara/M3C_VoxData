@@ -117,3 +117,24 @@ Satu sesi ≈ satu jatah 5 jam. Effort tinggi kecuali disebut lain.
 ## Aturan orisinalitas
 - Tidak ada kode, aset, teks, palet, atau font dari PlantPulse/netra. PlantPulse memakai Archivo/IBM Plex, Lucide, Recharts default, dan pabrik 3D generik; kita memakai Source Sans 3 + display khusus landing, Phosphor, warna rambu keselamatan Jepang, dan objek TPS (andon, kanban, A3, gemba board).
 - 3D kita dibangun dari primitif sendiri dengan gaya "maket insinyur" (abu-abu monokrom, garis tipis, warna hanya untuk status), bukan pabrik realistis.
+
+---
+
+# Landing v3 (diperbarui 7 Okt 2026, atas masukan Dinda)
+
+Masukan: tulisan terlalu banyak, dan layout selalu gambar kiri/teks kanan. Arah baru:
+
+**Aturan tulisan.** Setiap bagian maksimal satu judul dan satu kalimat pendek. Detail panjang (A3 lengkap) disembunyikan di balik "Read the whole case", jadi tetap ada untuk juri tapi tidak memenuhi layar.
+
+**Ritme komposisi** (tidak ada dua bagian berurutan dengan susunan sama):
+
+| # | Bagian | Komposisi | Isi |
+|---|---|---|---|
+| 1 | Hero | **Tengah**, judul di atas, maket 3D selebar layar di bawahnya | Judul, satu kalimat, dua tombol, strip gemba yang hidup (takt, body bertambah tiap takt, andon, status lini) |
+| 2 | The Trail | **Poros tengah**: kartu abnormalitas sticky di tengah, langkah bergantian kiri-kanan dengan garis penghubung ke kartu | Lima langkah, masing-masing label + judul ≤ 6 kata + siapa yang memutuskan |
+| 3 | Tiga larangan | **Tiga papan rambu** sejajar (stop merah, caution kuning, safe hijau) | Tiga kalimat pendek |
+| 4 | Cameras | **Full-bleed** pita gelap, mosaik bento 4 kolom, frame alert besar di tengah | Satu judul, chip legenda |
+| 5 | Angka jujur | **Buku besar di tengah**: angka besar baseline → target, chip asal-usul | Lima baris, lalu A3 lengkap dalam lipatan |
+| 6 | Penutup | **Tengah**: judul, tombol, komposisi laptop + HP bertumpuk | Satu judul, satu tombol |
+
+**Momen tanda tangan:** maket 3D di hero, kartu yang distempel di poros tengah, dan mosaik CCTV full-bleed.
