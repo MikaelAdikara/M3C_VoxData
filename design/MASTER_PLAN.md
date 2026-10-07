@@ -82,3 +82,38 @@ Disusun dari objek TPS, bukan dari PlantPulse:
 - **Mockup:** screenshot laptop, tablet, dan HP; terang dan gelap; reduced-motion (video jadi poster, sapuan mati). Dinding 3×3 tetap ringan karena hanya ubin fokus yang beranimasi. Tidak ada kotak deteksi di atas klip nyata.
 - **Aplikasi (setelah BE-4):** lint, typecheck, test, dan build lulus. Alur demo diuji dengan puppeteer: inject defect, ubin st-04 jadi kuning di `/cameras`, klik membuka Station dengan freeze-frame, lalu confirm. Tanpa error konsol dan tanpa overflow di 390 px. Bundle 3D dan video di-lazy-load.
 - **Cek orisinalitas:** tidak ada kode, aset, atau teks dari netra maupun PlantPulse; hanya prinsipnya. Lisensi setiap klip dicatat di `design/ASSETS.md`.
+
+---
+
+# Roadmap multi-sesi (diperbarui 7 Okt 2026)
+
+## Kritik jujur UI sekarang (UI-3)
+- **Sudah kuat:** sistem tanda keselamatan (plate kuning/merah/hijau), kejujuran label, alur demo end-to-end, dark mode, HP.
+- **Masih "formulir":** shift board berupa 8 kartu angka 0/0/0. Juri tidak *melihat* lini produksinya. Metrics didominasi tabel; grafik masih dasar. Belum ada satu momen visual yang diingat juri.
+- **Belum ada gerak bercerita:** perpindahan dari kamera → operator → team leader → Kaizen → kartu belum terasa sebagai satu perjalanan.
+
+## Tiga momen tanda tangan (pembeda kita, bukan tiruan PlantPulse)
+PlantPulse menjual *pabrik digital* (3D plant + dashboard KPI). Kita menjual *satu abnormalitas yang menjadi standar*. Jadi pusat visual kita berbeda:
+1. **The Line** (pengganti grid shift board): lini K2-Body sebagai ruang 3D/2.5D. Menara andon per stasiun, body bergerak sesuai takt, stasiun yang menunggu keputusan menyala kuning. Klik stasiun → kamera (CCTV wall) → keputusan.
+2. **The Trail**: satu kartu kanban fisik yang berpindah antar loop (alert → konfirmasi → andon → tiket A3 → kartu tervalidasi), dengan cap peran dan jam di setiap perpindahan. Dipakai di landing, Station, dan Kaizen.
+3. **Honest numbers**: setiap angka membawa chip asal-usul (Simulated · Illustration · Target · Benchmark) dan sumber (ES Gate 1, Casebook Exhibit 4). Seed fingerprint di Simulator. Ini rekomendasi laporan pilot data dan sulit ditiru karena butuh disiplin data, bukan efek visual.
+
+Ditambah: CCTV wall (sudah di mockup), gemba hourly board, "Ask the line" dock, display font khusus landing.
+
+## Rencana sesi
+Satu sesi ≈ satu jatah 5 jam. Effort tinggi kecuali disebut lain.
+
+| Sesi | Isi | Butuh BE? | Hasil |
+|---|---|---|---|
+| **S1** (sekarang) | Arah visual + motion tokens; prototipe **The Line** 3D (Three.js via CDN) di `design/mockup/line.html`; versi 2.5D fallback untuk HP dan reduced-motion | Tidak | Dinda memilih arah The Line |
+| **S2** | Mockup **landing v2** (hero The Line + camera wall mini + scroll story The Trail), **metrics v2** (tren, sparkline, chip provenance, garis Gate 1), **Ask the line** dock | Tidak | Semua mockup lengkap; Dinda memilih |
+| **S3** | UI-4 bagian 1 di Next: `CameraFeed`, `/cameras`, Station memakai kamera, The Line di shift board (lazy-load), nav | **Ya, `handoff/be-4`** | Modul inti di aplikasi |
+| **S4** | UI-4 bagian 2: landing v2, metrics v2 + data pilot, The Trail, provenance chips, dock assistant, koreografi motion | Ya | Semua layar di aplikasi |
+| **S5** (effort sedang + tinggi) | Pengerasan: break-ui, HP/tablet, a11y, performa bundle 3D/video, finish reviewer, screenshot, `docs/DESIGN.md`, update naskah video; push `handoff/ui-4` | Ya | Siap demo |
+| S6 (cadangan) | Rekam video, Appendix C, perbaikan dari latihan | - | FINAL |
+
+**Jalur kritis:** Bonfi belum bisa mulai BE-4 sebelum request di `COLLAB.md` ter-push. Push COLLAB + mockup sedini mungkin (atas instruksi Dinda) supaya S3 tidak menunggu.
+
+## Aturan orisinalitas
+- Tidak ada kode, aset, teks, palet, atau font dari PlantPulse/netra. PlantPulse memakai Archivo/IBM Plex, Lucide, Recharts default, dan pabrik 3D generik; kita memakai Source Sans 3 + display khusus landing, Phosphor, warna rambu keselamatan Jepang, dan objek TPS (andon, kanban, A3, gemba board).
+- 3D kita dibangun dari primitif sendiri dengan gaya "maket insinyur" (abu-abu monokrom, garis tipis, warna hanya untuk status), bukan pabrik realistis.

@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Line · Learning Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/cctv.css">
+<link rel="stylesheet" href="assets/line.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body data-screen="shift-board" data-role="team-leader" data-trail="team-leader">
+
+<main class="page">
+  <div class="page__head">
+    <div>
+      <h1 class="page__title">Shift board · K2-Body</h1>
+      <p class="page__sub">Shift A · 07:00 to 15:30 · false-alarm budget 2 per station per shift</p>
+    </div>
+    <div class="cam-head">
+      <div class="seg" role="group" aria-label="Board view">
+        <label><input type="radio" name="view" value="line" checked><span>Line</span></label>
+        <label><input type="radio" name="view" value="grid" onchange="location.href='shift-board.html'"><span>Grid</span></label>
+      </div>
+      <span class="loop loop--shift">Shift loop</span>
+    </div>
+  </div>
+
+  <div class="lineboard">
+    <section aria-labelledby="line-title">
+      <h2 class="sr-only" id="line-title">K2-Body line, live</h2>
+      <div class="stage" id="stage">
+        <canvas id="line-canvas" role="img" aria-label="Scale model of the K2-Body line. st-04 has a yellow andon; st-02 is in model review. Use the station buttons below to choose a station."></canvas>
+        <div class="line-labels" id="line-labels" aria-hidden="true"></div>
+
+        <dl class="hud" aria-label="Gemba board">
+          <div class="hud__takt"><dt>Takt</dt><dd>1.5 <small>min</small></dd><div class="hud__bar" aria-hidden="true"><span id="takt-bar"></span></div></div>
+          <div><dt>Bodies this shift</dt><dd><span id="bodies">68</span> <small>of ~300</small></dd><div class="hud__bar" aria-hidden="true"><span id="bodies-bar" style="transform: scaleX(.227)"></span></div></div>
+          <div class="hud__line"><dt>Line</dt><dd><span class="feed__pip" data-tone="ok" id="line-pip"></span><span id="line-state">Running</span></dd></div>
+        </dl>
+
+        <div class="stage__tools">
+          <button class="icon-btn" type="button" id="btn-motion" aria-pressed="false" aria-label="Pause motion"><i class="ph-bold ph-pause" aria-hidden="true"></i></button>
+          <button class="icon-btn" type="button" id="btn-view" aria-label="Reset view"><i class="ph-bold ph-arrows-counter-clockwise" aria-hidden="true"></i></button>
+        </div>
+
+        <div class="stage__legend" aria-hidden="true">
+          <span><i style="background:var(--caution)"></i>Needs a person</span>
+          <span><i style="background:var(--stop)"></i>Line stopped</span>
+          <span><i style="background:#2f86d6"></i>Model review</span>
+          <span><i style="background:#1fae55;opacity:.6"></i>Running</span>
+        </div>
+        <p class="stage__note"><span class="hud__speed">Time ×13 · </span>scale model · simulated</p>
+        <div class="stage__fallback"><p>3D view unavailable on this device. The station buttons below show the same state.</p></div>
+      </div>
+
+      <div class="strip" id="strip" role="group" aria-label="Stations"></div>
+      <p class="totals">Shift A so far: <b class="num">1</b> open · <b class="num">9</b> confirmed · <b class="num">5</b> rejected · override rate <b class="num">36%</b></p>
+    </section>
+
+    <aside class="rec" id="rec" aria-live="polite" aria-label="Selected station"></aside>
+  </div>
+</main>
+
+<script src="assets/bead.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/cctv.js"></script>
+<script>
+/* Page wiring for the line view: strip, aside and gemba strip. 3D lives in assets/line.js. */
+const decision = { made: null, note: "" };
+
+function lampsGlyph(s, lineStopped) {
+  const on = lineStopped && s.id === "st-04" ? "red"
+    : s.state === "andon" ? "yellow" : s.state === "review" ? "blue" : s.state === "contained" ? "yellow" : "green";
+  return `<span class="tower" aria-hidden="true">${["red", "yellow", "green", "blue"].map((k) => `<i ${k === on || (k === "green" && on !== "red") ? `data-on="${k}"` : ""}></i>`).join("")}</span>`;
+}
+function stateText(s, lineStopped) {
+  if (lineStopped && s.id === "st-04") return "Line stopped";
+  return s.state === "andon" ? "Yellow andon" : s.state === "review" ? "Model review" : s.state === "contained" ? "Contained" : "Running";
+}
+
+function renderStrip() {
+  const L = window.LLLine;
+  const stopped = L.state.line === "stopped";
+  document.getElementById("strip").innerHTML = L.STATIONS.map((s) => `
+    <button class="st" type="button" data-id="${s.id}" aria-pressed="${s.id === L.state.selected}">
+      ${lampsGlyph(s, stopped)}
+      <span class="st__id">${s.id}</span>
+      <span class="st__meta">${stateText(s, stopped)}</span>
+    </button>`).join("");
+}
+
+function plateHTML() {
+  if (decision.made === "stop" && LLLine.state.line === "stopped") return `
+    <article class="plate" data-tone="stop">
+      <div class="plate__band"><span class="plate__icon"><i class="ph-fill ph-hand-palm" aria-hidden="true"></i></span>
+        <h2 class="plate__title">Line stopped at st-04<small>Decided by team leader · role:team-leader@body · 08:44</small></h2></div>
+      <div class="plate__body">
+        <div class="log swap"><p><strong>Logged:</strong> Stop and fix. Note: ${decision.note}.</p>
+        <p style="margin-top: var(--s2)">Body <span class="mono">K2-27-031487</span> held for repair. Third confirmed repeat this shift: Kaizen ticket <span class="mono">KZ-SEAL-009</span> opened.</p></div>
+        <div class="rec__btns"><button class="btn btn--xl btn--block" data-d="restart"><i class="ph-bold ph-play" aria-hidden="true"></i>Repair done · restart line</button></div>
+        <p class="muted" style="font-size: 14px; margin-top: var(--s3)">Only the team leader restarts the line.</p>
+      </div>
+    </article>`;
+  if (decision.made) {
+    const label = { stop: "Stop and fix", contain: "Contain", continue: "Continue with check" }[decision.made];
+    return `
+    <article class="plate" data-tone="neutral">
+      <div class="plate__band"><span class="plate__icon"><i class="ph-bold ph-check" aria-hidden="true"></i></span>
+        <h2 class="plate__title">${label}: st-04<small>Decided by team leader · role:team-leader@body · 08:44</small></h2></div>
+      <div class="plate__body"><div class="log swap">
+        <p><strong>Logged:</strong> ${label}${decision.made === "stop" ? ", line restarted after repair" : ""}. Note: ${decision.note}.</p>
+        <p style="margin-top: var(--s2)">Third confirmed repeat this shift: Kaizen ticket <span class="mono">KZ-SEAL-009</span> opened for the engineer.</p>
+        <p style="margin-top: var(--s3)"><a href="kaizen.html">Open the ticket</a></p></div></div>
+    </article>`;
+  }
+  return `
+    <article class="plate" data-tone="caution">
+      <div class="plate__band"><span class="plate__icon"><i class="ph-fill ph-bell-ringing" aria-hidden="true"></i></span>
+        <h2 class="plate__title">Yellow andon: st-04<small>Bead break · confirmed by operator · 08:43</small></h2></div>
+      <div class="plate__body">
+        <div class="rec__by"><i class="ph ph-cpu" aria-hidden="true"></i>Suggested by the system</div>
+        <p class="rec__text"><strong>Stop and fix:</strong> leak-critical. Body <span class="mono">K2-27-031487</span> is now at <span class="mono" id="flag-where">${LLLine.flaggedAt() ?? "st-04"}</span>.</p>
+        <dl class="facts"><dt>Repeats this shift</dt><dd class="num">3 of 3 · ticket opens</dd><dt>Region</dt><dd class="mono">seam-R-door-07</dd></dl>
+        <div class="field" style="margin-top: var(--s4)"><label for="note">Note for the log</label>
+          <input class="input" id="note" placeholder="For example: nozzle check" maxlength="120" value="${decision.note}"></div>
+        <div class="rec__btns">
+          <button class="btn btn--xl btn--block btn--stop" data-d="stop"><i class="ph-bold ph-hand-palm" aria-hidden="true"></i>Stop and fix</button>
+          <button class="btn btn--xl btn--block btn--ghost" data-d="contain"><i class="ph-bold ph-funnel" aria-hidden="true"></i>Contain</button>
+          <button class="btn btn--xl btn--block btn--ghost" data-d="continue"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Continue with check</button>
+        </div>
+        <p class="muted" style="font-size: 14px; margin-top: var(--s3)">The line keeps running until you choose.</p>
+      </div>
+    </article>`;
+}
+
+function stationHTML(s) {
+  const cam = LLCam.CAMERAS.find((c) => c.station === s.id);
+  const note = s.state === "review"
+    ? `<p class="focus__note"><span class="badge badge--instruct"><i class="ph-bold ph-wrench" aria-hidden="true"></i>Model review</span>3 rejections, all reflection. Over budget; confirmed defects stay visible.</p>` : "";
+  return `
+    <section class="panel"><div class="panel__body rec__station">
+      <h2>${s.name}<small class="mono">${s.id}</small></h2>
+      ${cam ? LLCam.feedHTML(cam, { focus: true }) : `<div class="rec__empty"><i class="ph ph-device-tablet" aria-hidden="true"></i>No camera here. Paint findings are tapped on the body-map tablet.</div>`}
+      ${note}
+      <dl class="facts">
+        <dt>Open alerts</dt><dd class="num">${s.o}</dd>
+        <dt>Confirmed this shift</dt><dd class="num">${s.c}</dd>
+        <dt>False alarms</dt><dd class="num">${s.r} of 2</dd>
+      </dl>
+      <div class="focus__actions">
+        ${cam ? `<a class="btn btn--ghost" href="cameras.html"><i class="ph ph-video-camera" aria-hidden="true"></i>Open in cameras</a>` : ""}
+        <button class="btn btn--ghost" type="button" data-select="st-04"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i>Back to st-04</button>
+      </div>
+    </div></section>`;
+}
+
+function renderAside() {
+  const L = window.LLLine;
+  const s = L.STATIONS.find((x) => x.id === L.state.selected);
+  document.getElementById("rec").innerHTML = s.id === "st-04" ? plateHTML() : stationHTML(s);
+}
+
+function renderHud() {
+  const stopped = LLLine.state.line === "stopped";
+  document.getElementById("line-state").textContent = stopped ? "Stopped by team leader" : "Running";
+  document.getElementById("line-pip").dataset.tone = stopped ? "stop" : "ok";
+}
+
+function wire() {
+  renderStrip(); renderAside(); renderHud();
+
+  document.getElementById("strip").addEventListener("click", (e) => {
+    const b = e.target.closest(".st");
+    if (b) LLLine.select(b.dataset.id);
+  });
+  document.getElementById("rec").addEventListener("click", (e) => {
+    const sel = e.target.closest("[data-select]");
+    if (sel) { LLLine.select(sel.dataset.select); return; }
+    const b = e.target.closest("[data-d]");
+    if (!b) return;
+    const d = b.dataset.d;
+    if (d !== "restart") {
+      decision.note = (document.getElementById("note")?.value.trim() || "no note").replace(/</g, "&lt;");
+      decision.made = d;
+      LL.setTrail("kaizen");
+      LL.toast(d === "stop" ? "Line stopped at st-04. Decided by team leader." : `${b.textContent.trim()} logged. Decided by team leader.`);
+    } else LL.toast("Line restarted by team leader.");
+    LLLine.decide(d);
+  });
+  document.addEventListener("line:select", () => { renderStrip(); renderAside(); });
+  document.addEventListener("line:state", () => { renderStrip(); renderAside(); renderHud(); });
+  document.addEventListener("line:takt", (e) => {
+    const n = e.detail.bodiesDone;
+    document.getElementById("bodies").textContent = n;
+    document.getElementById("bodies-bar").style.transform = `scaleX(${Math.min(1, n / 300)})`;
+    const w = document.getElementById("flag-where");
+    if (w) w.textContent = LLLine.flaggedAt() ?? "past final-01";
+  });
+
+  const motion = document.getElementById("btn-motion");
+  const syncMotion = () => {
+    const p = LLLine.state.paused;
+    motion.setAttribute("aria-pressed", String(p));
+    motion.setAttribute("aria-label", p ? "Play motion" : "Pause motion");
+    motion.querySelector("i").className = "ph-bold " + (p ? "ph-play" : "ph-pause");
+  };
+  motion.addEventListener("click", () => { LLLine.setPaused(!LLLine.state.paused); syncMotion(); });
+  document.getElementById("btn-view").addEventListener("click", () => LLLine.resetView());
+  syncMotion();
+
+  const bar = document.getElementById("takt-bar");
+  (function takt() {
+    const { cycleT, CYCLE } = LLLine.takt();
+    bar.style.transform = `scaleX(${(cycleT / CYCLE).toFixed(3)})`;
+    requestAnimationFrame(takt);
+  })();
+}
+
+let shellReady = false, lineReady = !!window.LLLine;
+document.addEventListener("shell:ready", () => { shellReady = true; if (lineReady) wire(); });
+document.addEventListener("line:ready", () => { lineReady = true; if (shellReady) wire(); });
+</script>
+<script type="module" src="assets/line.js"></script>
+</body>
+</html>

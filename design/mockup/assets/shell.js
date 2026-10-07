@@ -4,7 +4,7 @@
 
 const SCREENS = [
   { id: "station", href: "station.html", label: "Station", icon: "ph-monitor" },
-  { id: "shift-board", href: "shift-board.html", label: "Shift board", icon: "ph-squares-four" },
+  { id: "shift-board", href: "line.html", label: "Shift board", icon: "ph-squares-four" },
   { id: "cameras", href: "cameras.html", label: "Cameras", icon: "ph-video-camera" },
   { id: "kaizen", href: "kaizen.html", label: "Kaizen", icon: "ph-clipboard-text" },
   { id: "knowledge", href: "knowledge.html", label: "Knowledge", icon: "ph-books" },
@@ -13,7 +13,7 @@ const SCREENS = [
 
 const ROLES = [
   { id: "operator", label: "Operator · st-04", home: "station.html" },
-  { id: "team-leader", label: "Team leader", home: "shift-board.html" },
+  { id: "team-leader", label: "Team leader", home: "line.html" },
   { id: "engineer", label: "Engineer", home: "kaizen.html" },
   { id: "senior-expert", label: "Senior expert", home: "knowledge.html" },
   { id: "management", label: "Management", home: "metrics.html" },

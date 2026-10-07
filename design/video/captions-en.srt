@@ -80,7 +80,7 @@ Management watches the Gate 1 indicators: false alarms per station,
 
 21
 00:02:27,000 --> 00:02:38,000
-the override rate falling from thirty-one to twenty-four percent in the simulated pilot, and how fast a problem becomes a standard.
+the override rate moving from thirty-one toward twenty-four percent in the simulated history, still short of Gate 1, and how fast a problem becomes a standard.
 
 22
 00:02:38,500 --> 00:02:43,500
