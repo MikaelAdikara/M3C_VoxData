@@ -50,7 +50,7 @@ scene.fog = new THREE.Fog(0xdedede, 60, 150);
 const camera = new THREE.PerspectiveCamera(28, 16 / 9, 0.5, 400);
 const HOME = { pos: new THREE.Vector3(-38, 22, 34), target: new THREE.Vector3(-1, 0, -2) };
 const INTRO_FROM = new THREE.Vector3(-70, 52, 84);
-const camQ = new URLSearchParams(location.search).get("cam");
+const camQ = new URLSearchParams(location.search).get("cam") || stage.dataset.home;
 if (camQ) { const n = camQ.split(",").map(Number); HOME.pos.set(n[0], n[1], n[2]); HOME.target.set(n[3], n[4], n[5]); }
 
 const materials = {};
@@ -511,6 +511,12 @@ function frame(now) {
     if (fly.t === 1) fly = null;
   }
   stepLine(dt);
+  if (!interactive && introT === 1 && !fly && !state.paused) {
+    const f = framing();
+    const a = Math.sin(t * 0.12) * 0.07;
+    const off = f.pos.clone().sub(f.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), a);
+    camera.position.copy(f.target).add(off);
+  }
   const changed = controls.update();
   if (!animating && !changed && !needsRender) return;
   placeBodies(t);
@@ -526,7 +532,9 @@ mat("steel", 0xb9b9b9, { metalness: 0.3, roughness: 0.6 });
 mat("body", 0xf7f7f7, { roughness: 0.55 });
 
 let controls;
-const controlsAllowed = matchMedia("(pointer: fine)").matches;
+const interactive = stage.dataset.interactive !== "false";
+const controlsAllowed = interactive && matchMedia("(pointer: fine)").matches;
+const viewShift = Number(stage.dataset.shift || 0);   // fraction of width the scene moves right
 
 function resize() {
   const w = stage.clientWidth, h = stage.clientHeight;
@@ -534,6 +542,8 @@ function resize() {
   camera.aspect = w / h;
   // keep the whole line in frame on narrow stages
   camera.fov = w / h < 1.2 ? 50 : w / h < 1.7 ? 37 : 30;
+  if (viewShift && !narrow()) camera.setViewOffset(w, h, -w * viewShift, 0, w, h);
+  else camera.clearViewOffset();
   camera.updateProjectionMatrix();
   requestRender();
 }
@@ -560,6 +570,7 @@ function init() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.enablePan = false;
+  controls.enableZoom = false;
   controls.minDistance = 24;
   controls.maxDistance = 95;
   controls.minPolarAngle = 0.45;

@@ -50,7 +50,8 @@ function sealerScene({ animated = true } = {}) {
   <svg class="scene${animated ? " scene--live" : ""}" viewBox="0 0 320 180" role="img" aria-label="Simulated view of the sealer cell: a door panel passes the nozzle and the camera">
     <defs>
       <linearGradient id="${id}-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3a"/><stop offset="1" stop-color="#262626"/></linearGradient>
-      <linearGradient id="${id}-panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8d8d8d"/><stop offset="1" stop-color="#6b6b6b"/></linearGradient>
+      <linearGradient id="${id}-panel" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#9ba0a5"/><stop offset=".6" stop-color="#7d8287"/><stop offset="1" stop-color="#63676c"/></linearGradient>
+      ${beadLitFilter(`${id}-lit`)}
     </defs>
     <rect width="320" height="180" fill="url(#${id}-bg)"/>
     <g opacity=".35" stroke="#6a6a6a" stroke-width="1">
@@ -59,8 +60,12 @@ function sealerScene({ animated = true } = {}) {
     </g>
     <g class="scene__body">
       <path d="M40 140 C 40 80, 80 50, 150 46 L 250 44 C 268 44, 276 60, 276 80 L 276 140 Z" fill="url(#${id}-panel)" stroke="#2c2c2c" stroke-width="2"/>
-      <path d="M70 118 C 74 84, 100 66, 150 63 L 244 62" fill="none" stroke="#2f2f2f" stroke-width="7" stroke-linecap="round"/>
-      <path class="scene__bead" d="M70 118 C 74 84, 100 66, 150 63 L 244 62" fill="none" stroke="#e0dacb" stroke-width="4" stroke-linecap="round" pathLength="100"/>
+      <path d="M58 140 C 58 92, 92 66, 150 62 L 252 60 C 262 60, 266 70, 266 82 L 266 140" fill="none" stroke="#b9bdc1" stroke-width="1" opacity=".55"/>
+      ${[[86, 92], [112, 74], [178, 56], [214, 55], [246, 55]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="#7a7e83" stroke="#9fa3a8" stroke-width=".8"/>`).join("")}
+      <path d="M70 118 C 74 84, 100 66, 150 63 L 244 62" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round" opacity=".35" transform="translate(1 2)"/>
+      <g filter="url(#${id}-lit)">
+        <path class="scene__bead" d="M70 118 C 74 84, 100 66, 150 63 L 244 62" fill="none" stroke="#cbc2ab" stroke-width="5.5" stroke-linecap="round" pathLength="100"/>
+      </g>
     </g>
     <g class="scene__robot" stroke="#1d1d1d" stroke-width="2">
       <rect x="196" y="0" width="22" height="18" fill="#4a4a4a"/>

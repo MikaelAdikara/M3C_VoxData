@@ -1,0 +1,160 @@
+/* Landing v2: the line itself is the hero, then one abnormality travels
+   through five pairs of hands on a physical abnormality tag. */
+
+:root { --display: "Big Shoulders Display", "Source Sans 3", sans-serif; }
+
+/* ---------- Provenance chips: every number says where it came from ---------- */
+.prov {
+  display: inline-flex; align-items: center; gap: 4px; vertical-align: 1px;
+  padding: 1px 7px 1px 5px; border-radius: 4px; border: 1px solid var(--line-strong);
+  font-size: 11.5px; font-weight: 600; line-height: 1.5; color: var(--muted-strong); white-space: nowrap;
+  font-variant-numeric: normal;
+}
+.prov i { font-size: 12px; }
+.prov[data-k="target"] { border-style: dashed; }
+.prov[data-k="simulated"] { background: var(--panel); }
+
+/* ---------- Hero ---------- */
+.hero2 { position: relative; min-height: min(100dvh, 940px); display: grid; align-items: center; overflow: hidden; }
+.hero2 .stage { position: absolute; inset: 0; height: auto; border: 0; border-radius: 0; box-shadow: none; }
+.hero2__inner { position: relative; z-index: 4; width: 100%; max-width: 1440px; margin: 0 auto; padding: calc(var(--bar-h) + var(--s6)) var(--s5) 150px; pointer-events: none; }
+.hero2__inner > * { pointer-events: auto; }
+.hero2 h1 {
+  font-family: var(--display); font-weight: 800; text-transform: uppercase;
+  font-size: clamp(56px, 7.4vw, 120px); line-height: .9; letter-spacing: -.005em; color: var(--ink);
+}
+.hero2 h1 span { display: block; white-space: nowrap; }
+.hero2 h1 .dim { color: var(--muted-strong); }
+.hero2__sub { margin-top: var(--s5); font-size: 21px; line-height: 1.45; max-width: 31ch; color: var(--ink-2); }
+.hero2__ctas { display: flex; flex-wrap: wrap; gap: var(--s3); margin-top: var(--s6); }
+
+/* scrim keeps the headline readable over the model, both themes */
+.hero2::before {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(90deg, var(--hero-scrim) 0%, var(--hero-scrim) 30%, transparent 60%);
+}
+:root { --hero-scrim: rgba(222, 222, 222, .92); }
+:root[data-theme="dark"] { --hero-scrim: rgba(44, 46, 49, .9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --hero-scrim: rgba(44, 46, 49, .9); } }
+
+/* gemba strip at the foot of the hero */
+.gemba {
+  position: absolute; z-index: 4; left: 0; right: 0; bottom: 0;
+  border-top: 1px solid var(--line-strong);
+  background: var(--bar-bg); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+}
+.gemba ul { list-style: none; margin: 0 auto; padding: 0 var(--s5); max-width: 1440px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.gemba li { padding: var(--s4) var(--s4) var(--s4) 0; display: grid; gap: 4px; align-content: start; }
+.gemba li + li { padding-left: var(--s4); border-left: 1px solid var(--line); }
+.gemba b { font-family: var(--display); font-weight: 700; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.gemba b small { font-family: var(--font); font-size: 15px; font-weight: 600; margin-left: 3px; }
+.gemba span { font-size: 14px; color: var(--ink-2); }
+.hero2 .stage__tools { top: auto; bottom: 108px; }
+
+/* ---------- The Trail ---------- */
+.trail2 { max-width: 1440px; margin: 0 auto; padding: 120px var(--s5) 0; }
+.trail2__head { max-width: 62ch; margin-bottom: var(--s6); }
+.trail2__head h2, .cams2 h2, .closing h2, .section__head h2 { font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: clamp(40px, 4.6vw, 64px); line-height: .95; letter-spacing: 0; }
+.trail2__head p { margin-top: var(--s4); font-size: 19px; color: var(--ink-2); }
+.trail2__grid { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: var(--s7); }
+.trail2__sticky { position: sticky; top: calc(var(--bar-h) + 40px); align-self: start; }
+
+.steps2 { list-style: none; margin: 0; padding: 0; }
+.step2 { min-height: 64vh; padding: var(--s6) 0; display: grid; align-content: center; gap: var(--s3); opacity: .38; transition: opacity 320ms var(--ease-out); }
+.step2[data-active="true"], .step2[data-done="true"] { opacity: 1; }
+.step2__n { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.step2 h3 { font-size: 34px; line-height: 1.12; letter-spacing: -.015em; max-width: 20ch; }
+.step2 p { font-size: 18px; color: var(--ink-2); max-width: 48ch; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; margin-top: var(--s3); max-width: 560px; border-radius: var(--r-panel); overflow: hidden; background: var(--line-strong); }
+.split > div { background: var(--surface-strong); padding: var(--s3) var(--s4); display: grid; gap: 2px; }
+.split dt { font-size: 12.5px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.split dd { margin: 0; font-size: 15.5px; }
+.split .who dd { font-weight: 700; }
+
+/* The abnormality tag: a physical card, punched, stamped as it travels */
+.tag2 {
+  --paper: #f7f6f2; --paper-ink: #1f1f1f; --paper-line: rgba(31, 31, 31, .14); --paper-muted: #5a5a5a;
+  position: relative; border-radius: 6px; background: var(--paper); color: var(--paper-ink);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .08), 0 18px 40px -12px rgba(0, 0, 0, .28);
+  transform: rotate(-1.2deg); overflow: hidden;
+}
+:root[data-theme="dark"] .tag2 { --paper: #e9e7e1; }
+.tag2__band { position: relative; padding: 18px 20px 26px 64px; background: var(--g-caution); color: var(--sign-dark); transition: background 400ms ease; }
+.tag2__band::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8px; background: repeating-linear-gradient(-45deg, var(--sign-dark) 0 8px, transparent 8px 16px); }
+.tag2[data-step="5"] .tag2__band { background: var(--g-safe); color: #fff; }
+.tag2[data-step="5"] .tag2__band::after { background: repeating-linear-gradient(-45deg, #fff 0 8px, transparent 8px 16px); opacity: .5; }
+.tag2__hole { position: absolute; left: 20px; top: 20px; width: 26px; height: 26px; border-radius: 50%; background: var(--page-bg); box-shadow: inset 0 2px 3px rgba(0, 0, 0, .35); }
+.tag2__kind { font-family: var(--display); font-weight: 800; font-size: 26px; text-transform: uppercase; line-height: 1; letter-spacing: .02em; }
+.tag2__kind small { display: block; font-family: var(--font); font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; margin-top: 4px; opacity: .85; }
+.tag2__body { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: var(--s4); padding: 18px 20px 6px; }
+.tag2__photo { position: relative; margin: 0; border-radius: 3px; overflow: hidden; aspect-ratio: 4 / 3; background: #333; transform: rotate(1.6deg); box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
+.tag2__photo svg { width: 100%; height: 100%; display: block; }
+.tag2__photo figcaption { position: absolute; left: 4px; bottom: 4px; font-size: 9.5px; color: #eee; background: rgba(0, 0, 0, .55); padding: 1px 5px; border-radius: 2px; }
+.tag2__fields { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; font-size: 14px; align-content: start; }
+.tag2__fields dt { color: var(--paper-muted); }
+.tag2__fields dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tag2__log { list-style: none; margin: 10px 20px 0; padding: 0 0 18px; border-top: 1px dashed var(--paper-line); }
+.tag2__log li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 0; border-bottom: 1px dashed var(--paper-line); font-size: 14px; opacity: .22; transition: opacity 300ms var(--ease-out); }
+.tag2__log li i { font-size: 18px; }
+.tag2__log li small { display: block; color: var(--paper-muted); font-size: 12px; }
+.tag2__log li[data-on="true"] { opacity: 1; }
+/* hanko-style ink stamp, monochrome; only the last one is green */
+.stamp {
+  justify-self: end; font-family: var(--display); font-weight: 800; font-size: 13px; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 8px; border: 2px solid currentColor; border-radius: 4px; color: #2b2b2b; transform: rotate(-5deg) scale(1.25); opacity: 0;
+  mix-blend-mode: multiply;
+}
+.tag2__log li[data-on="true"] .stamp { animation: stamp 420ms cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.tag2__log li:last-child .stamp { color: var(--safe); }
+@keyframes stamp { 0% { opacity: 0; transform: rotate(-9deg) scale(1.5); } 60% { opacity: 1; } 100% { opacity: .92; transform: rotate(-5deg) scale(1); } }
+.tag2__foot { display: flex; justify-content: space-between; gap: var(--s3); padding: 10px 20px 14px; font-size: 12px; color: var(--paper-muted); border-top: 1px solid var(--paper-line); }
+
+/* ---------- Cameras ---------- */
+.cams2 { max-width: 1440px; margin: 0 auto; padding: 120px var(--s5) 0; }
+.cams2 > p { margin-top: var(--s4); font-size: 19px; color: var(--ink-2); max-width: 62ch; }
+.cams2__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); margin-top: var(--s6); }
+.cams2 figure { margin: 0; display: grid; gap: var(--s3); }
+.cams2 figcaption { font-size: 15.5px; color: var(--ink-2); }
+.cams2 figcaption strong { display: block; color: var(--ink); font-size: 17px; }
+.cams2__more { margin-top: var(--s5); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1023px) {
+  .trail2__grid { grid-template-columns: 1fr; gap: 0; }
+  .trail2__sticky { top: calc(var(--bar-h) + 8px); z-index: 5; }
+  .tag2 { transform: none; }
+  .tag2__body { display: none; }
+  .tag2__band { padding: 12px 16px 20px 52px; }
+  .tag2__hole { left: 16px; top: 14px; width: 22px; height: 22px; }
+  .tag2__kind { font-size: 21px; }
+  .tag2__log { margin: 0 16px; padding-bottom: 8px; }
+  .tag2__log li { display: none; }
+  .tag2__log li[data-last="true"] { display: grid; opacity: 1; border-bottom: 0; }
+  .tag2__foot { display: none; }
+  .step2 { min-height: 70vh; }
+  .cams2__grid { grid-template-columns: 1fr; }
+  .gemba ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gemba li:nth-child(3) { padding-left: 0; border-left: 0; }
+  .gemba li:nth-child(n + 3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 767px) {
+  .hero2 { display: block; min-height: 0; }
+  .hero2::before { display: none; }
+  .hero2__inner { padding: var(--s6) var(--s4) var(--s5); }
+  .hero2 .stage { margin-top: var(--bar-h); }
+  .hero2 h1 span { white-space: normal; }
+  .hero2 .stage { position: relative; inset: auto; height: 360px; }
+  .hero2 .stage__tools { bottom: auto; top: var(--s3); }
+  .gemba { position: relative; }
+  .gemba ul { padding: 0 var(--s4); }
+  .gemba b { font-size: 28px; }
+  .hero2__sub { font-size: 18px; }
+  .step2 h3 { font-size: 27px; }
+  .split { grid-template-columns: 1fr; }
+  .trail2, .cams2 { padding: 80px var(--s4) 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step2 { opacity: 1; transition: none; }
+  .tag2__log li { transition: none; }
+  .tag2__log li[data-on="true"] .stamp { animation: none; opacity: .92; transform: rotate(-5deg); }
+}

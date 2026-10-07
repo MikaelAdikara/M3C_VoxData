@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning Line · AI detects, people decide</title>
+<meta name="description" content="Concept prototype for the M3C 2026 case on PT Toyota Motor Manufacturing Indonesia: every abnormality at Karawang becomes a reusable standard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/landing.css">
+<link rel="stylesheet" href="assets/cctv.css">
+<link rel="stylesheet" href="assets/line.css">
+<link rel="stylesheet" href="assets/landing2.css">
+<script>document.documentElement.classList.add("js");</script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+
+<header class="cover-bar" id="bar" data-light="true">
+  <div class="cover-bar__inner">
+    <a class="brand" href="#top"><span class="brand__name">Learning Line</span><span class="brand__site">Case: PT Toyota Motor Manufacturing Indonesia (TMMIN)</span></a>
+    <nav class="cover-bar__nav" aria-label="Sections">
+      <a href="#trail">How it works</a>
+      <a href="#cams">Cameras</a>
+      <a href="#a3">The case</a>
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode"><i class="ph-bold ph-moon" aria-hidden="true"></i></button>
+    <a class="btn btn--light" href="screens.html">Enter the prototype</a>
+  </div>
+</header>
+
+<main id="top">
+  <!-- Hero: the K2-Body line as a scale model, st-04 waiting for a person -->
+  <section class="hero2" aria-labelledby="hero-title">
+    <div class="stage" id="stage" data-interactive="false" data-shift="0.22" data-home="-36,20,30,0,0,-2">
+      <canvas id="line-canvas" role="img" aria-label="Scale model of the K2-Body line. A yellow andon at sealer station st-04 waits for the team leader."></canvas>
+      <div class="line-labels" id="line-labels" aria-hidden="true"></div>
+      <div class="stage__tools">
+        <button class="icon-btn" type="button" id="btn-motion" aria-pressed="false" aria-label="Pause motion"><i class="ph-bold ph-pause" aria-hidden="true"></i></button>
+      </div>
+      <div class="stage__fallback"><p>3D view unavailable on this device.</p></div>
+    </div>
+
+    <div class="hero2__inner">
+      <h1 id="hero-title"><span>AI detects.</span><span class="dim">People decide.</span></h1>
+      <p class="hero2__sub">Learning Line turns every abnormality at TMMIN Karawang into a reusable standard, and shows who decided at every step.</p>
+      <div class="hero2__ctas">
+        <a class="btn btn--xl" href="screens.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Enter the prototype</a>
+        <a class="btn btn--xl btn--ghost" href="#trail">Follow one defect</a>
+      </div>
+    </div>
+
+    <div class="gemba" aria-label="Line facts">
+      <ul>
+        <li><b>1.5<small>min</small></b><span>Takt time at Karawang</span><span><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data · ES 2.2</span></span></li>
+        <li><b>~300</b><span>Bodies per shift on K2-Body</span><span><span class="prov" data-k="assumption"><i class="ph ph-ruler" aria-hidden="true"></i>Assumption · ES App. D</span></span></li>
+        <li><b>31%</b><span>Operators often overriding alerts today</span><span><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data · casebook survey</span></span></li>
+        <li><b>&lt;20%</b><span>Override rate the pilot must reach</span><span><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target · Gate 1</span></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- The Trail -->
+  <section class="trail2" id="trail" aria-labelledby="trail-title">
+    <div class="trail2__head reveal">
+      <h2 id="trail-title">One defect,<br>five pairs of hands</h2>
+      <p>Follow a single bead break on body K2-27-031487 from the camera to a revised standard. The system detects and drafts. At every step a named role decides, and the tag records who.</p>
+    </div>
+
+    <div class="trail2__grid">
+      <div class="trail2__sticky">
+        <article class="tag2" id="tag" data-step="0" aria-label="Abnormality tag for body K2-27-031487">
+          <div class="tag2__band"><span class="tag2__hole" aria-hidden="true"></span>
+            <p class="tag2__kind" id="tag-kind">Abnormality<small>Sealer station st-04 · Shift A</small></p></div>
+          <div class="tag2__body">
+            <figure class="tag2__photo" id="tag-photo"><figcaption>Illustration · simulated</figcaption></figure>
+            <dl class="tag2__fields">
+              <dt>Body</dt><dd>K2-27-031487</dd>
+              <dt>Defect</dt><dd>Bead break</dd>
+              <dt>Region</dt><dd>seam-R-door-07</dd>
+              <dt>Score</dt><dd>0.83 vs 0.61</dd>
+              <dt>Criticality</dt><dd>Leak-critical</dd>
+            </dl>
+          </div>
+          <ol class="tag2__log" id="tag-log">
+            <li><i class="ph ph-video-camera" aria-hidden="true"></i><span>Flagged by camera<small>sealer-st04-v1.3 · 08:42:17</small></span><span class="stamp">Flagged</span></li>
+            <li><i class="ph ph-hand-pointing" aria-hidden="true"></i><span>Confirmed<small>role:operator@st-04 · 08:43</small></span><span class="stamp">Confirmed</span></li>
+            <li><i class="ph ph-users-three" aria-hidden="true"></i><span>Stop and fix<small>role:team-leader@body · 08:44</small></span><span class="stamp">Decided</span></li>
+            <li><i class="ph ph-clipboard-text" aria-hidden="true"></i><span>Kaizen ticket KZ-SEAL-009<small>Third repeat this shift · engineer owns the A3</small></span><span class="stamp">A3 open</span></li>
+            <li><i class="ph ph-seal-check" aria-hidden="true"></i><span>Knowledge card validated<small>role:senior-expert · standard revised</small></span><span class="stamp">Validated</span></li>
+          </ol>
+          <div class="tag2__foot"><span>Learning Line · K2-Body</span><span>Concept prototype · simulated</span></div>
+        </article>
+      </div>
+
+      <ol class="steps2" id="steps">
+        <li class="step2" data-step="1">
+          <span class="step2__n">Step 1 · Camera</span>
+          <h3>A camera sees a bead that doesn't match the good ones</h3>
+          <p>A repurposed CCTV at st-04 checks every bead. The model learned only from good beads, so it flags anything that departs from them and marks where.</p>
+          <dl class="split"><div><dt><i class="ph ph-cpu" aria-hidden="true"></i>System</dt><dd>Flags a bead break, 0.83 against a 0.61 threshold</dd></div><div class="who"><dt><i class="ph ph-user" aria-hidden="true"></i>Decides next</dt><dd>Operator at st-04</dd></div></dl>
+        </li>
+        <li class="step2" data-step="2">
+          <span class="step2__n">Step 2 · Operator</span>
+          <h3>The station that made it confirms it</h3>
+          <p>The alert goes back to st-04, not to final inspection. A false alarm is rejected with a reason, and only a rejection the team leader verifies can update the model.</p>
+          <dl class="split"><div><dt><i class="ph ph-cpu" aria-hidden="true"></i>System</dt><dd>Suggests "Caution: bead break"</dd></div><div class="who"><dt><i class="ph ph-user" aria-hidden="true"></i>Decides</dt><dd>Operator confirms</dd></div></dl>
+        </li>
+        <li class="step2" data-step="3">
+          <span class="step2__n">Step 3 · Team leader</span>
+          <h3>A yellow andon, and a person chooses what the line does</h3>
+          <p>The system suggests stop and fix because the defect is leak-critical. It never stops the line by itself. The team leader decides and logs a note.</p>
+          <dl class="split"><div><dt><i class="ph ph-cpu" aria-hidden="true"></i>System</dt><dd>Suggests stop and fix</dd></div><div class="who"><dt><i class="ph ph-user" aria-hidden="true"></i>Decides</dt><dd>Team leader: stop, contain or continue</dd></div></dl>
+        </li>
+        <li class="step2" data-step="4">
+          <span class="step2__n">Step 4 · Engineer</span>
+          <h3>The third repeat opens a Kaizen ticket on its own</h3>
+          <p>Three confirmed bead breaks at st-04 in one shift open an A3 with the three alerts attached. AI drafts only the background and current condition, and says so.</p>
+          <dl class="split"><div><dt><i class="ph ph-cpu" aria-hidden="true"></i>System</dt><dd>Opens the ticket, drafts two A3 blocks</dd></div><div class="who"><dt><i class="ph ph-user" aria-hidden="true"></i>Decides</dt><dd>Engineer writes the root cause</dd></div></dl>
+        </li>
+        <li class="step2" data-step="5">
+          <span class="step2__n">Step 5 · Senior expert</span>
+          <h3>The fix becomes a standard every station can reuse</h3>
+          <p>A senior expert validates the knowledge card. It revises standardized work, and yokoten carries it to every station running the same process. The assistant may now cite it.</p>
+          <dl class="split"><div><dt><i class="ph ph-cpu" aria-hidden="true"></i>System</dt><dd>Cites only validated cards</dd></div><div class="who"><dt><i class="ph ph-user" aria-hidden="true"></i>Decides</dt><dd>Senior expert validates</dd></div></dl>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Cameras -->
+  <section class="cams2" id="cams" aria-labelledby="cams-title">
+    <h2 id="cams-title" class="reveal">Cameras that tell<br>you what they are</h2>
+    <p class="reveal">Each sealer station reuses a CCTV with fixed lighting and a closed housing. Faces are masked at the edge, and every frame says honestly what you are looking at.</p>
+    <div class="cams2__grid" id="cams-grid"></div>
+    <div class="cams2__more reveal"><a class="btn btn--ghost" href="cameras.html"><i class="ph ph-video-camera" aria-hidden="true"></i>Open the camera wall</a></div>
+  </section>
+
+  <!-- The case on one A3 sheet, with provenance on every number -->
+  <section class="section" id="a3" aria-labelledby="a3-title">
+    <div class="section__head reveal">
+      <h2 id="a3-title">The case on<br>one A3 sheet</h2>
+      <p>Toyota's one-page problem-solving report. Every number carries its source: case data, target, assumption or simulation.</p>
+    </div>
+    <article class="sheet reveal">
+      <div class="sheet__title">
+        <strong>Turn every abnormality at Karawang into a reusable standard</strong>
+        <span>Scope <b>K2-Body, sealer pilot</b></span>
+        <span>Horizon <b>2026 to 2030</b></span>
+        <span>Owner <b>TMMIN Karawang, body line</b></span>
+      </div>
+      <div class="sheet__grid">
+        <div class="sheet__col">
+          <section class="block">
+            <h3>Background</h3>
+            <p>TMMIN is losing cost ground every year, just as line changes multiply.</p>
+            <ul class="rows">
+              <li><span>Conversion cost index, 2025<small><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data</span> 2023 = 100; new entrants at 89</small></span><b>106</b></li>
+              <li><span>Cost gap to new entrants<small><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data</span> Up from 6.4% in 2023</small></span><b>19.1%</b></li>
+              <li><span>Electrified share of volume<small><span class="prov" data-k="assumption"><i class="ph ph-ruler" aria-hidden="true"></i>Case scenario</span> 2026 to 2030</small></span><b>30% to 55-70%</b></li>
+            </ul>
+          </section>
+          <section class="block">
+            <h3>Current condition</h3>
+            <ul class="rows">
+              <li><span>Scrap index<small><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data</span> Casebook Exhibit 4</small></span><b>108</b></li>
+              <li><span>Unplanned downtime index<small><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data</span></small></span><b>111</b></li>
+              <li><span>Operators often overriding alerts<small><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data</span> Casebook survey</small></span><b>31%</b></li>
+              <li><span>Critical know-how documented<small><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data</span></small></span><b>33%</b></li>
+              <li><span>Months to prepare a new variant<small><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data</span></small></span><b>9</b></li>
+            </ul>
+          </section>
+          <section class="block">
+            <h3>Root cause</h3>
+            <p class="lead">The plant learns more slowly than its mix is changing.</p>
+            <ul class="rows rows--rc">
+              <li><b>RC1</b><span>Defects are found late, far from the station that made them.</span></li>
+              <li><b>RC2</b><span>Know-how and engineer time are locked in firefighting.</span></li>
+              <li><b>RC3</b><span>Every new variant needs new point-to-point connections.</span></li>
+              <li><b>RC4</b><span>Flow between stations is not synchronised.</span></li>
+            </ul>
+          </section>
+        </div>
+        <div class="sheet__col">
+          <section class="block">
+            <h3>Countermeasure <small>The Learning Line</small></h3>
+            <p>Toyota's jidoka extended with AI: three loops on one data foundation. AI detects and drafts; operators, team leaders and engineers decide.</p>
+            <div class="loops">
+              <div class="loop-step" data-l="S"><h4>Shift loop</h4><span class="when">Minutes</span><p>The alert returns to the station that made the defect. The operator confirms; the team leader decides.</p></div>
+              <div class="loop-step" data-l="K"><h4>Kaizen loop</h4><span class="when">Weeks</span><p>A third repeat opens a ticket. The engineer writes the A3; the fix becomes a validated card.</p></div>
+              <div class="loop-step" data-l="L"><h4>Launch loop</h4><span class="when">Per variant</span><p>One interface standard lets each new variant reuse validated standards.</p></div>
+            </div>
+            <div class="never">
+              <ul class="rows">
+                <li><span class="tile tile--stop"><i class="ph-fill ph-hand-palm" aria-hidden="true"></i></span><span>Never stops the line by itself. The team leader decides.</span></li>
+                <li><span class="tile tile--caution"><i class="ph-fill ph-eye" aria-hidden="true"></i></span><span>Never hides a confirmed defect. The false-alarm budget only flags a station for model review.</span></li>
+                <li><span class="tile tile--safe"><i class="ph-fill ph-seal-check" aria-hidden="true"></i></span><span>Never answers without a validated card, and always cites it.</span></li>
+              </ul>
+            </div>
+          </section>
+          <section class="block">
+            <h3>Check <small>Gate 1 indicators</small></h3>
+            <ul class="rows">
+              <li><span>False alarms per station per shift<small><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target</span></small></span><b>≤ 2</b></li>
+              <li><span>Operators often overriding alerts<small><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target</span> From 31%</small></span><b>&lt; 20%</b></li>
+              <li><span>Seeded limit samples detected<small><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target</span> Per defect type</small></span><b>59</b></li>
+              <li><span>Pilot operators saying the tool helps<small><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target</span> From 54%</small></span><b>≥ 75%</b></li>
+            </ul>
+          </section>
+          <section class="block">
+            <h3>Standardise</h3>
+            <ul class="rows">
+              <li class="wide"><span>A working countermeasure revises standardized work or the QC process chart, then yokoten carries it to every station running the same process.</span></li>
+              <li><span>Time to introduce a new variant by 2030<small><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target</span> From 9 months</small></span><b>~5 months</b></li>
+              <li><span>Engineer time for improvement by 2030<small><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target</span> From 25%</small></span><b>45%</b></li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="section closing" id="try" aria-labelledby="try-title">
+    <div class="closing__grid reveal">
+      <div class="devices__phone" aria-hidden="true"><div><iframe src="station.html" title="Station screen on a phone" tabindex="-1" loading="lazy"></iframe></div></div>
+      <div>
+        <h2 id="try-title">Try every<br>decision yourself</h2>
+        <p>Operators and team leaders decide on a phone or tablet; engineers and managers work at a laptop. Every button works on simulated data.</p>
+        <a class="btn btn--xl" href="screens.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Enter the prototype</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="cover-foot">
+  <div>
+    <p>M3C 2026 business case. Case company: PT Toyota Motor Manufacturing Indonesia (TMMIN). Not affiliated with or endorsed by Toyota.</p>
+    <p>Concept prototype · simulated data · not connected to TMMIN systems</p>
+    <p>Camera test clips: Engin Altundağ and Parker Filme via Pexels, converted to black and white. Line model and bead images are our own illustrations.</p>
+  </div>
+</footer>
+
+<script src="assets/bead.js"></script>
+<script src="assets/cctv.js"></script>
+<script src="assets/landing2.js"></script>
+<script type="module" src="assets/line.js"></script>
+</body>
+</html>
