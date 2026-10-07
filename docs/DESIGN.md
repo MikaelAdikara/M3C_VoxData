@@ -132,7 +132,7 @@ components:
 
 # Design System: Learning Line
 
-Reference build: `design/mockup/` (open `design/mockup/index.html`). Product truth: `PRODUCT.md`.
+Reference build: the app itself; design studies live in `design/mockup/` (hub: `design/mockup/plan.html`). Product truth: `PRODUCT.md`. Asset credits: `design/ASSETS.md`.
 
 ## Overview
 
@@ -182,7 +182,8 @@ Restrained neutrals with four signal colours that are never decorative.
 
 ## Typography
 
-**Font:** Source Sans 3 (400, 600, 700) with Helvetica Neue, Arial, used for all text.
+**Font:** Source Sans 3 (400, 600, 700) with Helvetica Neue, Arial, used for all text in the app.
+**Display (cover only):** Big Shoulders (700, 800), uppercase, for the cover headline, section headings, the ledger numbers and the abnormality tag. It never appears inside the app screens.
 **IDs** (bodies, regions, cards, tickets, model versions): the same face at 600 with tabular figures. There is no monospace; dotted or slashed zeros are not used.
 
 **Character:** A plain, classic, legible sans in the spirit of Toyota's humanist-technical lettering, which is proprietary and not used.
@@ -255,6 +256,27 @@ Depth comes from frosted glass. Panels float over the gradient with blur, a whit
 - Five steps: Detected, Operator, Team leader, Kaizen ticket, Validated card.
 - Done steps show an ink dot with a check. The current step shows an ink ring, or yellow when an operator or team leader decision is pending.
 
+### Camera Feed
+- One station camera tile, dark in both themes because it is a screen. Chrome: station chip with a state pip, LIVE or the frame time, the source label and REC. A vignette and faint interlace sit over the picture.
+- Three sources, honest about what they are: a public test clip (black and white, labelled "Test clip · no annotation", **never** carries a box), a drawn sealer scene ("Simulated scene", animated only when focused), and the alert frame (our bead illustration with the heatmap, "Alert frame hh:mm:ss · simulated").
+- Tone outlines: yellow for an alert waiting, blue for model review or attention, red with "Signal lost" for offline.
+- Used on `/cameras` (wall 2×2/3×3/4×4, focus panel, shift timeline, camera health) and on Station (Alert frame / Live switch).
+
+### The Line (shift board and cover)
+- K2-Body as an engineer's scale model in three.js, loaded only on the client. Grey floor and lane, steel gantries, one four-lamp andon tower per station (red, yellow, green, blue from top).
+- Car bodies are body-in-white shells (fictional, unbranded CC BY models) recoloured from the palette: steel grey with thin edge lines; only the body waiting on a decision turns caution yellow. If the models fail to load, a drawn body stays.
+- Lamps carry state: yellow andon breathes, red when the team leader has stopped the line, blue for model review, dim green when running. Labels show the station and, when abnormal, a state chip.
+- A station strip under the model is the keyboard path and the fallback when WebGL is missing. A pause button stops all motion; reduced motion starts paused. Wheel never zooms the page.
+
+### Provenance Chip
+- A small outlined chip on every figure that could be mistaken for a measurement: **Case data** (book icon), **Target** (flag, dashed border), **Simulated** (chip icon, panel fill), **Illustration**, **Benchmark**. Text says the source ("Casebook survey", "ES Gate 1").
+
+### Ask the Line (assistant dock)
+- A charcoal pill "Ask the line" fixed bottom right on every screen except Knowledge and the cover; on phone it sits above the tab bar as a round button. It opens the same grounded assistant panel: suggestions, cited answers (green citation chip with card ID and revision), and "Route to owner engineer" when no card covers the question.
+
+### Bead Illustration
+- A close-up of a door hem seam: outer panel with a press line and pilot hole, flange with spot welds and a contact shadow, and the PVC bead drawn as a matte, rounded stroke through an SVG lighting filter. Same framing for every defect type so images compare directly. Always labelled as an illustration.
+
 ### Sheets
 - Native `<dialog>`. On phone it is a bottom sheet (drawer curve `cubic-bezier(.32,.72,0,1)`); on desktop it is a centred card. Entry uses `@starting-style`.
 
@@ -266,15 +288,19 @@ Every page has a light and a dark theme. The default follows the device; the sun
 - **Ink:** #ececec, ink-2 #d2d2d2, muted #a3a3a3.
 - **Primary buttons invert:** a light gradient (#f4f4f4 to #d9d9d9) with #1b1b1b text.
 - **Signal colours stay the same.** Ink on yellow signs and hazard stripes stays #1f1f1f in both themes. Green and blue text on tints lighten to #74d39d and #84bdf0.
-- **Fixed elements:** the landing hero (video under a dark wash) and the device bezels look the same in both themes.
+- **Fixed elements:** camera feeds, the cover camera band and the device bezels look the same in both themes. The 3D line switches to a darker steel palette with higher exposure.
 
 ## Landing (cover)
 
-`design/mockup/index.html` is the entry page.
-- **Hero:** grayscale factory footage (Pexels, Parker Filme) under a dark wash (#1b1b1b family). Headline "AI detects. People decide." at 76 px. White and outline pills. A dark-glass demo card loops scan, heatmap, caution plate, confirm and confirmed.
-- **The case on one A3 sheet:** a 16 px glass sheet with a title block, two columns and ruled rows (Background, Current condition, Root cause | Countermeasure, Check, Standardise).
-- **Devices:** a phone with the live Station screen and a laptop showing the shift board.
-- **Footer:** the TMMIN case text, the "not affiliated with or endorsed by Toyota" line and the footage credit. The landing carries no logos at all: no Toyota, M3C or AKTI.
+`app/page.tsx` (study: `design/mockup/landing3.html`). Few words, and no two sections in a row share a composition:
+1. **Hero, centred:** "AI DETECTS. PEOPLE DECIDE." over the full-width 3D line; one sentence; two pills; a live strip with takt, bodies this shift and the current andon.
+2. **The trail on a centre spine:** a sticky abnormality tag (punched card, hazard stripe) in the middle; five steps alternate left and right, each with who decides. Stamps appear only for steps that really happened; the rest say "Waiting".
+3. **Three signs:** stop, caution and safe plates for the three things the system never does.
+4. **Cameras, full bleed:** a dark band with a camera mosaic, the alert frame large in the centre, and a legend of what each frame is.
+5. **Ledger, centred:** large baseline → target figures with provenance chips; the whole case on one A3 sits behind "Read the whole case on one A3".
+6. **Closing, centred:** one heading, one button, a laptop and phone with real app captures.
+
+Footer: the TMMIN case text, "not affiliated with or endorsed by Toyota", footage and model credits. No logos at all.
 
 ## Do's and Don'ts
 
@@ -283,7 +309,8 @@ Every page has a light and a dark theme. The default follows the device; the sun
 - **Do** label every simulated image and number as simulated.
 - **Do** show who decided ("Decided by team leader · role:team-leader@body") after every human action.
 - **Do** keep operator and team-leader targets at 48 px or more, and primary actions at 72 px.
-- **Do** respect `prefers-reduced-motion`; motion is limited to state changes of 150–250 ms.
+- **Do** respect `prefers-reduced-motion`; motion is limited to state changes of 150–250 ms, and the 3D line starts paused.
+- **Do** put a provenance chip on any figure a reader could take for a measured result.
 
 ### Don't:
 - **Don't** use Toyota Red for anything except the brand strip, stop and leak-critical.
@@ -294,4 +321,6 @@ Every page has a light and a dark theme. The default follows the device; the sun
 - **Don't** add eyebrows or kickers above headings, saturated or purple-neon gradients, glow halos, or em-dashes. Gradients stay soft on the ground and signal-coloured on state elements.
 - **Don't** use monospace fonts.
 - **Don't** use the Toyota emblem, Toyota Type, faces or personal names, and don't add competition or partner logos.
+- **Don't** use 3D models or images of real branded vehicles, or keep their paint colours; car bodies are unbranded and recoloured from the palette.
+- **Don't** draw a detection box over a real video clip.
 - **Don't** use pure black (#000) for dark-mode backgrounds.
