@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cameras · Learning Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/cctv.css">
+</head>
+<body data-screen="cameras" data-role="team-leader">
+
+<main class="page">
+  <div class="page__head">
+    <div>
+      <h1 class="page__title">Cameras · K2-Body</h1>
+      <p class="page__sub">Repurposed CCTV at each station · fixed lighting · faces masked at the edge · sample data</p>
+    </div>
+    <div class="cam-head">
+      <div class="seg" id="tabs-cam" role="radiogroup" aria-label="View">
+        <label><input type="radio" name="view" value="wall" checked><span>Camera wall</span></label>
+        <label><input type="radio" name="view" value="health"><span>Camera health</span></label>
+      </div>
+      <span class="loop loop--shift">Shift loop</span>
+    </div>
+  </div>
+
+  <section id="view-wall" aria-label="Camera wall">
+    <div class="cams">
+      <div>
+        <div class="tl-row" style="margin: 0 0 var(--s3)">
+          <span>Shift A · live · select a camera to focus</span>
+          <div class="seg" id="layouts" role="radiogroup" aria-label="Layout">
+            <label><input type="radio" name="lay" value="2"><span>2×2</span></label>
+            <label><input type="radio" name="lay" value="3" checked><span>3×3</span></label>
+            <label><input type="radio" name="lay" value="4"><span>4×4</span></label>
+          </div>
+        </div>
+        <div class="wall" id="wall" data-cols="3"></div>
+      </div>
+
+      <aside class="panel focus" aria-label="Focused camera">
+        <div class="panel__body focus">
+          <h2 id="focus-title"></h2>
+          <div id="focus-feed"></div>
+          <p class="focus__note" id="focus-note"></p>
+          <dl class="facts" id="focus-facts"></dl>
+          <div class="chips">
+            <span class="badge badge--outline">Faces masked at edge</span>
+            <span class="badge badge--outline">Fixed lighting</span>
+            <span class="badge badge--outline">On-premise inference</span>
+          </div>
+          <div class="focus__actions">
+            <a class="btn" id="focus-open" href="station.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Open station</a>
+            <button class="btn btn--ghost" type="button" onclick="LL.toast('Evidence clip exported (simulated)')"><i class="ph ph-download-simple" aria-hidden="true"></i>Export evidence</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="panel timeline" aria-labelledby="tl-title">
+      <div class="panel__head">
+        <h2 id="tl-title">Shift timeline · <span class="num" id="tl-time">08:42</span></h2>
+        <span class="muted">07:00 to 15:30 · drag to replay; an alert shows its frame</span>
+      </div>
+      <div class="panel__body">
+        <div class="tl" aria-hidden="false">
+          <div class="tl__cov" id="tl-cov"></div>
+          <div class="tl__events" id="tl-events"></div>
+          <span class="tl__head" id="tl-head"></span>
+          <div class="tl__axis"><span>07:00</span><span>09:00</span><span>11:00</span><span>13:00</span><span>15:30</span></div>
+        </div>
+        <label class="sr-only" for="tl-scrub">Replay time</label>
+        <input class="tl-scrub" id="tl-scrub" type="range" min="420" max="930" step="1" value="522">
+        <div class="tl-row">
+          <div class="tl-key">
+            <span><i style="background:rgba(120,120,120,.6)"></i>Recorded</span>
+            <span><i style="background:rgba(235,10,30,.7)"></i>Recording gap</span>
+            <span><i style="background:var(--caution)"></i>Alert</span>
+            <span><i style="background:#fff;outline:1px solid #999"></i>Confirmed</span>
+            <span><i style="background:#5f5f5f"></i>Rejected</span>
+          </div>
+        </div>
+        <ul class="tl-list" id="tl-list"></ul>
+      </div>
+    </section>
+  </section>
+
+  <section id="view-health" aria-label="Camera health" hidden>
+    <p class="page__sub" style="margin-bottom: var(--s4)">Lens cleaning is on the maintenance checklist. A station over its false-alarm budget points to the camera to check first.</p>
+    <div class="health-grid" id="health"></div>
+  </section>
+</main>
+
+<script src="assets/bead.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/cctv.js"></script>
+</body>
+</html>

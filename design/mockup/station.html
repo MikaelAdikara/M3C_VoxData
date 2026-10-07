@@ -11,10 +11,15 @@
 <script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
 <script src="assets/theme.js"></script>
 <link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/cctv.css">
 <style>
   .station { display: grid; grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr); grid-template-areas: "media decide" "hist decide"; gap: var(--s5); align-items: start; }
   .station__media { grid-area: media; } .decide { grid-area: decide; } .history { grid-area: hist; }
-  .station__media .bead { box-shadow: var(--shadow-1); }
+  .station__media .feed { box-shadow: var(--shadow-1); }
+  .media-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); margin-bottom: var(--s3); }
+  .media-head .seg span { min-height: 44px; }
+  .link-quiet { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; font-size: 15px; font-weight: 600; color: var(--ink-2); text-decoration: none; }
+  .link-quiet:hover { color: var(--ink); text-decoration: underline; }
   .decide { display: grid; gap: var(--s4); }
   .decide__q { font-size: 22px; margin-top: var(--s2); }
   .decide__btns { display: grid; gap: var(--s3); }
@@ -43,8 +48,15 @@
   </div>
 
   <div class="station">
-    <section class="station__media" aria-label="Camera image">
-      <div class="bead" data-bead-slot="BEAD_BREAK"></div>
+    <section class="station__media" aria-label="Station camera">
+      <div class="media-head">
+        <div class="seg" id="feed-mode" role="radiogroup" aria-label="Camera view">
+          <label><input type="radio" name="feed" value="alert" checked><span>Alert frame</span></label>
+          <label><input type="radio" name="feed" value="live"><span>Live</span></label>
+        </div>
+        <a class="link-quiet" href="cameras.html"><i class="ph ph-video-camera" aria-hidden="true"></i>All cameras</a>
+      </div>
+      <div id="station-feed"></div>
       <div class="bead__cap">
         <span>Region <span class="mono">seam-R-door-07</span></span>
         <span>Camera <span class="mono">sealer-edge-04/cam-01</span></span>
@@ -143,6 +155,16 @@
 
 <script src="assets/bead.js"></script>
 <script src="assets/shell.js"></script>
+<script src="assets/cctv.js"></script>
+<script>
+  document.addEventListener("shell:ready", () => {
+    const cam = LLCam.CAMERAS.find((c) => c.station === "st-04");
+    const slot = document.getElementById("station-feed");
+    const show = (mode) => { slot.innerHTML = LLCam.feedHTML(cam, { focus: true, frameAlert: mode === "alert" }); LLBead.placeBeads(slot); };
+    show("alert");
+    document.getElementById("feed-mode").addEventListener("change", (e) => show(e.target.value));
+  });
+</script>
 <script>
 document.addEventListener("shell:ready", () => {
   const plate = document.getElementById("plate");

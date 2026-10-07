@@ -5,6 +5,7 @@
 const SCREENS = [
   { id: "station", href: "station.html", label: "Station", icon: "ph-monitor" },
   { id: "shift-board", href: "shift-board.html", label: "Shift board", icon: "ph-squares-four" },
+  { id: "cameras", href: "cameras.html", label: "Cameras", icon: "ph-video-camera" },
   { id: "kaizen", href: "kaizen.html", label: "Kaizen", icon: "ph-clipboard-text" },
   { id: "knowledge", href: "knowledge.html", label: "Knowledge", icon: "ph-books" },
   { id: "metrics", href: "metrics.html", label: "Metrics", icon: "ph-chart-line" },
