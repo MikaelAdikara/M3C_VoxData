@@ -50,7 +50,7 @@ export async function confirmAlert(alertId: string): Promise<ActionResult> {
   } catch {
     return { ok: false, error: "Could not confirm the alert." };
   } finally {
-    revalidatePaths(["/station", "/shift-board", "/kaizen"]);
+    revalidatePaths(["/", "/station", "/shift-board", "/cameras", "/kaizen", "/metrics"]);
   }
 }
 
@@ -111,6 +111,6 @@ export async function rejectAlert(
   } catch {
     return { ok: false, error: "Could not reject the alert." };
   } finally {
-    revalidatePaths(["/station", "/shift-board"]);
+    revalidatePaths(["/", "/station", "/shift-board", "/cameras", "/metrics"]);
   }
 }

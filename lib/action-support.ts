@@ -48,6 +48,10 @@ export function nextSimulatedTimestamp(snapshot: StoreSnapshot): string {
       .filter(Boolean)
       .map((value) => Date.parse(value!)),
     ...snapshot.routedQuestions.map((item) => Date.parse(item.createdAt)),
+    ...snapshot.cameraMaintenanceTickets.map((item) => Date.parse(item.createdAt)),
+    ...[snapshot.lineOperation.stoppedAt, snapshot.lineOperation.restartedAt]
+      .filter(Boolean)
+      .map((value) => Date.parse(value!)),
   ].filter((timestamp) => timestamp >= shiftStart && timestamp <= shiftEnd);
   const latest = timestamps.length > 0 ? Math.max(...timestamps) : shiftStart;
   return new Date(Math.min(latest + 1_000, shiftEnd)).toISOString();

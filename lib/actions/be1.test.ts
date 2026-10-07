@@ -109,7 +109,7 @@ describe("BE-1 server actions", () => {
       { ok: false, error: "Only the team leader can make the shift decision." },
     );
     const snapshot = await getMemoryStore().getSnapshot();
-    expect(snapshot.decisions.some((decision) => decision.alertId === "alert-st05-confirmed-001")).toBe(
+    expect(snapshot.decisions.some((decision) => decision.alertId === "alert-st05-confirmed-001" && decision.kind === "contain")).toBe(
       false,
     );
   });

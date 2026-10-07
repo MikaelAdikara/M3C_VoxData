@@ -13,11 +13,15 @@ import { getShiftRecommendation } from "@/lib/rules/recommend";
 import { getConfirmedRepeatState, isConfirmedAlert } from "@/lib/rules/repeat";
 import { isA3Complete } from "@/lib/rules/lifecycle";
 import { getStore } from "@/lib/store";
+import { buildCameraView, buildLineView, buildPilotView, buildTrailView } from "@/lib/be4-views";
+import { fingerprintSnapshot, seedFingerprint, SEED_VERSION } from "@/lib/seed-identity";
+import { SEED_REFERENCE_CLOCK } from "@/lib/seed";
 import type {
   Alert,
   AlertView,
   CardStatus,
   CardView,
+  CameraView,
   Decision,
   DecisionView,
   DefectType,
@@ -27,13 +31,19 @@ import type {
   KnowledgeFilters,
   KnowledgeView,
   MetricsView,
+  LineView,
+  OverviewView,
+  PilotView,
   ReasonCodeOption,
   RecommendationView,
   Role,
+  SimulatorView,
   ShiftBoardView,
   StationDecisionHistoryItem,
   StationView,
+  StoreSnapshot,
   TicketView,
+  TrailView,
 } from "@/lib/types";
 
 export const reasonCodes: ReasonCodeOption[] = [
@@ -60,6 +70,7 @@ function toAlertView(
     modelVersion: alert.modelVersion,
     image: alert.image,
     mask: alert.mask,
+    visualScenarioId: alert.visualScenarioId,
     createdAt: alert.createdAt,
     status: alert.status,
     recommendation,
@@ -115,7 +126,7 @@ export async function getStationView(stationId: string): Promise<StationView | n
   const defectTypesById = new Map(snapshot.defectTypes.map((item) => [item.id, item]));
   const openAlert = snapshot.alerts
     .filter((alert) => alert.stationId === stationId && alert.status === "open")
-    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))[0];
+    .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0];
   const shiftAlerts = snapshot.alerts.filter(
     (alert) =>
       alert.stationId === stationId &&
@@ -139,7 +150,7 @@ export async function getStationView(stationId: string): Promise<StationView | n
       };
     })
     .filter((item): item is StationDecisionHistoryItem => item !== null)
-    .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt));
+    .sort((left, right) => Date.parse(right.occurredAt) - Date.parse(left.occurredAt));
 
   return {
     station,
@@ -153,7 +164,10 @@ export async function getStationView(stationId: string): Promise<StationView | n
 }
 
 export async function getShiftBoardView(): Promise<ShiftBoardView> {
-  const snapshot = await getStore().getSnapshot();
+  return buildShiftBoardView(await getStore().getSnapshot());
+}
+
+export function buildShiftBoardView(snapshot: StoreSnapshot): ShiftBoardView {
   const { startsAt, endsAt } = snapshot.currentShift;
   const shiftStart = Date.parse(startsAt);
   const shiftEnd = Date.parse(endsAt);
@@ -203,7 +217,7 @@ export async function getShiftBoardView(): Promise<ShiftBoardView> {
         const defectType = alert.defectTypeId ? defectTypesById.get(alert.defectTypeId) : undefined;
         const repeatCount = alert.defectTypeId
           ? getConfirmedRepeatState(
-              shiftAlerts,
+              shiftAlerts.filter((item) => Date.parse(item.createdAt) <= Date.parse(alert.createdAt)),
               snapshot.decisions,
               alert.stationId,
               alert.defectTypeId,
@@ -232,7 +246,10 @@ export async function getShiftBoardView(): Promise<ShiftBoardView> {
 }
 
 export async function getKaizenView(): Promise<KaizenView> {
-  const snapshot = await getStore().getSnapshot();
+  return buildKaizenView(await getStore().getSnapshot());
+}
+
+export function buildKaizenView(snapshot: StoreSnapshot): KaizenView {
   const defectTypesById = new Map(snapshot.defectTypes.map((item) => [item.id, item]));
   const end = Date.parse(snapshot.currentShift.endsAt);
   const start = end - 30 * 86_400_000;
@@ -265,7 +282,7 @@ export async function getKaizenView(): Promise<KaizenView> {
         createdAt: ticket.createdAt,
       }))
       .filter((ticket) => ticket.defectType !== undefined)
-      .sort((left, right) => right.createdAt.localeCompare(left.createdAt)),
+      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt)),
   };
 }
 
@@ -329,7 +346,10 @@ export async function getKnowledgeView(filters: KnowledgeFilters = {}): Promise<
 }
 
 export async function getMetricsView(): Promise<MetricsView> {
-  const snapshot = await getStore().getSnapshot();
+  return buildMetricsView(await getStore().getSnapshot());
+}
+
+export function buildMetricsView(snapshot: StoreSnapshot): MetricsView {
   const falseAlarms = snapshot.stations.map((station) => {
     const budget = getFalseAlarmBudgetState(
       snapshot.alerts,
@@ -342,6 +362,10 @@ export async function getMetricsView(): Promise<MetricsView> {
       count: budget.count,
       budget: budget.budget,
       withinBudget: !budget.exceeded,
+      provenance: "simulated" as const,
+      sourceLabel: "Simulated current shift",
+      budgetProvenance: "target" as const,
+      budgetSourceLabel: "ES Gate 1",
     };
   });
 
@@ -363,6 +387,14 @@ export async function getMetricsView(): Promise<MetricsView> {
   );
   const ideas = calculateIdeaMetrics(snapshot.ideas);
   const stationsWithinBudget = falseAlarms.filter((item) => item.withinBudget).length;
+  const kaizen = buildKaizenView(snapshot);
+  const paretoTotal = kaizen.pareto.reduce((sum, item) => sum + item.count, 0);
+  const ticketStatuses = ["open", "a3_in_progress", "countermeasure_trial", "validated", "closed"] as const;
+  const cardsById = new Map<string, KnowledgeCard>();
+  for (const card of snapshot.cards) {
+    if ((cardsById.get(card.id)?.revision ?? -1) < card.revision) cardsById.set(card.id, card);
+  }
+  const cardStatuses = ["draft", "validated", "retired"] as const;
 
   return {
     gate1: [
@@ -374,6 +406,9 @@ export async function getMetricsView(): Promise<MetricsView> {
         baseline: "n/a",
         target: "≤ 2 per station per shift",
         sourceLabel: "ES Gate 1",
+        provenance: "simulated",
+        targetProvenance: "target",
+        targetSourceLabel: "ES Gate 1",
       },
       {
         id: "override-rate",
@@ -383,6 +418,11 @@ export async function getMetricsView(): Promise<MetricsView> {
         baseline: 31,
         target: "< 20%",
         sourceLabel: "Casebook survey; ES Section 3",
+        provenance: "simulated",
+        baselineProvenance: "case_data",
+        baselineSourceLabel: "Casebook survey",
+        targetProvenance: "target",
+        targetSourceLabel: "ES Gate 1",
       },
       {
         id: "limit-sample-detection",
@@ -392,6 +432,9 @@ export async function getMetricsView(): Promise<MetricsView> {
         baseline: "n/a",
         target: "59 per defect type",
         sourceLabel: "ES Appendix H",
+        provenance: "simulated",
+        targetProvenance: "target",
+        targetSourceLabel: "ES Appendix H",
       },
       {
         id: "scrap-index",
@@ -401,6 +444,11 @@ export async function getMetricsView(): Promise<MetricsView> {
         baseline: 108,
         target: 96,
         sourceLabel: "Casebook Exhibit 4; ES Table 4",
+        provenance: "case_data",
+        baselineProvenance: "case_data",
+        baselineSourceLabel: "Casebook Exhibit 4",
+        targetProvenance: "target",
+        targetSourceLabel: "ES Table 4",
       },
       {
         id: "operator-help",
@@ -410,6 +458,11 @@ export async function getMetricsView(): Promise<MetricsView> {
         baseline: 54,
         target: "≥ 75%",
         sourceLabel: "Casebook survey; ES Gate 1",
+        provenance: "case_data",
+        baselineProvenance: "case_data",
+        baselineSourceLabel: "Casebook survey",
+        targetProvenance: "target",
+        targetSourceLabel: "ES Gate 1",
       },
     ],
     falseAlarms,
@@ -419,9 +472,66 @@ export async function getMetricsView(): Promise<MetricsView> {
       gate1TargetPercent: 20,
       year2030TargetPercent: 10,
       periodLabel: "Latest completed simulated day",
+      provenance: "simulated",
+      sourceLabel: "Simulated 30-day history",
+      baselineProvenance: "case_data",
+      baselineSourceLabel: "Casebook survey",
+      targetProvenance: "target",
+      targetSourceLabel: "ES Gate 1",
     },
     learningCycleDays,
-    ideas,
+    learningCycle: { days: learningCycleDays, provenance: "simulated", sourceLabel: "Simulated ticket-to-card history" },
+    ideas: { ...ideas, provenance: "simulated", sourceLabel: "Simulated idea history" },
     dataLabel: "Simulated data",
+    provenance: "simulated",
+    sourceLabel: "Simulated K2-Body demo state",
+    pareto: kaizen.pareto.map((item) => ({ ...item, percent: paretoTotal ? Math.round(item.count / paretoTotal * 100) : 0, provenance: "simulated", sourceLabel: "Simulated 30-day history" })),
+    ticketProgress: ticketStatuses.map((status) => ({ status, count: snapshot.tickets.filter((ticket) => ticket.status === status).length, tickets: snapshot.tickets.filter((ticket) => ticket.status === status).map((ticket) => ({ id: ticket.id, stationId: ticket.stationId, defectType: snapshot.defectTypes.find((type) => type.id === ticket.defectTypeId)!, ownerRole: ticket.ownerRole, status: ticket.status, createdAt: ticket.createdAt })), provenance: "simulated", sourceLabel: "Simulated Kaizen ticket history" })),
+    knowledgeProgress: cardStatuses.map((status) => ({ status, count: [...cardsById.values()].filter((card) => card.status === status).length, provenance: "simulated", sourceLabel: "Simulated knowledge-card history" })),
+    seedVersion: SEED_VERSION,
+    seedFingerprint,
+  };
+}
+
+export async function getCameraView(): Promise<CameraView> {
+  const snapshot = await getStore().getSnapshot();
+  return buildCameraView(snapshot, buildShiftBoardView(snapshot));
+}
+
+export async function getLineView(): Promise<LineView> {
+  const snapshot = await getStore().getSnapshot();
+  return buildLineView(snapshot, buildShiftBoardView(snapshot));
+}
+
+export async function getPilotView(): Promise<PilotView> {
+  return buildPilotView(await getStore().getSnapshot());
+}
+
+export async function getTrailView(alertId: string): Promise<TrailView | null> {
+  return buildTrailView(await getStore().getSnapshot(), alertId);
+}
+
+export async function getSimulatorView(): Promise<SimulatorView> {
+  const snapshot = await getStore().getSnapshot();
+  const currentFingerprint = fingerprintSnapshot(snapshot);
+  return { seedVersion: SEED_VERSION, seedFingerprint, currentFingerprint, isCanonicalReset: currentFingerprint === seedFingerprint, referenceClock: SEED_REFERENCE_CLOCK, provenance: "simulated", sourceLabel: "Deterministic canonical demo seed" };
+}
+
+export async function getOverviewView(): Promise<OverviewView> {
+  const snapshot = await getStore().getSnapshot();
+  const board = buildShiftBoardView(snapshot);
+  const line = buildLineView(snapshot, board);
+  const latestAlertId = line.flaggedBody?.alertId ?? snapshot.alerts
+    .filter((alert) => isWithinRange(alert.createdAt, snapshot.currentShift.startsAt, snapshot.currentShift.endsAt))
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))[0]?.id ?? null;
+  return {
+    line,
+    trail: latestAlertId ? buildTrailView(snapshot, latestAlertId) : null,
+    ledger: [
+      { id: "override-rate", label: "Operators overriding alerts", baseline: 31, target: "< 20%", baselineProvenance: "case_data", targetProvenance: "target", baselineSourceLabel: "Casebook survey", targetSourceLabel: "ES Gate 1" },
+      { id: "scrap-index", label: "Scrap index (2023 = 100)", baseline: 108, target: 96, baselineProvenance: "case_data", targetProvenance: "target", baselineSourceLabel: "Casebook Exhibit 4", targetSourceLabel: "ES Table 4" },
+      { id: "know-how", label: "Critical know-how documented", baseline: "33%", target: "60%", baselineProvenance: "case_data", targetProvenance: "target", baselineSourceLabel: "Casebook", targetSourceLabel: "ES Table 4" },
+      { id: "ideas", label: "Improvement ideas implemented", baseline: "28%", target: "40%", baselineProvenance: "case_data", targetProvenance: "target", baselineSourceLabel: "ES Table 4", targetSourceLabel: "ES Table 4" },
+    ],
   };
 }

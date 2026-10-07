@@ -40,6 +40,6 @@ export async function submitIdea(stationId: string, text: string): Promise<Actio
   } catch {
     return { ok: false, error: "Could not submit the idea." };
   } finally {
-    revalidatePaths(["/station"]);
+    revalidatePaths(["/station", "/metrics"]);
   }
 }

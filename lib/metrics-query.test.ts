@@ -13,7 +13,7 @@ describe("getMetricsView", () => {
     const view = await getMetricsView();
     expect(view.dataLabel).toBe("Simulated data");
     expect(view.learningCycleDays).toBe(19);
-    expect(view.ideas).toEqual({ submitted: 40, answeredWithin7Days: 31, implemented: 11 });
+    expect(view.ideas).toMatchObject({ submitted: 40, answeredWithin7Days: 31, implemented: 11, provenance: "simulated" });
     expect(view.overrideRate).toMatchObject({
       baselinePercent: 31,
       currentPercent: 24,

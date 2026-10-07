@@ -4,6 +4,7 @@ import postgres from "postgres";
 
 import { demoStates } from "@/db/schema";
 import { createSeedData } from "@/lib/seed";
+import { normalizeSnapshot } from "@/lib/store/normalize";
 import type { LearningLineStore } from "@/lib/store";
 import type { StoreSnapshot } from "@/lib/types";
 
@@ -51,7 +52,10 @@ export class DrizzleStore implements LearningLineStore {
           updatedAt: new Date().toISOString(),
         })
         .onConflictDoNothing({ target: demoStates.id });
-    })();
+    })().catch((error: unknown) => {
+      this.initialization = null;
+      throw error;
+    });
     return this.initialization;
   }
 
@@ -62,7 +66,7 @@ export class DrizzleStore implements LearningLineStore {
       .from(demoStates)
       .where(eq(demoStates.id, DEMO_STATE_ID));
     if (!row) throw new Error("Persistent demo state is unavailable.");
-    return cloneSnapshot(row.snapshot);
+    return cloneSnapshot(normalizeSnapshot(row.snapshot));
   }
 
   async mutate<T>(mutation: (draft: StoreSnapshot) => T | Promise<T>): Promise<T> {
@@ -75,7 +79,7 @@ export class DrizzleStore implements LearningLineStore {
         .for("update");
       if (!row) throw new Error("Persistent demo state is unavailable.");
 
-      const draft = cloneSnapshot(row.snapshot);
+      const draft = cloneSnapshot(normalizeSnapshot(row.snapshot));
       const result = await mutation(draft);
       await transaction
         .update(demoStates)

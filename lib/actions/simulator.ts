@@ -15,8 +15,10 @@ const REPEAT_ALERT_IDS = [
 
 function refreshDemoRoutes() {
   revalidatePaths([
+    "/",
     "/station",
     "/shift-board",
+    "/cameras",
     "/kaizen",
     "/knowledge",
     "/metrics",
@@ -37,8 +39,9 @@ export async function injectTrueDefect(): Promise<ActionResult> {
         anomalyScore: 0.83,
         threshold: 0.61,
         modelVersion: "sealer-st04-v1.3",
-        image: "/beads/bead_break.svg",
-        mask: "/beads/bead_break-mask.svg",
+        image: "",
+        mask: "",
+        visualScenarioId: "bead-break-reference",
         createdAt: "2027-03-14T08:42:17.412+07:00",
         status: "open",
       });
@@ -64,8 +67,9 @@ export async function injectFalseAlarm(): Promise<ActionResult> {
         anomalyScore: 0.66,
         threshold: 0.61,
         modelVersion: "sealer-st04-v1.3",
-        image: "/beads/reflection.svg",
-        mask: "/beads/reflection-mask.svg",
+        image: "",
+        mask: "",
+        visualScenarioId: "reflection-false-alarm",
         createdAt: "2027-03-14T08:44:00.000+07:00",
         status: "open",
       });
@@ -112,8 +116,9 @@ export async function injectRepeat3(): Promise<ActionResult> {
           anomalyScore: Number((0.75 + index * 0.03).toFixed(2)),
           threshold: 0.61,
           modelVersion: "sealer-st04-v1.3",
-          image: "/beads/bead_excess.svg",
-          mask: "/beads/bead_excess-mask.svg",
+          image: "",
+          mask: "",
+          visualScenarioId: "bead-excess-reference",
           createdAt: `2027-03-14T09:${String(index * 5).padStart(2, "0")}:00.000+07:00`,
           status: "confirmed",
         };
@@ -144,5 +149,27 @@ export async function resetDemo(): Promise<ActionResult> {
     return { ok: false, error: "Could not reset the demo." };
   } finally {
     refreshDemoRoutes();
+  }
+}
+
+// UI-4 may call this once per simulated takt. The expected count makes
+// concurrent tabs/retries idempotent; the stored count is the display source.
+export async function advanceSimulatedProduction(expectedCompleted: number): Promise<ActionResult> {
+  try {
+    if (!Number.isSafeInteger(expectedCompleted) || expectedCompleted < 0 || expectedCompleted >= 300) {
+      return { ok: false, error: "Invalid production count." };
+    }
+    return await getStore().mutate<ActionResult>((draft) => {
+      if (draft.lineOperation.state !== "running") {
+        return { ok: false, error: "Production cannot advance while the line is stopped." };
+      }
+      if (draft.lineOperation.bodiesCompleted !== expectedCompleted) return { ok: true };
+      draft.lineOperation.bodiesCompleted += 1;
+      return { ok: true };
+    });
+  } catch {
+    return { ok: false, error: "Could not advance simulated production." };
+  } finally {
+    revalidatePaths(["/", "/shift-board"]);
   }
 }

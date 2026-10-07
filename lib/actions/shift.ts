@@ -44,21 +44,62 @@ export async function decideShift(
         return { ok: false, error: "A team leader decision already exists." };
       }
 
-      draft.decisions.push({
+      if (decision === "stop_fix" && draft.lineOperation.state === "stopped") {
+        return { ok: false, error: "The line is already stopped. Complete the repair before another stop." };
+      }
+
+      const loggedDecision = {
         id: nextEntityId("decision", draft.decisions.map((item) => item.id)),
         alertId: alert.id,
-        actor: "role:team_leader@body",
+        actor: "role:team_leader@body" as const,
         kind: decision,
         note: normalizedNote,
         createdAt: nextSimulatedTimestamp(draft),
-      });
+      };
+      draft.decisions.push(loggedDecision);
+      if (decision === "stop_fix") {
+        draft.lineOperation.state = "stopped";
+        draft.lineOperation.stoppedByDecisionId = loggedDecision.id;
+        draft.lineOperation.heldBodyId = alert.bodyId;
+        draft.lineOperation.stoppedAt = loggedDecision.createdAt;
+        draft.lineOperation.restartedAt = undefined;
+        draft.lineOperation.restartNote = undefined;
+        draft.lineOperation.restartedByRole = undefined;
+      }
       alert.status = "closed";
       return { ok: true };
     });
   } catch {
     return { ok: false, error: "Could not save the shift decision." };
   } finally {
-    revalidatePaths(["/station", "/shift-board"]);
+    revalidatePaths(["/", "/station", "/shift-board", "/cameras", "/metrics"]);
+  }
+}
+
+export async function restartLine(repairNote: string): Promise<ActionResult> {
+  try {
+    const note = normalizeRequiredText(repairNote, MAX_NOTE_LENGTH);
+    if (!note || /[\r\n]/.test(note)) {
+      return { ok: false, error: "A one-line repair completion note is required." };
+    }
+    if ((await getCurrentRole()) !== "team_leader") {
+      return { ok: false, error: "Only the team leader can restart the line." };
+    }
+    return await getStore().mutate<ActionResult>((draft) => {
+      if (draft.lineOperation.state !== "stopped" || !draft.lineOperation.stoppedByDecisionId) {
+        return { ok: false, error: "The line is not stopped for repair." };
+      }
+      draft.lineOperation.state = "running";
+      draft.lineOperation.restartedAt = nextSimulatedTimestamp(draft);
+      draft.lineOperation.restartNote = note;
+      draft.lineOperation.restartedByRole = "role:team_leader@body";
+      draft.lineOperation.heldBodyId = undefined;
+      return { ok: true };
+    });
+  } catch {
+    return { ok: false, error: "Could not restart the line." };
+  } finally {
+    revalidatePaths(["/", "/shift-board", "/station", "/cameras"]);
   }
 }
 
@@ -98,6 +139,6 @@ export async function verifyRejection(reviewId: string): Promise<ActionResult> {
   } catch {
     return { ok: false, error: "Could not verify the rejection." };
   } finally {
-    revalidatePaths(["/shift-board"]);
+    revalidatePaths(["/shift-board", "/cameras", "/metrics"]);
   }
 }

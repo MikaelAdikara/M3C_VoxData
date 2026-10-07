@@ -1,5 +1,6 @@
 import type {
   Alert,
+  Camera,
   Decision,
   DefectType,
   DefectTypeId,
@@ -12,6 +13,8 @@ import type {
 
 const DAY_MS = 86_400_000;
 const SEED_NOW = Date.parse("2027-03-14T08:45:00.000+07:00");
+export const SEED_REFERENCE_CLOCK = "2027-03-14T08:45:00.000+07:00";
+export const SEED_VERSION = "m3c-gate1-v1";
 
 export const stations: Station[] = [
   { id: "st-01", line: "K2-Body", area: "Body", name: "Sealer 01", type: "sealer" },
@@ -31,6 +34,42 @@ export const defectTypes: DefectType[] = [
   { id: "BEAD_OFFSET", name: "Bead off path", criticality: "non_critical" },
   { id: "BEAD_EXCESS", name: "Excess sealer", criticality: "non_critical" },
 ];
+
+function uptime14d(cameraIndex: number, state: Camera["state"]): number[] {
+  return Array.from({ length: 14 }, (_, day) => {
+    if (state === "offline" && day === 13) return 0.15;
+    if (state === "attention" && [4, 9, 13].includes(day)) return 0.52 + day / 1_000;
+    return Number((0.94 + ((cameraIndex * 7 + day * 11) % 57) / 1_000).toFixed(3));
+  });
+}
+
+export function createSeedCameras(): Camera[] {
+  const specs: Pick<Camera, "id" | "stationId" | "name" | "kind" | "state" | "note" | "modelVersion">[] = [
+    { id: "sealer-edge-01/cam-01", stationId: "st-01", name: "Sealer 01", kind: "sealer", state: "online", modelVersion: "sealer-st01-v1.3" },
+    { id: "sealer-edge-02/cam-01", stationId: "st-02", name: "Sealer 02", kind: "sealer", state: "attention", note: "Reflection on grey sealer; three rejected alerts this shift. Check lens and lighting.", modelVersion: "sealer-st02-v1.3" },
+    { id: "body-edge-03/cam-01", stationId: "st-03", name: "Body 03", kind: "sealer", state: "online", modelVersion: "body-st03-v1.1" },
+    { id: "sealer-edge-04/cam-01", stationId: "st-04", name: "Sealer 04", kind: "sealer", state: "online", modelVersion: "sealer-st04-v1.3" },
+    { id: "body-edge-05/cam-01", stationId: "st-05", name: "Body 05", kind: "sealer", state: "online", modelVersion: "body-st05-v1.1" },
+    { id: "body-edge-06/cam-01", stationId: "st-06", name: "Body 06", kind: "sealer", state: "offline", note: "No frames since 06:12; housing power check.", modelVersion: "body-st06-v1.1" },
+    { id: "paint-body-map/tablet-01", stationId: "paint-bm", name: "Paint body map", kind: "paint_tablet", state: "online", note: "Tablet findings; no CCTV feed.", modelVersion: "paint-map-v1.0" },
+    { id: "final-edge-01/cam-01", stationId: "final-01", name: "Final inspection", kind: "final", state: "online", modelVersion: "final-v1.0" },
+  ];
+  return specs.map((spec, index) => ({
+    ...spec,
+    uptime14d: uptime14d(index, spec.state),
+    lastLensCleanAt: new Date(SEED_NOW - (spec.state === "attention" ? 6 : spec.state === "offline" ? 9 : (index % 3) + 1) * DAY_MS).toISOString(),
+    fps: spec.kind === "paint_tablet" ? 0 : 25,
+    resolution: spec.kind === "paint_tablet" ? "not_applicable" : "1920x1080",
+  }));
+}
+
+export function createSeedRecordingGaps(): StoreSnapshot["recordingGaps"] {
+  return [{ id: "gap-body-06-current", cameraId: "body-edge-06/cam-01", startsAt: "2027-03-14T06:12:00.000+07:00", reason: "Camera offline since 06:12; housing power check" }];
+}
+
+export function createSeedLineOperation(): StoreSnapshot["lineOperation"] {
+  return { state: "running", bodiesCompleted: 68 };
+}
 
 function historyAlert(index: number): Alert {
   const day = Math.floor(index / 80);
@@ -52,8 +91,9 @@ function historyAlert(index: number): Alert {
     anomalyScore: Number((0.62 + (index % 29) / 100).toFixed(2)),
     threshold: 0.61,
     modelVersion: day < 15 ? "sealer-st04-v1.2" : "sealer-st04-v1.3",
-    image: `/beads/${defectTypeId.toLowerCase()}.svg`,
-    mask: `/beads/${defectTypeId.toLowerCase()}-mask.svg`,
+    image: "",
+    mask: "",
+    visualScenarioId: defectTypeId === "BEAD_BREAK" ? "bead-break-reference" : defectTypeId === "BEAD_EXCESS" ? "bead-excess-reference" : `${defectTypeId.toLowerCase().replace("_", "-")}-simulation`,
     createdAt,
     status: isRejected ? "rejected" : "confirmed",
   };
@@ -82,8 +122,7 @@ function createHistoricalAlerts(): Alert[] {
 
   st04Confirmed.forEach((alert, index) => {
     alert.defectTypeId = weightedDefects[index];
-    alert.image = `/beads/${weightedDefects[index].toLowerCase()}.svg`;
-    alert.mask = `/beads/${weightedDefects[index].toLowerCase()}-mask.svg`;
+    alert.visualScenarioId = weightedDefects[index] === "BEAD_BREAK" ? "bead-break-reference" : weightedDefects[index] === "BEAD_EXCESS" ? "bead-excess-reference" : `${weightedDefects[index].toLowerCase().replace("_", "-")}-simulation`;
   });
 
   return alerts;
@@ -99,8 +138,9 @@ const currentAlerts: Alert[] = [
     anomalyScore: 0.64 + index * 0.01,
     threshold: 0.61,
     modelVersion: "sealer-st04-v1.3",
-    image: "/beads/reflection.svg",
-    mask: "/beads/reflection-mask.svg",
+    image: "",
+    mask: "",
+    visualScenarioId: "reflection-false-alarm",
     createdAt: new Date(SEED_NOW - (25 - index) * 60_000).toISOString(),
     status: "rejected",
   })),
@@ -113,21 +153,25 @@ const currentAlerts: Alert[] = [
     anomalyScore: 0.72,
     threshold: 0.61,
     modelVersion: "sealer-st04-v1.3",
-    image: "/beads/bead_offset.svg",
-    mask: "/beads/bead_offset-mask.svg",
+    image: "",
+    mask: "",
+    visualScenarioId: "bead-offset-simulation",
     createdAt: new Date(SEED_NOW - 8 * 60_000).toISOString(),
     status: "confirmed",
   },
 ];
 
-const currentDecisions: Decision[] = Array.from({ length: 3 }, (_, index) => ({
-  id: `decision-st02-reflection-${index + 1}`,
-  alertId: `alert-st02-reflection-${index + 1}`,
-  actor: "role:operator@st-02",
-  kind: "reject",
-  reasonCode: "reflection",
-  createdAt: new Date(SEED_NOW - (24 - index) * 60_000).toISOString(),
-}));
+const currentDecisions: Decision[] = [
+  ...Array.from({ length: 3 }, (_, index): Decision => ({
+    id: `decision-st02-reflection-${index + 1}`,
+    alertId: `alert-st02-reflection-${index + 1}`,
+    actor: "role:operator@st-02",
+    kind: "reject",
+    reasonCode: "reflection",
+    createdAt: new Date(SEED_NOW - (24 - index) * 60_000).toISOString(),
+  })),
+  { id: "decision-st05-confirm-001", alertId: "alert-st05-confirmed-001", actor: "role:operator@st-05", kind: "confirm", createdAt: new Date(SEED_NOW - 7 * 60_000).toISOString() },
+];
 
 const emptyA3 = {
   background: "",
@@ -177,7 +221,7 @@ function createTickets(alerts: readonly Alert[]): Ticket[] {
       triggerAlertIds: triggerAlerts.map((alert) => alert.id),
       ownerRole: "role:engineer@body",
       status: "closed",
-      a3: emptyA3,
+      a3: { ...emptyA3 },
       aiPrefilledFields: [],
       createdAt: triggerAlerts.at(-1)!.createdAt,
       closedAt: new Date(Date.parse(triggerAlerts[0].createdAt) + spec.cycleDays * DAY_MS).toISOString(),
@@ -206,7 +250,7 @@ function createTickets(alerts: readonly Alert[]): Ticket[] {
       triggerAlertIds: offsetTriggers.map((alert) => alert.id),
       ownerRole: "role:engineer@body",
       status: "countermeasure_trial",
-      a3: emptyA3,
+      a3: { ...emptyA3 },
       aiPrefilledFields: [],
       createdAt: offsetTriggers.at(-1)!.createdAt,
     },
@@ -428,7 +472,7 @@ function createIdeas(): Idea[] {
 }
 
 export function createSeedData(): StoreSnapshot {
-  const alerts = [...createHistoricalAlerts(), ...currentAlerts];
+  const alerts = [...createHistoricalAlerts(), ...structuredClone(currentAlerts)];
   const tickets = createTickets(alerts);
   return {
     currentShift: {
@@ -437,10 +481,10 @@ export function createSeedData(): StoreSnapshot {
       startsAt: "2027-03-14T07:00:00.000+07:00",
       endsAt: "2027-03-14T15:30:00.000+07:00",
     },
-    stations,
-    defectTypes,
+    stations: structuredClone(stations),
+    defectTypes: structuredClone(defectTypes),
     alerts,
-    decisions: currentDecisions,
+    decisions: structuredClone(currentDecisions),
     tickets,
     cards: createCards(tickets),
     ideas: createIdeas(),
@@ -454,5 +498,9 @@ export function createSeedData(): StoreSnapshot {
       },
     ],
     routedQuestions: [],
+    cameras: createSeedCameras(),
+    recordingGaps: createSeedRecordingGaps(),
+    cameraMaintenanceTickets: [],
+    lineOperation: createSeedLineOperation(),
   };
 }

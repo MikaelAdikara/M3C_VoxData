@@ -56,7 +56,7 @@ export async function validateCard(cardId: string): Promise<ActionResult> {
   } catch {
     return { ok: false, error: "Could not validate the knowledge card." };
   } finally {
-    revalidatePaths(["/knowledge", "/kaizen"]);
+    revalidatePaths(["/", "/knowledge", "/kaizen", "/metrics"]);
   }
 }
 
@@ -83,7 +83,7 @@ export async function returnCard(cardId: string, comment: string): Promise<Actio
   } catch {
     return { ok: false, error: "Could not return the knowledge card." };
   } finally {
-    revalidatePaths(["/knowledge", "/kaizen"]);
+    revalidatePaths(["/", "/knowledge", "/kaizen", "/metrics"]);
   }
 }
 

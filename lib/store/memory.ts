@@ -1,4 +1,5 @@
 import { createSeedData } from "@/lib/seed";
+import { normalizeSnapshot } from "@/lib/store/normalize";
 import type { LearningLineStore } from "@/lib/store";
 import type { StoreSnapshot } from "@/lib/types";
 
@@ -11,7 +12,7 @@ export class MemoryStore implements LearningLineStore {
   private mutationQueue: Promise<void> = Promise.resolve();
 
   constructor(seed: StoreSnapshot = createSeedData()) {
-    this.state = cloneSnapshot(seed);
+    this.state = cloneSnapshot(normalizeSnapshot(seed));
   }
 
   async getSnapshot(): Promise<StoreSnapshot> {
@@ -34,9 +35,12 @@ export class MemoryStore implements LearningLineStore {
   }
 
   async reset(): Promise<StoreSnapshot> {
-    await this.mutationQueue;
-    this.state = createSeedData();
-    return cloneSnapshot(this.state);
+    const operation = this.mutationQueue.then(() => {
+      this.state = createSeedData();
+      return cloneSnapshot(this.state);
+    });
+    this.mutationQueue = operation.then(() => undefined, () => undefined);
+    return operation;
   }
 }
 

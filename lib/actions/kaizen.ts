@@ -58,7 +58,7 @@ export async function updateA3(ticketId: string, patch: Partial<A3>): Promise<Ac
   } catch {
     return { ok: false, error: "Could not update the A3." };
   } finally {
-    revalidatePaths(["/kaizen", `/kaizen/${ticketId}`]);
+    revalidatePaths(["/", "/kaizen", `/kaizen/${ticketId}`, "/metrics"]);
   }
 }
 
@@ -81,7 +81,7 @@ export async function advanceTicket(ticketId: string): Promise<ActionResult> {
   } catch {
     return { ok: false, error: "Could not advance the ticket." };
   } finally {
-    revalidatePaths(["/kaizen", `/kaizen/${ticketId}`, "/knowledge"]);
+    revalidatePaths(["/", "/kaizen", `/kaizen/${ticketId}`, "/knowledge", "/metrics"]);
   }
 }
 
@@ -125,6 +125,6 @@ export async function requestValidation(ticketId: string): Promise<ActionResult>
   } catch {
     return { ok: false, error: "Could not request validation." };
   } finally {
-    revalidatePaths(["/kaizen", `/kaizen/${ticketId}`, "/knowledge"]);
+    revalidatePaths(["/", "/kaizen", `/kaizen/${ticketId}`, "/knowledge", "/metrics"]);
   }
 }
