@@ -207,7 +207,7 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
                     <b className="num">{c.state === "offline" ? "Offline" : `${(avg * 100).toFixed(1)}%`}</b>
                   </div>
                   <div className="hc__bars" role="img" aria-label={`Uptime over 14 days, average ${(avg * 100).toFixed(1)}%`}>
-                    {c.uptime14d.map((u, i) => <span key={i} className={u < 0.97 ? "low" : undefined} style={{ height: `${Math.max(8, u * 100)}%` }} />)}
+                    {c.uptime14d.map((u, i) => <span key={i} className={u < 0.9 ? "low" : undefined} style={{ height: `${Math.max(8, u * 100)}%` }} />)}
                   </div>
                   <div className="hc__meta"><span>Lens cleaned {hhmmDate(c.lastLensCleanAt)}</span><span className="mono">{c.modelVersion}</span></div>
                   {c.note ? <p className="hc__note">{c.note}</p> : null}
