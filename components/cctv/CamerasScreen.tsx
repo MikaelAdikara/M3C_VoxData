@@ -20,7 +20,9 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
   const end = Date.parse(view.shift.endsAt);
   const now = Math.max(start + 102 * 60_000, ...view.events.map((e) => Date.parse(e.at)));
 
-  const firstPending = cams.find((c) => c.pendingDecisionAlertIds.length || c.openAlertIds.length);
+  // open on the camera behind the most recent alert, the one the team is talking about
+  const latestAlert = [...view.events].filter((e) => e.kind === "alert").sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+  const firstPending = (latestAlert && cams.find((c) => c.id === latestAlert.cameraId)) ?? cams.find((c) => c.pendingDecisionAlertIds.length || c.openAlertIds.length);
   const [tab, setTab] = useState<"wall" | "health">("wall");
   const [layout, setLayout] = useState<Layout>("3");
   const [focusId, setFocusId] = useState(firstPending?.id ?? cams.find((c) => c.stationId === "st-04")?.id ?? cams[0].id);

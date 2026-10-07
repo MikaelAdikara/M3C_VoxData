@@ -7,7 +7,7 @@ import { HeroLine } from "@/components/landing/HeroLine";
 import { TrailSpine } from "@/components/landing/TrailSpine";
 import { Icon } from "@/components/ui/Icon";
 import { Prov } from "@/components/ui/Prov";
-import { getCameraView, getOverviewView } from "@/lib/queries";
+import { getCameraView, getOverviewView, getTrailView } from "@/lib/queries";
 
 export const metadata = {
   title: "Learning Line · AI detects, people decide",
@@ -19,6 +19,18 @@ const pct = (v: number | string) => (typeof v === "number" ? `${v}%` : v);
 
 export default async function CoverPage() {
   const [overview, cams] = await Promise.all([getOverviewView(), getCameraView()]);
+  // The tag follows the recent alert that has travelled furthest; steps are only real ones.
+  const recentAlertIds = [...new Set([...cams.events].filter((e) => e.kind === "alert" && e.alertId).sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).map((e) => e.alertId!))].slice(0, 6);
+  const recentTrails = (await Promise.all(recentAlertIds.map((id) => getTrailView(id)))).filter((t) => t !== null);
+  const ORDER = ["flagged", "confirmed", "team_leader_decision", "a3_open", "validated_standard"];
+  const progress = (t: NonNullable<typeof overview.trail>) => {
+    let n = 0;
+    while (n < ORDER.length && t.steps.some((s) => s.kind === ORDER[n])) n++;
+    return n;
+  };
+  const trail = [...recentTrails, overview.trail]
+    .filter((t) => t !== null)
+    .reduce<typeof overview.trail>((best, t) => (!best || progress(t) > progress(best) ? t : best), null);
   const line = overview.line;
   const andon = line.stations.find((s) => s.state === "yellow_andon" || s.state === "stopped");
   const byStation = (id: string) => cams.cameras.find((c) => c.stationId === id);
@@ -64,7 +76,7 @@ export default async function CoverPage() {
         </section>
 
         {/* 2. The trail on a center spine */}
-        <TrailSpine trail={overview.trail} />
+        <TrailSpine trail={trail} />
 
         {/* 3. Three signs */}
         <section className="sec wrap" aria-labelledby="never-title">
