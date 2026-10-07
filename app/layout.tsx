@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Source_Sans_3 } from "next/font/google";
 import type { ReactNode } from "react";
 
+import { AssistantDock } from "@/components/shell/AssistantDock";
 import { ChromeGate } from "@/components/shell/ChromeGate";
 import { NavLinks } from "@/components/shell/NavLinks";
 import { themeBootScript } from "@/components/shell/ThemeToggle";
@@ -11,6 +12,7 @@ import { getCurrentRole, getShiftBoardView } from "@/lib/queries";
 import "./globals.css";
 import "./styles/cctv.css";
 import "./styles/line.css";
+import "./styles/dock.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
@@ -46,6 +48,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <ChromeGate>
           <Footer />
           <NavLinks variant="tabbar" />
+          <AssistantDock />
         </ChromeGate>
       </body>
     </html>

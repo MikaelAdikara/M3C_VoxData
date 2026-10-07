@@ -1,0 +1,31 @@
+/* Ask the line dock (from design/mockup/assets/dock.css) */
+.dock { position: fixed; right: var(--s5); bottom: var(--s5); z-index: 40; display: grid; justify-items: end; gap: var(--s3); }
+.dock__fab {
+  display: inline-flex; align-items: center; gap: var(--s2); min-height: 52px; padding: 0 var(--s5) 0 var(--s4);
+  border-radius: var(--r-pill); border: 1px solid var(--btn-border); background: var(--g-ink); color: var(--on-ink);
+  font: inherit; font-weight: 700; font-size: 16px; cursor: pointer; box-shadow: 0 10px 28px rgba(0, 0, 0, .22);
+  transition: transform var(--t-fast) var(--ease-out);
+}
+.dock__fab[hidden] { display: none; }
+.dock__fab i { font-size: 22px; }
+.dock__fab:active { transform: scale(.97); }
+.dock__fab:focus-visible { outline: 3px solid var(--instruct-text); outline-offset: 3px; }
+.dock__panel {
+  position: relative; width: min(440px, calc(100vw - 32px)); max-height: min(680px, calc(100dvh - var(--bar-h) - 48px)); overflow-y: auto;
+  border-radius: 14px; box-shadow: 0 24px 60px rgba(0, 0, 0, .28); overscroll-behavior: contain;
+  transform-origin: bottom right; animation: dock-in 220ms var(--ease-out);
+}
+.dock__panel .panel { margin: 0; background: var(--surface-strong); }
+.dock__close { position: absolute; top: 10px; right: 10px; z-index: 2; width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--panel); color: var(--ink); cursor: pointer; font-size: 17px; }
+.dock__panel .panel__head { padding-right: 60px; }
+@keyframes dock-in { from { opacity: 0; transform: scale(.96) translateY(6px); } to { opacity: 1; transform: none; } }
+@media (max-width: 767px) {
+  .dock { right: var(--s4); bottom: calc(var(--tabbar-h) + var(--s3) + env(safe-area-inset-bottom)); }
+  .dock__fab span { display: none; }
+  .dock__fab { width: 52px; padding: 0; justify-content: center; }
+  .dock__panel { position: fixed; left: 8px; right: 8px; bottom: calc(var(--tabbar-h) + 8px); width: auto; transform-origin: bottom center; }
+}
+@media (prefers-reduced-motion: reduce) { .dock__panel { animation: none; } }
+/* keep the last action on each page clear of the dock */
+body:has(.dock) .page { padding-bottom: 104px; }
+@media (max-width: 767px) { body:has(.dock) .page { padding-bottom: calc(var(--tabbar-h) + 84px); } }
