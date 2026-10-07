@@ -439,7 +439,7 @@ function stepLine(dt) {
   }
 }
 
-function placeBodies(t) {
+function placeBodies() {
   const moving = state.line === "running" && cycleT < MOVE;
   const k = moving ? easeInOut(cycleT / MOVE) : 0;
   bodies.forEach((b) => {
@@ -449,7 +449,7 @@ function placeBodies(t) {
     b.group.position.x = x;
   });
   // robot sweeps while a body dwells in a sealer bay
-  stationObjs.forEach((o, id) => {
+  stationObjs.forEach((o) => {
     if (!o.robot) return;
     const dwelling = !moving && state.line === "running" && !state.paused;
     const phase = dwelling ? (cycleT - MOVE) / (CYCLE - MOVE) : 0;

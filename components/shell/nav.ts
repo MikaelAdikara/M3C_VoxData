@@ -4,6 +4,7 @@ import type { Role } from "@/lib/types";
 export const SCREENS: { href: string; label: string; icon: IconName }[] = [
   { href: "/station", label: "Station", icon: "monitor" },
   { href: "/shift-board", label: "Shift board", icon: "squares-four" },
+  { href: "/cameras", label: "Cameras", icon: "video-camera" },
   { href: "/kaizen", label: "Kaizen", icon: "clipboard-text" },
   { href: "/knowledge", label: "Knowledge", icon: "books" },
   { href: "/metrics", label: "Metrics", icon: "chart-line" },

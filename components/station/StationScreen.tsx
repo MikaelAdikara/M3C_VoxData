@@ -3,6 +3,9 @@
 import { useState, useTransition } from "react";
 import type { ReactNode } from "react";
 
+import Link from "next/link";
+
+import { CameraFeed, type FeedCamera } from "@/components/cctv/CameraFeed";
 import { DECISION_LABEL, plantTime } from "@/components/format";
 import { Trail } from "@/components/shell/Trail";
 import { Badge, LoopBadge } from "@/components/ui/Badge";
@@ -28,15 +31,19 @@ type Outcome =
  */
 export function StationScreen({
   view,
+  camera,
   canDecide,
   notice,
 }: {
   view: StationView;
+  /** The station's camera, when it has one (BE-4 camera view). */
+  camera?: FeedCamera | null;
   canDecide: boolean;
   notice?: ReactNode;
 }) {
   const { station, openAlert: alert, reasonCodes, ideasOpen, decisionHistory } = view;
   const [outcome, setOutcome] = useState<Outcome | null>(null);
+  const [feedMode, setFeedMode] = useState<"alert" | "live">("alert");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -113,11 +120,32 @@ export function StationScreen({
 
         {alert ? (
           <div className="station">
-            <section className="station__media" aria-label="Camera image">
-              <div className="bead">
-                <BeadIllustration defect={alert.defectType?.id ?? null} id={`bead-${alert.id}`} />
-                <span className="bead__tag">Illustration · simulated</span>
-              </div>
+            <section className="station__media" aria-label="Station camera">
+              {camera ? (
+                <>
+                  <div className="media-head">
+                    <div className="seg" role="radiogroup" aria-label="Camera view">
+                      {(["alert", "live"] as const).map((m) => (
+                        <label key={m}>
+                          <input type="radio" name="feed-mode" checked={feedMode === m} onChange={() => setFeedMode(m)} />
+                          <span>{m === "alert" ? "Alert frame" : "Live"}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <Link className="link-quiet" href="/cameras"><Icon name="video-camera" />All cameras</Link>
+                  </div>
+                  <CameraFeed
+                    cam={camera}
+                    focus
+                    alertFrame={feedMode === "alert" && alert.defectType ? { at: alert.createdAt, defect: alert.defectType.id, id: alert.id } : null}
+                  />
+                </>
+              ) : (
+                <div className="bead">
+                  <BeadIllustration defect={alert.defectType?.id ?? null} id={`bead-${alert.id}`} />
+                  <span className="bead__tag">Illustration · simulated</span>
+                </div>
+              )}
               <div className="bead__cap">
                 <span>
                   Region <span className="mono">{alert.roi}</span>

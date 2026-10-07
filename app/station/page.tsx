@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { LiveRefresh } from "@/components/live/LiveRefresh";
 import { RoleGate } from "@/components/live/RoleGate";
 import { StationScreen } from "@/components/station/StationScreen";
-import { getCurrentRole, getStationView } from "@/lib/queries";
+import { getCameraView, getCurrentRole, getStationView } from "@/lib/queries";
 
 export const metadata = { title: "Station · Learning Line" };
 
@@ -13,7 +13,8 @@ export default async function StationPage({
   searchParams: Promise<{ st?: string }>;
 }) {
   const { st } = await searchParams;
-  const [view, role] = await Promise.all([getStationView(st ?? "st-04"), getCurrentRole()]);
+  const stationId = st ?? "st-04";
+  const [view, role, cameras] = await Promise.all([getStationView(stationId), getCurrentRole(), getCameraView()]);
   if (!view) notFound();
 
   return (
@@ -21,6 +22,7 @@ export default async function StationPage({
       <LiveRefresh />
       <StationScreen
         view={view}
+        camera={cameras.cameras.find((c) => c.stationId === stationId && c.media) ?? null}
         canDecide={role === "operator"}
         notice={
           <RoleGate need="operator" current={role}>

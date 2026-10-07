@@ -9,6 +9,7 @@ import { Footer, TopBar } from "@/components/shell/TopBar";
 import { getCurrentRole, getShiftBoardView } from "@/lib/queries";
 
 import "./globals.css";
+import "./styles/cctv.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
