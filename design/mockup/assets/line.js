@@ -32,6 +32,10 @@ const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
 const stage = document.getElementById("stage");
 const canvas = document.getElementById("line-canvas");
 const labelsEl = document.getElementById("line-labels");
+// "real": photographic variant. Image-based light from a real car workshop
+// (Poly Haven "Autoshop 01" HDRI by Oliksiy Yakovlyev, CC0) and a hollow body-in-white in galvanised steel.
+const REAL = stage.dataset.realism === "real";
+const HDRI_URL = "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/autoshop_01_1k.hdr";
 
 /* ---------- Theme palette (read once per theme change) ---------- */
 const PALETTES = {
@@ -65,6 +69,7 @@ function mat(key, color, extra = {}) {
 }
 
 function withEdges(mesh, threshold = 28) {
+  if (REAL) { mesh.castShadow = true; mesh.receiveShadow = true; return mesh; }
   const m = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.5 });
   edgeMats.push(m);
   const lines = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry, threshold), m);
@@ -300,7 +305,7 @@ let bodySerial = 31484;              // K2-27-031484 enters first; 031487 sits a
 function newBody(slot) {
   const id = `K2-27-0${bodySerial++}`;
   const g = new THREE.Group();
-  const shell = withEdges(new THREE.Mesh(bodyGeo, materials.body), 24);
+  const shell = REAL ? realBody.clone() : withEdges(new THREE.Mesh(bodyGeo, materials.body), 24);
   shell.position.y = 0.28;
   g.add(shell);
   [-0.62, 0.62].forEach((z) => {
@@ -370,18 +375,20 @@ function applyTheme() {
   scene.fog.color.setHex(current.fog);
   materials.floor.color.setHex(current.floor);
   materials.lane.color.setHex(current.lane);
-  materials.solid.color.setHex(current.solid);
-  materials.body.color.setHex(current.body);
-  flagMat.color.setHex(current.flag);
-  materials.steel.color.setHex(current.steel);
+  if (!REAL) {
+    materials.solid.color.setHex(current.solid);
+    materials.body.color.setHex(current.body);
+    flagMat.color.setHex(current.flag);
+    materials.steel.color.setHex(current.steel);
+  }
   materials.slat.color.setHex(current.steel);
   grid.material.color.setHex(current.grid);
   edgeMats.forEach((m) => { m.color.setHex(current.edge); m.opacity = m === zoneMat ? current.edgeOpacity * 0.7 : current.edgeOpacity; });
   hemi.color.setHex(current.hemiSky);
   hemi.groundColor.setHex(current.hemiGround);
-  hemi.intensity = current.hemi;
-  sun.intensity = current.sun;
-  if (renderer) renderer.toneMappingExposure = current.exposure;
+  hemi.intensity = current.hemi * (REAL && scene.environment ? 0.25 : 1);
+  sun.intensity = current.sun * (REAL ? 0.8 : 1);
+  if (renderer) renderer.toneMappingExposure = REAL ? (isDark() ? 0.95 : 1.1) : current.exposure;
   requestRender();
 }
 
@@ -466,12 +473,14 @@ function placeLabels() {
     tagEl.style.transform = `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px) translate(-50%, -100%)`;
     tagEl.innerHTML = `<span class="mono">${FLAGGED}</span><span>${state.flaggedNote}</span>`;
     tagEl.hidden = false;
-    fb.shell.children[0].material = flagEdge;
-    fb.shell.material = flagMat;
+    if (REAL) fb.shell.traverse((m) => { if (m.isMesh) m.material = flagMat; });
+    else { fb.shell.children[0].material = flagEdge; fb.shell.material = flagMat; }
   } else tagEl.hidden = true;
 }
 const flagEdge = new THREE.LineBasicMaterial({ color: 0x6b4f00, transparent: true, opacity: 0.8 });
-const flagMat = new THREE.MeshStandardMaterial({ color: 0xf7d46a, roughness: 0.55 });
+const flagMat = REAL
+  ? new THREE.MeshPhysicalMaterial({ color: 0xf2c230, metalness: 0.35, roughness: 0.42, clearcoat: 0.3 })
+  : new THREE.MeshStandardMaterial({ color: 0xf7d46a, roughness: 0.55 });
 
 /* Wide stages show the whole line; narrow ones follow the chosen station. */
 let fly = null;
@@ -534,6 +543,113 @@ function frame(now) {
 mat("solid", 0xf3f3f3);
 mat("steel", 0xb9b9b9, { metalness: 0.3, roughness: 0.6 });
 mat("body", 0xf7f7f7, { roughness: 0.55 });
+if (REAL) {
+  // galvanised body steel, painted plant steel, white robot casings
+  materials.body = new THREE.MeshPhysicalMaterial({ color: 0xd2d6da, metalness: 0.9, roughness: 0.27 });
+  materials.steel = new THREE.MeshStandardMaterial({ color: 0x8d9298, metalness: 0.55, roughness: 0.45 });
+  materials.solid = new THREE.MeshStandardMaterial({ color: 0xe9e9e6, metalness: 0.1, roughness: 0.4 });
+  materials.floor.roughness = 0.7;
+  materials.lane.roughness = 0.6;
+  materials.lane.metalness = 0.4;
+}
+
+/* Hollow body-in-white: two side panels with the door and window openings,
+   roof, hood, front and rear panels, floor pan and dash, panel gaps drawn on.
+   Front faces +x, the direction of travel. Built once and cloned per body. */
+let realBody;
+function makeRealBody() {
+  const g = new THREE.Group();
+  const steel = materials.body;
+  const part = (geo, x, y, z, rz = 0) => {
+    const m = new THREE.Mesh(geo, steel);
+    m.position.set(x, y, z); m.rotation.z = rz;
+    m.castShadow = true; m.receiveShadow = true;
+    g.add(m);
+    return m;
+  };
+  const crowned = (w, h, d, crown) => {
+    const geo = new THREE.BoxGeometry(w, h, d, 2, 1, 10);
+    const pos = geo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const z = pos.getZ(i) / (d / 2);
+      pos.setY(i, pos.getY(i) + crown * (1 - z * z));
+    }
+    geo.computeVertexNormals();
+    return geo;
+  };
+
+  const sh = new THREE.Shape();
+  sh.moveTo(-2.30, 0.40);
+  sh.lineTo(-1.92, 0.40);
+  sh.absarc(-1.45, 0.40, 0.47, Math.PI, 0, true);
+  sh.lineTo(0.93, 0.40);
+  sh.absarc(1.40, 0.40, 0.47, Math.PI, 0, true);
+  sh.lineTo(2.20, 0.40);
+  sh.quadraticCurveTo(2.36, 0.44, 2.37, 0.62);
+  sh.lineTo(2.36, 0.84);
+  sh.quadraticCurveTo(2.33, 0.97, 2.18, 1.00);
+  sh.lineTo(1.10, 1.12);
+  sh.lineTo(0.28, 1.64);
+  sh.quadraticCurveTo(0.15, 1.70, -0.10, 1.70);
+  sh.lineTo(-1.80, 1.71);
+  sh.quadraticCurveTo(-2.15, 1.70, -2.25, 1.45);
+  sh.lineTo(-2.34, 1.02);
+  sh.lineTo(-2.36, 0.62);
+  sh.quadraticCurveTo(-2.36, 0.42, -2.30, 0.40);
+  const hole = (pts) => { const p = new THREE.Path(); p.moveTo(...pts[0]); pts.slice(1).forEach((q) => p.lineTo(...q)); p.closePath(); return p; };
+  sh.holes.push(
+    hole([[0.98, 1.17], [0.33, 1.58], [-0.30, 1.60], [-0.30, 1.17]]),
+    hole([[-0.44, 1.17], [-0.44, 1.60], [-1.33, 1.61], [-1.33, 1.17]]),
+    hole([[-1.47, 1.18], [-1.47, 1.61], [-1.82, 1.62], [-2.12, 1.40], [-2.14, 1.18]]),
+  );
+  const side = new THREE.ExtrudeGeometry(sh, { depth: 0.06, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2, curveSegments: 18 });
+  side.translate(0, 0, -0.03);
+  part(side, 0, 0, 0.86);
+  part(side, 0, 0, -0.86);
+
+  part(crowned(1.12, 0.04, 1.70, 0.035), 1.65, 1.06, 0, -0.109);   // hood
+  part(crowned(2.06, 0.04, 1.70, 0.05), -0.82, 1.69, 0);           // roof
+  part(new THREE.BoxGeometry(0.05, 0.56, 1.70), 2.33, 0.70, 0);     // front panel
+  part(new THREE.BoxGeometry(0.05, 0.62, 1.70), -2.33, 0.72, 0);    // rear panel
+  part(new THREE.BoxGeometry(0.06, 0.06, 1.70), -2.24, 1.60, 0);    // rear header
+  part(new THREE.BoxGeometry(4.40, 0.04, 1.66), 0, 0.46, 0);        // floor pan
+  part(new THREE.BoxGeometry(0.05, 0.26, 1.66), 1.06, 1.0, 0);      // dash
+  part(new THREE.BoxGeometry(0.08, 0.05, 1.66), -0.37, 1.66, 0);    // roof bow at the B pillar
+
+  // wheel-arch lips and the character line along the doors
+  const lip = new THREE.TorusGeometry(0.49, 0.025, 6, 28, Math.PI);
+  [-1.45, 1.40].forEach((x) => [0.9, -0.9].forEach((z) => part(lip, x, 0.40, z)));
+  const crease = new THREE.BoxGeometry(3.3, 0.022, 0.02);
+  [0.905, -0.905].forEach((z) => part(crease, -0.25, 0.92, z));
+
+  // panel gaps: door shut lines and the sill
+  const gap = new THREE.LineBasicMaterial({ color: 0x1e2022, transparent: true, opacity: 0.75 });
+  const pts = [];
+  [0.98, -0.37, -1.40].forEach((x) => pts.push(x, 0.47, 0, x, 1.17, 0));
+  pts.push(-1.40, 0.47, 0, 0.98, 0.47, 0);
+  [0.915, -0.915].forEach((z) => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pts.map((v, i) => (i % 3 === 2 ? z : v)), 3));
+    g.add(new THREE.LineSegments(geo, gap));
+  });
+  return g;
+}
+
+async function loadEnvironment() {
+  try {
+    const { RGBELoader } = await import("three/addons/loaders/RGBELoader.js");
+    const tex = await new RGBELoader().loadAsync(HDRI_URL);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromEquirectangular(tex).texture;
+    scene.environmentIntensity = 0.9;
+    tex.dispose();
+    pmrem.dispose();
+    applyTheme();
+  } catch (err) {
+    console.warn("Environment light unavailable; using studio lights only.", err);
+  }
+}
 
 let controls;
 const interactive = stage.dataset.interactive !== "false";
@@ -559,10 +675,11 @@ function init() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = REAL ? THREE.AgXToneMapping : THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
 
   bodyGeo = makeBodyGeometry();
+  if (REAL) { realBody = makeRealBody(); loadEnvironment(); }
   buildStations();
   for (let s = 0; s < STATIONS.length; s++) if (s !== 5) newBody(s);   // one empty bay reads as a real line
   // K2-27-031487 must sit at st-04 (slot 3)

@@ -31,6 +31,8 @@
 .live .feed__pip { width: 10px; height: 10px; }
 .live__andon { color: var(--ink); }
 .hero3 .stage__tools { top: auto; bottom: var(--s5); right: var(--s5); }
+/* the hero tells one story: only st-04 and the flagged body are labelled */
+.hero3 .line-label:not([data-id="st-04"]) { display: none; }
 
 /* ---------- 2. The Trail on a center spine ---------- */
 .spine { display: grid; grid-template-columns: minmax(0, 1fr) minmax(380px, 470px) minmax(0, 1fr); column-gap: 56px; margin-top: var(--s7); }

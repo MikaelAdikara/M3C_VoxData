@@ -31,5 +31,6 @@ Original work (bead illustrations, sealer scene, icons from Phosphor under MIT) 
 | Big Shoulders Display (landing display face) | Google Fonts | SIL Open Font License |
 | Source Sans 3 | Google Fonts | SIL Open Font License |
 | Phosphor Icons | unpkg CDN | MIT |
+| "Autoshop 01" HDRI by Oliksiy Yakovlyev (image-based light in `landing3-real.html`) | Poly Haven CDN, loaded at runtime | CC0 |
 
 The line model, the car bodies on skids, the andon towers, the sealer bead illustration (SVG lighting filters) and the abnormality tag are drawn from scratch. No 3D models, textures or images were downloaded for them.
