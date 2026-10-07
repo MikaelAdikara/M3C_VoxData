@@ -12,6 +12,16 @@ const CLIPS: Record<string, string> = {
   "industrial-context-final-01": "body-hall",
 };
 
+const DEFECT_BY_NAME: Record<string, DefectTypeId> = {
+  "Broken bead": "BEAD_BREAK",
+  "Missing bead": "BEAD_MISSING",
+  "Thin bead": "BEAD_THIN",
+  "Bead off path": "BEAD_OFFSET",
+  "Excess sealer": "BEAD_EXCESS",
+};
+/** Defect type of a camera "Alert · <name>" event, for drawing its frame. */
+export const defectOfEvent = (label: string): DefectTypeId => DEFECT_BY_NAME[label.replace(/^Alert · /, "")] ?? "BEAD_BREAK";
+
 export function feedTone(cam: FeedCamera) {
   if (cam.state === "offline") return "stop";
   if (cam.pendingDecisionAlertIds.length || cam.openAlertIds.length) return "caution";

@@ -8,6 +8,14 @@ Ringkasan praktis dari `COLLAB.md` §3–§4: siapa sedang bekerja, kapan boleh 
 
 | | |
 |---|---|
+| **Giliran** | **FINAL** (rekam video, Appendix C); tidak ada fase kode yang menunggu |
+| Selesai | BE-4 (`handoff/be-4`) dan UI-4 (`handoff/ui-4`) |
+| Isi UI-4 | Cameras, Station camera feed, The Line 3D, cover v3, Metrics v2, dock "Ask the line", bead realistis. Lihat `COLLAB.md` §7 |
+| Berikutnya (opsional) | UI: model mobil realistis di cover dan update screenshot/DESIGN.md. BE: tidak ada request terbuka baru |
+
+> Perbarui tabel ini setiap kali giliran berpindah, di commit yang sama dengan tag handoff.
+
+---|---|
 | **Giliran** | **UI → mengerjakan UI-4 setelah tag `handoff/be-4` tersedia di remote** |
 | Syarat UI-4 | `handoff/be-4` menjadi penanda handoff BE-4 selesai |
 | Isi UI-4 | Lihat `COLLAB.md` §3 (baris UI-4), §6 (request UI-4), dan §8 (kontrak BE-4); implementasikan mockup UI-4 dengan view/action backend yang tersedia |

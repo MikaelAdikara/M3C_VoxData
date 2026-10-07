@@ -31,11 +31,15 @@ export function LineStage({
   line,
   selected,
   onSelect,
+  variant = "board",
 }: {
   line: LineView;
   selected: string | null;
   onSelect: (stationId: string) => void;
+  /** "hero": full-bleed, non-interactive, no strip or gemba board (landing page). */
+  variant?: "board" | "hero";
 }) {
+  const hero = variant === "hero";
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const labelsRef = useRef<HTMLDivElement>(null);
@@ -60,6 +64,8 @@ export function LineStage({
         labels: labelsRef.current,
         tag: tagRef.current,
         stations,
+        interactive: !hero,
+        ...(hero ? { home: { pos: [-34, 17, 33] as [number, number, number], target: [1, 0, -2] as [number, number, number] }, shiftY: 0.3 } : {}),
         onSelect: (id) => onSelectRef.current(id),
       });
       if (!engine) { setFailed(true); return; }
@@ -85,7 +91,7 @@ export function LineStage({
 
   return (
     <>
-      <div className="stage" ref={stageRef} data-fallback={failed}>
+      <div className="stage" ref={stageRef} data-fallback={failed} data-variant={variant}>
         <canvas
           ref={canvasRef}
           role="img"
@@ -94,6 +100,7 @@ export function LineStage({
         <div className="line-labels" ref={labelsRef} aria-hidden="true" />
         <div className="line-tag" ref={tagRef} hidden aria-hidden="true" />
 
+        {hero ? null : (
         <dl className="hud" aria-label="Gemba board">
           <div className="hud__takt"><dt>Takt</dt><dd>{line.taktMinutes} <small>min</small></dd></div>
           <div>
@@ -106,6 +113,7 @@ export function LineStage({
             <dd><span className="feed__pip" data-tone={stopped ? "stop" : "ok"} />{stopped ? "Stopped by team leader" : "Running"}</dd>
           </div>
         </dl>
+        )}
 
         <div className="stage__tools">
           <button
@@ -117,21 +125,25 @@ export function LineStage({
           >
             <Icon name={paused ? "play" : "pause"} weight="bold" />
           </button>
-          <button className="icon-btn" type="button" aria-label="Reset view" onClick={() => engineRef.current?.resetView()}>
-            <Icon name="arrow-counter-clockwise" weight="bold" />
-          </button>
+          {hero ? null : (
+            <button className="icon-btn" type="button" aria-label="Reset view" onClick={() => engineRef.current?.resetView()}>
+              <Icon name="arrow-counter-clockwise" weight="bold" />
+            </button>
+          )}
         </div>
 
-        <div className="stage__legend" aria-hidden="true">
+        {hero ? null : <div className="stage__legend" aria-hidden="true">
           <span><i style={{ background: "var(--caution)" }} />Needs a person</span>
           <span><i style={{ background: "var(--stop)" }} />Line stopped</span>
           <span><i style={{ background: "#2f86d6" }} />Model review</span>
           <span><i style={{ background: "#1fae55", opacity: 0.6 }} />Running</span>
-        </div>
-        <p className="stage__note"><span className="hud__speed">Time compressed · </span>scale model · {line.productionSourceLabel}</p>
+        </div>}
+        {hero ? null : <p className="stage__note"><span className="hud__speed">Time compressed · </span>scale model · {line.productionSourceLabel}</p>}
         <div className="stage__fallback"><p>3D view unavailable on this device. The station buttons below show the same state.</p></div>
       </div>
 
+      {hero ? null : (
+      <>
       <div className="strip" role="group" aria-label="Stations">
         {line.stations.map((s) => (
           <button key={s.station.id} type="button" className="st" aria-pressed={s.station.id === selected} onClick={() => onSelect(s.station.id)}>
@@ -148,6 +160,8 @@ export function LineStage({
       <p className="muted" style={{ fontSize: 13, marginTop: "var(--s2)" }}>
         Takt {line.taktSourceLabel} · body count {line.bodiesTargetSourceLabel}
       </p>
+      </>
+      )}
     </>
   );
 }

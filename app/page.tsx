@@ -1,8 +1,13 @@
 import Link from "next/link";
 
+import { CameraFeed, defectOfEvent } from "@/components/cctv/CameraFeed";
+import { A3Sheet } from "@/components/landing/A3Sheet";
 import { CoverBar } from "@/components/landing/CoverBar";
-import { HeroDemo } from "@/components/landing/HeroDemo";
+import { HeroLine } from "@/components/landing/HeroLine";
+import { TrailSpine } from "@/components/landing/TrailSpine";
 import { Icon } from "@/components/ui/Icon";
+import { Prov } from "@/components/ui/Prov";
+import { getCameraView, getOverviewView } from "@/lib/queries";
 
 export const metadata = {
   title: "Learning Line · AI detects, people decide",
@@ -10,256 +15,127 @@ export const metadata = {
     "Concept prototype for the M3C 2026 case on PT Toyota Motor Manufacturing Indonesia: every abnormality at Karawang becomes a reusable standard.",
 };
 
-/* Facts below come from the Executive Summary and docs/SEED_DATA.md. */
-const BACKGROUND = [
-  { label: "Conversion cost index, 2025", note: "2023 = 100; new entrants at 89", value: "106" },
-  { label: "Cost gap to new entrants", note: "Up from 6.4% in 2023", value: "19.1%" },
-  { label: "Electrified share of volume", note: "Case scenarios, 2026 to 2030", value: "30% to 55-70%" },
-];
-const CONDITION = [
-  { label: "Scrap index", note: "Casebook Exhibit 4", value: "108" },
-  { label: "Unplanned downtime index", value: "111" },
-  { label: "Operators often overriding alerts", note: "Casebook survey", value: "31%" },
-  { label: "Critical know-how documented", value: "33%" },
-  { label: "Engineer hours on routine support", value: "65%" },
-  { label: "Months to prepare a new variant", value: "9" },
-];
-const ROOT = [
-  ["RC1", "Defects are found late, far from the station that made them."],
-  ["RC2", "Know-how and engineer time are locked in firefighting."],
-  ["RC3", "Every new variant needs new point-to-point connections."],
-  ["RC4", "Flow between stations is not synchronised."],
-];
-const CHECK = [
-  { label: "False alarms per station per shift", value: "≤ 2" },
-  { label: "Operators often overriding alerts", note: "From 31%", value: "< 20%" },
-  { label: "Seeded limit samples detected", note: "Per defect type", value: "59" },
-  { label: "Pilot operators saying the tool helps", note: "From 54%", value: "≥ 75%" },
-];
+const pct = (v: number | string) => (typeof v === "number" ? `${v}%` : v);
 
-function Rows({ items }: { items: { label: string; note?: string; value: string }[] }) {
-  return (
-    <ul className="rows">
-      {items.map((r) => (
-        <li key={r.label}>
-          <span>
-            {r.label}
-            {r.note ? <small>{r.note}</small> : null}
-          </span>
-          <b>{r.value}</b>
-        </li>
-      ))}
-    </ul>
-  );
-}
+export default async function CoverPage() {
+  const [overview, cams] = await Promise.all([getOverviewView(), getCameraView()]);
+  const line = overview.line;
+  const andon = line.stations.find((s) => s.state === "yellow_andon" || s.state === "stopped");
+  const byStation = (id: string) => cams.cameras.find((c) => c.stationId === id);
+  // the alert frame in the middle is the latest camera alert, if any
+  const lastAlert = [...cams.events].reverse().find((e) => e.kind === "alert");
+  const alertCam = lastAlert ? cams.cameras.find((c) => c.id === lastAlert.cameraId) : undefined;
+  const centre = alertCam ?? byStation("st-04");
+  const side = ["st-02", "st-03", "st-06", "final-01"].map(byStation).filter((c) => c && c.id !== centre?.id);
 
-export default function CoverPage() {
   return (
     <>
       <CoverBar />
       <main>
-        <section className="hero" id="hero" aria-labelledby="hero-title">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="hero__poster" src="/landing/factory-line-poster.jpg" alt="" />
-          <video
-            className="hero__video"
-            id="hero-video"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster="/landing/factory-line-poster.jpg"
-            aria-hidden="true"
-          >
-            <source src="/landing/factory-line.webm" type="video/webm" />
-            <source src="/landing/factory-line.mp4" type="video/mp4" />
-          </video>
-          <div className="hero__inner">
-            <div>
-              <h1 id="hero-title">
-                AI detects.
-                <br />
-                People decide.
-              </h1>
-              <p className="hero__sub">Learning Line turns every abnormality at TMMIN Karawang into a reusable standard.</p>
-              <div className="hero__ctas">
-                <Link className="btn btn--xl btn--light" href="/station">
-                  <Icon name="arrow-right" weight="bold" />
-                  Enter the prototype
-                </Link>
-                <a className="btn btn--xl btn--line" href="#a3">
-                  See how it works
-                </a>
-              </div>
-            </div>
-            <HeroDemo />
-          </div>
-        </section>
-
-        <section className="section" id="a3" aria-labelledby="a3-title">
-          <div className="section__head">
-            <h2 id="a3-title">The case on one A3 sheet</h2>
-            <p>
-              Toyota&apos;s one-page problem-solving report, read left to right: why the plant must change, what the
-              Learning Line does, and how we will know it works.
-            </p>
-          </div>
-
-          <article className="a3sheet">
-            <div className="a3sheet__title">
-              <strong>Turn every abnormality at Karawang into a reusable standard</strong>
-              <span>
-                Scope <b>K2-Body, sealer pilot</b>
-              </span>
-              <span>
-                Horizon <b>2026 to 2030</b>
-              </span>
-              <span>
-                Owner <b>TMMIN Karawang, body line</b>
-              </span>
-            </div>
-            <div className="a3sheet__grid">
-              <div className="a3sheet__col">
-                <section className="block">
-                  <h3>Background</h3>
-                  <p>TMMIN is losing cost ground every year, just as line changes multiply.</p>
-                  <Rows items={BACKGROUND} />
-                </section>
-                <section className="block">
-                  <h3>Current condition</h3>
-                  <Rows items={CONDITION} />
-                </section>
-                <section className="block">
-                  <h3>Root cause</h3>
-                  <p className="lead">The plant learns more slowly than its mix is changing.</p>
-                  <ul className="rows rows--rc">
-                    {ROOT.map(([id, text]) => (
-                      <li key={id}>
-                        <b>{id}</b>
-                        <span>{text}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              </div>
-              <div className="a3sheet__col">
-                <section className="block">
-                  <h3>
-                    Countermeasure <small>The Learning Line</small>
-                  </h3>
-                  <p>
-                    Toyota&apos;s jidoka extended with AI: three loops on one data foundation. AI detects and drafts;
-                    operators, team leaders and engineers decide.
-                  </p>
-                  <div className="loops">
-                    <div className="loop-step" data-l="S">
-                      <h4>Shift loop</h4>
-                      <span className="when">Minutes</span>
-                      <p>The alert returns to the station that made the defect. The operator confirms; the team leader decides.</p>
-                    </div>
-                    <div className="loop-step" data-l="K">
-                      <h4>Kaizen loop</h4>
-                      <span className="when">Weeks</span>
-                      <p>A third repeat opens a ticket. The engineer writes the A3; the fix becomes a validated card.</p>
-                    </div>
-                    <div className="loop-step" data-l="L">
-                      <h4>Launch loop</h4>
-                      <span className="when">Per variant</span>
-                      <p>One interface standard lets each new variant reuse validated standards.</p>
-                    </div>
-                  </div>
-                  <figure className="shots">
-                    <Link href="/station">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/landing/screen-station.jpg" alt="Station screen: bead break at st-04 with Confirm defect and Reject buttons" loading="lazy" />
-                    </Link>
-                    <Link href="/shift-board">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/landing/screen-shift-board.jpg" alt="Shift board: yellow andon and the team leader decision panel" loading="lazy" />
-                    </Link>
-                    <Link href="/knowledge">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/landing/screen-knowledge.jpg" alt="Knowledge cards with validation and the assistant" loading="lazy" />
-                    </Link>
-                    <figcaption>Screens from the prototype. Simulated data.</figcaption>
-                  </figure>
-                  <div className="never">
-                    <ul className="rows">
-                      <li>
-                        <span className="never__tile never__tile--stop">
-                          <Icon name="hand-palm" weight="fill" />
-                        </span>
-                        <span>Never stops the line by itself. The team leader decides.</span>
-                      </li>
-                      <li>
-                        <span className="never__tile never__tile--caution">
-                          <Icon name="warning" weight="fill" />
-                        </span>
-                        <span>Never hides a confirmed defect. The false-alarm budget only flags a station for model review.</span>
-                      </li>
-                      <li>
-                        <span className="never__tile never__tile--safe">
-                          <Icon name="seal-check" weight="fill" />
-                        </span>
-                        <span>Never answers without a validated card, and always cites it.</span>
-                      </li>
-                    </ul>
-                  </div>
-                </section>
-                <section className="block">
-                  <h3>
-                    Check <small>Gate 1 indicators</small>
-                  </h3>
-                  <Rows items={CHECK} />
-                </section>
-                <section className="block">
-                  <h3>Standardise</h3>
-                  <ul className="rows">
-                    <li className="wide">
-                      <span>
-                        A working countermeasure revises standardized work or the QC process chart, then yokoten carries it
-                        to every station running the same process.
-                      </span>
-                    </li>
-                    <li>
-                      <span>
-                        Time to introduce a new variant by 2030<small>From 9 months</small>
-                      </span>
-                      <b>~5 months</b>
-                    </li>
-                    <li>
-                      <span>
-                        Engineer time for improvement by 2030<small>From 25%</small>
-                      </span>
-                      <b>45%</b>
-                    </li>
-                  </ul>
-                </section>
-              </div>
-            </div>
-          </article>
-        </section>
-
-        <section className="section closing" id="try" aria-labelledby="try-title">
-          <div className="closing__grid">
-            <div className="devices__phone" aria-hidden="true">
-              <div>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/landing/phone-station.jpg" alt="" loading="lazy" />
-              </div>
-            </div>
-            <div>
-              <h2 id="try-title">The station screen, on a phone</h2>
-              <p>
-                Operators and team leaders decide on a phone or tablet; engineers and managers work at a laptop. In the
-                prototype, every button works on simulated data.
-              </p>
+        {/* 1. Centered words over the whole line */}
+        <section className="hero3" id="hero" aria-labelledby="hero-title">
+          <HeroLine line={line} />
+          <div className="hero3__inner">
+            <h1 id="hero-title" className="display">
+              AI detects.
+              <br />
+              <span className="dim">People decide.</span>
+            </h1>
+            <p className="hero3__sub">Every abnormality at TMMIN Karawang becomes a standard the whole line can reuse.</p>
+            <div className="hero3__ctas">
               <Link className="btn btn--xl" href="/station">
                 <Icon name="arrow-right" weight="bold" />
                 Enter the prototype
               </Link>
+              <a className="btn btn--xl btn--ghost" href="#trail">Follow one defect</a>
             </div>
+          </div>
+          <dl className="live" aria-label="Line right now, simulated">
+            <div><dt>Takt</dt><dd>{line.taktMinutes}<small>min</small></dd></div>
+            <div><dt>Bodies this shift</dt><dd>{line.line.bodiesCompleted}<small>of ~{line.bodiesTargetApprox}</small></dd></div>
+            <div>
+              <dt>{line.line.state === "stopped" ? "Line" : "Andon"}</dt>
+              <dd className="live__andon">
+                <span className="feed__pip" data-tone={line.line.state === "stopped" ? "stop" : andon ? "caution" : "ok"} />
+                {line.line.state === "stopped" ? "Stopped" : andon ? andon.station.id : "None"}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        {/* 2. The trail on a center spine */}
+        <TrailSpine trail={overview.trail} />
+
+        {/* 3. Three signs */}
+        <section className="sec wrap" aria-labelledby="never-title">
+          <h2 id="never-title" className="display h-sec center">Three things it never does</h2>
+          <div className="signs">
+            <article className="sign sign--stop"><div className="sign__band"><Icon name="hand-palm" weight="fill" /><b>Never stops<br />the line</b></div><p>The team leader decides.</p></article>
+            <article className="sign sign--caution"><div className="sign__band"><Icon name="eye" weight="fill" /><b>Never hides<br />a defect</b></div><p>A false-alarm budget only sends the model to review.</p></article>
+            <article className="sign sign--safe"><div className="sign__band"><Icon name="seal-check" weight="fill" /><b>Never answers<br />without a card</b></div><p>Every answer cites a validated card.</p></article>
+          </div>
+        </section>
+
+        {/* 4. Cameras, full bleed */}
+        <section className="band" id="cams" aria-labelledby="cams-title">
+          <div className="wrap center">
+            <h2 id="cams-title" className="display h-sec">Cameras that say<br />what they are</h2>
+            <p className="lede" style={{ marginTop: "var(--s4)" }}>Repurposed CCTV, fixed light, faces masked at the edge.</p>
+          </div>
+          <div className="mosaic">
+            {side[0] ? <div><CameraFeed cam={side[0]} compact /></div> : null}
+            {centre ? (
+              <div className="big">
+                <CameraFeed
+                  cam={centre}
+                  focus
+                  alertFrame={lastAlert && alertCam ? { at: lastAlert.at, defect: defectOfEvent(lastAlert.label), id: lastAlert.alertId ?? "hero" } : null}
+                />
+              </div>
+            ) : null}
+            {side.slice(1).map((c) => (c ? <div key={c.id}><CameraFeed cam={c} focus /></div> : null))}
+          </div>
+          <div className="keys" aria-label="What each frame is">
+            <span><Icon name="film-strip" />Test clip · never boxed</span>
+            <span><Icon name="pen-nib" />Simulated scene</span>
+            <span><span className="feed__pip" data-tone="caution" />Alert frame · simulated</span>
+            <span><span className="feed__pip" data-tone="stop" />Signal lost</span>
+          </div>
+        </section>
+
+        {/* 5. Ledger */}
+        <section className="sec wrap" id="a3" aria-labelledby="num-title">
+          <h2 id="num-title" className="display h-sec center">Numbers that say<br />where they come from</h2>
+          <ul className="ledger">
+            {overview.ledger.map((r) => (
+              <li key={r.id}>
+                <div className="ledger__name">
+                  {r.label}
+                  <span><Prov p={r.baselineProvenance} label={r.baselineSourceLabel} /><Prov p={r.targetProvenance} label={r.targetSourceLabel} /></span>
+                </div>
+                <span className="ledger__from">{pct(r.baseline)}<small>today</small></span>
+                <span className="ledger__arrow" aria-label="to"><Icon name="arrow-right" weight="bold" /></span>
+                <span className="ledger__to">{String(r.target).replace(/\s/g, "")}<small>Gate 1</small></span>
+              </li>
+            ))}
+          </ul>
+          <div className="fold-c">
+            <details className="fold">
+              <summary>Read the whole case on one A3 <Icon name="caret-down" weight="bold" /></summary>
+              <A3Sheet />
+            </details>
+          </div>
+        </section>
+
+        {/* 6. Closing */}
+        <section className="close3" id="try" aria-labelledby="try-title">
+          <h2 id="try-title" className="display h-sec">Try every<br />decision yourself</h2>
+          <Link className="btn btn--xl" href="/station"><Icon name="arrow-right" weight="bold" />Enter the prototype</Link>
+          <div className="devices" aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <div className="laptop"><img src="/landing/v3-laptop.jpg" alt="" loading="lazy" /></div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <div className="phone"><img src="/landing/v3-phone.jpg" alt="" loading="lazy" /></div>
           </div>
         </section>
       </main>
@@ -271,7 +147,8 @@ export default function CoverPage() {
         </p>
         <p>Concept prototype · simulated data · not connected to TMMIN systems</p>
         <p>
-          Factory footage: Parker Filme via Pexels, converted to black and white. <Link href="/simulator">Demo control</Link>
+          Camera test clips: Engin Altundağ and Parker Filme via Pexels, in black and white. Line model and bead images are
+          our own illustrations. <Link href="/simulator">Demo control</Link>
         </p>
       </footer>
     </>

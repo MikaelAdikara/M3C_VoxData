@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Source_Sans_3 } from "next/font/google";
+import { Big_Shoulders, Source_Sans_3 } from "next/font/google";
 import type { ReactNode } from "react";
 
 import { AssistantDock } from "@/components/shell/AssistantDock";
@@ -14,11 +14,19 @@ import "./styles/cctv.css";
 import "./styles/line.css";
 import "./styles/dock.css";
 import "./styles/prov.css";
+import "./styles/landing3.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   variable: "--font-source-sans",
+  display: "swap",
+});
+
+const display = Big_Shoulders({
+  subsets: ["latin"],
+  weight: ["700", "800"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -37,7 +45,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const [role, board] = await Promise.all([getCurrentRole(), getShiftBoardView()]);
 
   return (
-    <html lang="en" className={sourceSans.variable} suppressHydrationWarning>
+    <html lang="en" className={`${sourceSans.variable} ${display.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>

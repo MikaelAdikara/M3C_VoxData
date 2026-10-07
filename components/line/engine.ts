@@ -43,6 +43,10 @@ export function createLineEngine(opts: {
   tag: HTMLElement;
   stations: EngineStation[];
   interactive?: boolean;
+  /** Camera position and target, for the landing hero framing. */
+  home?: { pos: [number, number, number]; target: [number, number, number] };
+  /** Fraction of the stage height the scene moves down (room for a headline). */
+  shiftY?: number;
   onSelect?: (id: string) => void;
 }): LineEngine | null {
   const { stage, canvas, labels, tag, stations } = opts;
@@ -66,7 +70,10 @@ export function createLineEngine(opts: {
   scene.fog = new THREE.Fog(0xdedede, 60, 150);
   const fog = scene.fog as THREE.Fog;
   const camera = new THREE.PerspectiveCamera(30, 16 / 9, 0.5, 400);
-  const HOME = { pos: new THREE.Vector3(-38, 22, 34), target: new THREE.Vector3(-1, 0, -2) };
+  const HOME = opts.home
+    ? { pos: new THREE.Vector3(...opts.home.pos), target: new THREE.Vector3(...opts.home.target) }
+    : { pos: new THREE.Vector3(-38, 22, 34), target: new THREE.Vector3(-1, 0, -2) };
+  const interactive = opts.interactive ?? true;
 
   /* ---------- materials ---------- */
   const std = (color: number, extra: THREE.MeshStandardMaterialParameters = {}) =>
@@ -338,7 +345,7 @@ export function createLineEngine(opts: {
   let fly: { fromP: THREE.Vector3; fromT: THREE.Vector3; toP: THREE.Vector3; toT: THREE.Vector3; t: number } | null = null;
 
   const controls = new OrbitControls(camera, canvas);
-  const controlsAllowed = (opts.interactive ?? true) && matchMedia("(pointer: fine)").matches;
+  const controlsAllowed = interactive && matchMedia("(pointer: fine)").matches;
   Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, enablePan: false, enableZoom: false, minPolarAngle: 0.45, maxPolarAngle: 1.2, minAzimuthAngle: -0.9, maxAzimuthAngle: 0.6 });
   controls.enabled = controlsAllowed && introT === 1;
   controls.addEventListener("change", () => { needsRender = true; });
@@ -354,6 +361,8 @@ export function createLineEngine(opts: {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.fov = w / h < 1.2 ? 50 : w / h < 1.7 ? 37 : 30;
+    if (opts.shiftY && !narrow()) camera.setViewOffset(w, h, 0, -h * opts.shiftY, w, h);
+    else camera.clearViewOffset();
     camera.updateProjectionMatrix();
     needsRender = true;
   }
@@ -426,6 +435,12 @@ export function createLineEngine(opts: {
       if (fly.t === 1) fly = null;
     }
     step(dt);
+    if (!interactive && introT === 1 && !fly && !paused) {
+      // a slow drift keeps a non-interactive hero alive without asking for input
+      const f = framing();
+      const off = f.pos.clone().sub(f.target).applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.sin(t * 0.12) * 0.07);
+      camera.position.copy(f.target).add(off);
+    }
     const changed = controls.update();
     if (!animating && !changed && !needsRender) return;
 

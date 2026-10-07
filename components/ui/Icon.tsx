@@ -40,6 +40,9 @@ import {
   PenNib,
   Ruler,
   Fingerprint,
+  CaretDown,
+  Eye,
+  FilmStrip,
 } from "@phosphor-icons/react/ssr";
 import type { IconWeight } from "@phosphor-icons/react";
 
@@ -85,6 +88,9 @@ const ICONS = {
   "pen-nib": PenNib,
   "ruler": Ruler,
   "fingerprint": Fingerprint,
+  "caret-down": CaretDown,
+  "eye": Eye,
+  "film-strip": FilmStrip,
 } as const;
 
 export type IconName = keyof typeof ICONS;

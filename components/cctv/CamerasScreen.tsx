@@ -3,20 +3,13 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
-import { CameraFeed, feedTone, type FeedCamera } from "@/components/cctv/CameraFeed";
+import { CameraFeed, defectOfEvent, feedTone, type FeedCamera } from "@/components/cctv/CameraFeed";
 import { plantTime } from "@/components/format";
 import { Icon } from "@/components/ui/Icon";
 import { createCameraTicket } from "@/lib/actions/camera";
-import type { CameraEventView, CameraView, DefectTypeId } from "@/lib/types";
+import type { CameraEventView, CameraView } from "@/lib/types";
 
-const DEFECT_BY_NAME: Record<string, DefectTypeId> = {
-  "Broken bead": "BEAD_BREAK",
-  "Missing bead": "BEAD_MISSING",
-  "Thin bead": "BEAD_THIN",
-  "Bead off path": "BEAD_OFFSET",
-  "Excess sealer": "BEAD_EXCESS",
-};
-const defectOf = (label: string): DefectTypeId => DEFECT_BY_NAME[label.replace(/^Alert · /, "")] ?? "BEAD_BREAK";
+const defectOf = defectOfEvent;
 const hhmm = (iso: string) => plantTime(iso).slice(0, 5);
 
 type Layout = "2" | "3" | "4";
