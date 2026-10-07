@@ -8,7 +8,7 @@ const SCREENS = [
   { id: "cameras", href: "cameras.html", label: "Cameras", icon: "ph-video-camera" },
   { id: "kaizen", href: "kaizen.html", label: "Kaizen", icon: "ph-clipboard-text" },
   { id: "knowledge", href: "knowledge.html", label: "Knowledge", icon: "ph-books" },
-  { id: "metrics", href: "metrics.html", label: "Metrics", icon: "ph-chart-line" },
+  { id: "metrics", href: "metrics2.html", label: "Metrics", icon: "ph-chart-line" },
 ];
 
 const ROLES = [
@@ -16,7 +16,7 @@ const ROLES = [
   { id: "team-leader", label: "Team leader", home: "line.html" },
   { id: "engineer", label: "Engineer", home: "kaizen.html" },
   { id: "senior-expert", label: "Senior expert", home: "knowledge.html" },
-  { id: "management", label: "Management", home: "metrics.html" },
+  { id: "management", label: "Management", home: "metrics2.html" },
 ];
 
 const TRAIL = [
@@ -64,7 +64,7 @@ function mountShell() {
   const top = el(`
     <header class="topbar">
       <div class="topbar__inner">
-        <a class="brand" href="index.html" aria-label="Learning Line cover page"><span class="brand__name">Learning Line</span><span class="brand__site">K2-Body · Karawang II</span></a>
+        <a class="brand" href="landing2.html" aria-label="Learning Line cover page"><span class="brand__name">Learning Line</span><span class="brand__site">K2-Body · Karawang II</span></a>
         <nav class="nav" aria-label="Screens">${nav}</nav>
         <div class="topbar__end">
           <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode"><i class="ph-bold ph-moon" aria-hidden="true"></i></button>
@@ -121,6 +121,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   placeBeads();
   tickClock();
+  // the knowledge screen has the assistant built in; everywhere else it docks
+  if (document.body.dataset.screen !== "knowledge" && document.body.dataset.dock !== "off") {
+    const d = document.createElement("script");
+    d.src = "assets/dock.js";
+    document.body.append(d);
+  }
   document.dispatchEvent(new CustomEvent("shell:ready"));
 });
 

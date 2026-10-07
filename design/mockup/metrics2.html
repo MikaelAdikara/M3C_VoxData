@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loop metrics · Learning Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/metrics2.css">
+</head>
+<body data-screen="metrics" data-role="management">
+
+<main class="page">
+  <div class="page__head">
+    <div>
+      <h1 class="page__title">Loop metrics · K2-Body pilot</h1>
+      <p class="page__sub">Gate 1 indicators, how far each one is from its target, and where every number comes from</p>
+    </div>
+    <div class="cam-head" style="display:flex;gap:var(--s2);flex-wrap:wrap">
+      <span class="loop loop--shift">Shift loop</span>
+      <span class="loop loop--kaizen">Kaizen loop</span>
+    </div>
+  </div>
+
+  <div class="m2">
+    <!-- Gate 1 -->
+    <section class="panel" aria-labelledby="gate-title">
+      <div class="panel__head">
+        <h2 id="gate-title">Gate 1: distance to target</h2>
+        <span class="muted">The pilot passes Gate 1 only when every row reaches its shaded zone</span>
+      </div>
+      <div class="panel__body">
+        <ul class="gate" id="gate"></ul>
+        <div class="legend-key">
+          <span><i class="dot"></i>Now</span>
+          <span><i style="width:2px;height:12px;border:0;background:var(--muted)"></i>Baseline or 2030 target</span>
+          <span><i style="width:16px;height:10px;border:1px dashed var(--line-strong);background:var(--panel)"></i>Gate 1 zone</span>
+          <span><i style="width:10px;height:10px;border:2px dashed var(--muted);border-radius:50%"></i>Not measured yet</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="m2-row">
+      <section class="panel" aria-labelledby="ov-title">
+        <div class="panel__head">
+          <h2 id="ov-title">Operators overriding alerts, last 30 days</h2>
+          <span class="prov" data-k="simulated"><i class="ph ph-cpu" aria-hidden="true"></i>Simulated history</span>
+        </div>
+        <div class="panel__body">
+          <div class="chart-wrap" id="ov"></div>
+          <div class="legend-key">
+            <span><i class="dot"></i>Daily rate</span>
+            <span><i></i>7-day average</span>
+            <span><i class="dash"></i>Gate 1: below 20%</span>
+            <span><i class="dash" style="border-top-color:var(--muted)"></i>2030: 10%</span>
+          </div>
+          <p class="muted" style="font-size:14px;margin-top:var(--s3)">Moving toward Gate 1, not there yet. The baseline of 31% comes from the casebook survey; the 30 days after it are simulated.</p>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="fa-title">
+        <div class="panel__head">
+          <h2 id="fa-title">False alarms this shift</h2>
+          <span class="prov" data-k="simulated"><i class="ph ph-cpu" aria-hidden="true"></i>Simulated</span>
+        </div>
+        <div class="panel__body">
+          <div class="chart-wrap" id="fa"></div>
+          <p class="muted" style="font-size:14px;margin-top:var(--s3)">st-02 is over its budget of 2, so its model goes to review. Its confirmed defects stay visible.</p>
+        </div>
+      </section>
+    </div>
+
+    <div class="m2-row m2-row--3">
+      <section class="panel" aria-labelledby="pa-title">
+        <div class="panel__head"><h2 id="pa-title">What st-04 confirms</h2><span class="prov" data-k="simulated"><i class="ph ph-cpu" aria-hidden="true"></i>Simulated</span></div>
+        <div class="panel__body">
+          <ul class="pareto" id="pareto"></ul>
+          <p class="muted" style="font-size:13px;margin-top:var(--s3)">Share of confirmed defects, last 30 days. Images are illustrations.</p>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="kz-title">
+        <div class="panel__head"><h2 id="kz-title">Problem to standard</h2><span class="loop loop--kaizen">Kaizen loop</span></div>
+        <div class="panel__body">
+          <div class="flow">
+            <div><h3>A3 in progress</h3><span class="kc">KZ-SEAL-007<small>st-04 · thin bead</small></span></div>
+            <div><h3>Countermeasure trial</h3><span class="kc">KZ-SEAL-008<small>st-02 · bead off path</small></span></div>
+            <div><h3>Closed · 6</h3><div class="stack"><span>001</span><span>002</span><span>003</span><span>004</span><span>005</span><span>006</span></div></div>
+          </div>
+          <div class="statline"><span class="bigstat">19<small>days</small></span><span>median learning cycle, from first alert to validated card</span><span class="prov" data-k="simulated"><i class="ph ph-cpu" aria-hidden="true"></i>Simulated</span></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="kn-title">
+        <div class="panel__head"><h2 id="kn-title">Know-how and ideas</h2><span class="loop loop--kaizen">Kaizen loop</span></div>
+        <div class="panel__body">
+          <div class="units" role="img" aria-label="12 knowledge cards: 9 validated, 2 draft, 1 retired">
+            <span class="u-val"></span><span class="u-val"></span><span class="u-val"></span><span class="u-val"></span><span class="u-val"></span><span class="u-val"></span><span class="u-val"></span><span class="u-val"></span><span class="u-val"></span><span class="u-draft"></span><span class="u-draft"></span><span class="u-ret"></span>
+          </div>
+          <div class="legend-key"><span><i class="dot" style="background:var(--safe)"></i>9 validated, the assistant may cite</span><span>2 draft</span><span>1 retired</span></div>
+          <div class="funnel" aria-label="Improvement ideas">
+            <div><span><small>Submitted by operators</small><i style="width:100%"></i></span><b>40</b></div>
+            <div><span><small>Answered within 7 days</small><i style="width:77.5%"></i></span><b>31</b></div>
+            <div><span><small>Implemented · Gate 1 wants 40%</small><i style="width:27.5%"></i></span><b>11</b></div>
+          </div>
+          <p style="font-size:13px;margin-top:var(--s3);display:flex;gap:6px;flex-wrap:wrap"><span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>Case data · 28% implemented today</span><span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>Target · 40%</span></p>
+        </div>
+      </section>
+    </div>
+
+    <div class="seed">
+      <i class="ph ph-fingerprint" aria-hidden="true"></i>
+      <span>Seed <span class="mono">m3c-gate1-v1</span> · reference clock 14 Mar 2027 08:45 WIB</span>
+      <span>Reset demo restores this exact state; the fingerprint appears here once the backend computes it.</span>
+      <span class="prov" data-k="simulated"><i class="ph ph-cpu" aria-hidden="true"></i>Simulated · not TMMIN data</span>
+    </div>
+  </div>
+</main>
+
+<script src="assets/bead.js"></script>
+<script src="assets/shell.js"></script>
+<script>
+/* Charts are plain SVG: every mark is ours, colours come from the theme. */
+const P = {
+  case: (t) => `<span class="prov" data-k="case"><i class="ph ph-book-open" aria-hidden="true"></i>${t}</span>`,
+  target: (t) => `<span class="prov" data-k="target"><i class="ph ph-flag" aria-hidden="true"></i>${t}</span>`,
+  sim: (t) => `<span class="prov" data-k="simulated"><i class="ph ph-cpu" aria-hidden="true"></i>${t}</span>`,
+};
+
+/* ---------- Gate 1 tracks ---------- */
+const GATE = [
+  { name: "Operators overriding alerts", provs: [P.case("Casebook survey"), P.target("ES Gate 1"), P.sim("Now")], now: "24%", status: '<span class="badge badge--outline">Not yet</span>',
+    min: 0, max: 35, zone: [0, 20], marks: [{ v: 31, label: "Baseline", val: "31%" }, { v: 24, k: "now", label: "Now", val: "24%" }, { v: 10, label: "2030", val: "10%" }] },
+  { name: "False alarms per station per shift", provs: [P.target("ES Gate 1"), P.sim("Now")], now: "7<small> of 8</small>", status: '<span class="badge badge--instruct"><i class="ph-bold ph-wrench" aria-hidden="true"></i>st-02 in review</span>', stations: [0, 3, 1, 0, 1, 0, 0, 0] },
+  { name: "Operators saying the tool helps", provs: [P.case("Casebook survey"), P.target("ES Gate 1")], now: "Survey due", word: true, status: '<span class="badge badge--outline">Planned</span>',
+    min: 40, max: 100, zone: [75, 100], marks: [{ v: 54, label: "Baseline", val: "54%" }, { v: 64, k: "none", label: "Pilot survey", val: "due" }] },
+  { name: "Seeded limit samples detected", provs: [P.target("ES Appendix H")], now: "Not run", word: true, status: '<span class="badge badge--outline">Planned</span>',
+    min: 0, max: 59, zone: [59, 59], zoneLabel: "59 per type; leak-critical 100% plus manual check", marks: [{ v: 0, k: "none", label: "Run", val: "0 of 59" }] },
+  { name: "Scrap index (2023 = 100)", provs: [P.case("Casebook Exhibit 4"), P.target("ES Table 4")], now: "Not measured", word: true, status: '<span class="badge badge--outline">Planned</span>',
+    min: 75, max: 115, zone: [75, 96], reverse: true, marks: [{ v: 108, label: "Baseline", val: "108" }, { v: 96, label: "Gate 1", val: "96" }, { v: 81, label: "2030", val: "81" }] },
+];
+const pct = (g, v) => {
+  const t = (v - g.min) / (g.max - g.min);
+  return (g.reverse ? 1 - t : t) * 100;
+};
+document.getElementById("gate").innerHTML = GATE.map((g) => {
+  let viz;
+  if (g.stations) {
+    const ids = ["st-01", "st-02", "st-03", "st-04", "st-05", "st-06", "paint", "final"];
+    viz = `<div class="stations8" role="img" aria-label="False alarms per station this shift; st-02 has 3, over the budget of 2">${g.stations.map((n, i) => `<span data-over="${n > 2}"><b>${n}</b>${ids[i]}</span>`).join("")}</div>`;
+  } else {
+    let [z0, z1] = g.zone.map((v) => pct(g, v)).sort((a, b) => a - b);
+    if (z1 - z0 < 3) { z0 -= 1.5; z1 += 1.5; }
+    viz = `<div class="track" role="img" aria-label="${g.name}: ${g.marks.map((m) => `${m.label} ${m.val}`).join(", ")}">
+      <span class="track__rail"></span>
+      <span class="track__zone" style="left:${z0}%;width:${z1 - z0}%"></span>
+      ${g.marks.map((m) => `<span class="track__mark" data-k="${m.k || "ref"}" style="left:${pct(g, m.v)}%"><span>${m.label}</span><i></i><b>${m.val}</b></span>`).join("")}
+    </div>${g.zoneLabel ? `<p class="muted" style="font-size:12.5px">${g.zoneLabel}</p>` : ""}`;
+  }
+  return `<li>
+    <div class="gate__name"><strong>${g.name}</strong><span>${g.provs.join("")}</span></div>
+    <div>${viz}</div>
+    <div class="gate__status"><span class="gate__now${g.word ? " gate__now--word" : ""}">${g.now}</span>${g.status}</div>
+  </li>`;
+}).join("");
+
+/* ---------- Override rate, 30 simulated days ---------- */
+(function override() {
+  const days = Array.from({ length: 30 }, (_, i) => {
+    const base = 31 - (7 * i) / 29;
+    const wave = i === 0 || i === 29 ? 0 : 0.9 * Math.sin(i * 1.7) + 0.5 * Math.sin(i * 0.6);
+    return Math.round((base + wave) * 10) / 10;
+  });
+  const avg = days.map((_, i) => { const s = days.slice(Math.max(0, i - 6), i + 1); return s.reduce((a, b) => a + b, 0) / s.length; });
+  const W = 720, H = 280, L = 40, R = 86, T = 16, B = 30;
+  const x = (i) => L + (i / 29) * (W - L - R);
+  const y = (v) => T + (1 - v / 35) * (H - T - B);
+  const line = (arr) => arr.map((v, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join(" ");
+  const ticks = [0, 10, 20, 30];
+  const svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Override rate fell from 31% on day 1 to 24% on day 30 in the simulated history; Gate 1 needs below 20%.">
+    <rect class="zone" x="${L}" y="${y(20)}" width="${W - L - R}" height="${y(0) - y(20)}"/>
+    ${ticks.map((t) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t}%</text>`).join("")}
+    <line class="target" x1="${L}" x2="${W - R}" y1="${y(20)}" y2="${y(20)}"/>
+    <text class="lbl" x="${W - R + 8}" y="${y(20) + 4}">Gate 1 · 20%</text>
+    <line class="target2" x1="${L}" x2="${W - R}" y1="${y(10)}" y2="${y(10)}"/>
+    <text x="${W - R + 8}" y="${y(10) + 4}">2030 · 10%</text>
+    <path class="soft" d="${line(days)}" stroke-width="1.5"/>
+    ${days.map((v, i) => `<circle class="ink-fill" cx="${x(i)}" cy="${y(v)}" r="2.2" opacity=".55"/>`).join("")}
+    <path class="ink" d="${line(avg)}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle class="ink-fill" cx="${x(0)}" cy="${y(31)}" r="5"/><text class="lbl-strong" x="${x(0)}" y="${y(31) - 14}">31% baseline · casebook</text>
+    <circle class="ink-fill" cx="${x(29)}" cy="${y(24)}" r="5"/><text class="lbl-strong" x="${x(29) + 10}" y="${y(24) + 4}">24% day 30</text>
+    ${[1, 10, 20, 30].map((d) => `<text x="${x(d - 1)}" y="${H - 8}" text-anchor="middle">Day ${d}</text>`).join("")}
+    ${days.map((v, i) => `<rect class="hit" x="${x(i) - 11}" y="${T}" width="22" height="${H - T - B}" data-i="${i}"/>`).join("")}
+  </svg><div class="chart-tip" hidden></div>`;
+  const el = document.getElementById("ov");
+  el.innerHTML = svg;
+  const tip = el.querySelector(".chart-tip");
+  el.addEventListener("pointermove", (e) => {
+    const r = e.target.closest(".hit");
+    if (!r) { tip.hidden = true; return; }
+    const i = +r.dataset.i, box = el.getBoundingClientRect(), s = box.width / W;
+    tip.hidden = false;
+    tip.textContent = `Day ${i + 1}: ${days[i].toFixed(1)}% · 7-day ${avg[i].toFixed(1)}%`;
+    tip.style.left = `${x(i) * s}px`; tip.style.top = `${y(days[i]) * s}px`;
+  });
+  el.addEventListener("pointerleave", () => { tip.hidden = true; });
+})();
+
+/* ---------- False alarms per station ---------- */
+(function falseAlarms() {
+  const ids = ["st-01", "st-02", "st-03", "st-04", "st-05", "st-06", "paint", "final"];
+  const n = [0, 3, 1, 0, 1, 0, 0, 0];
+  const W = 420, H = 260, L = 28, R = 12, T = 18, B = 30;
+  const bw = (W - L - R) / ids.length;
+  const y = (v) => T + (1 - v / 4) * (H - T - B);
+  document.getElementById("fa").innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="False alarms this shift: st-02 has 3, above the budget of 2; st-03 and st-05 have 1; others 0.">
+    ${[0, 1, 2, 3, 4].map((t) => `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join("")}
+    ${n.map((v, i) => v ? `<rect class="bar ${v > 2 ? "bar--over" : ""}" x="${L + i * bw + bw * 0.22}" y="${y(v)}" width="${bw * 0.56}" height="${y(0) - y(v)}" rx="3"/><text class="lbl-strong" x="${L + i * bw + bw / 2}" y="${y(v) - 6}" text-anchor="middle">${v}</text>` : `<rect x="${L + i * bw + bw * 0.22}" y="${y(0) - 2}" width="${bw * 0.56}" height="2" fill="var(--line-strong)"/>`).join("")}
+    <line class="target" x1="${L}" x2="${W - R}" y1="${y(2)}" y2="${y(2)}"/>
+    <text class="lbl" x="${W - R}" y="${y(2) - 6}" text-anchor="end">Budget 2</text>
+    ${ids.map((s, i) => `<text x="${L + i * bw + bw / 2}" y="${H - 8}" text-anchor="middle">${s}</text>`).join("")}
+  </svg>`;
+})();
+
+/* ---------- st-04 Pareto with the bead each defect looks like ---------- */
+(function pareto() {
+  const rows = [
+    ["BEAD_THIN", "Thin bead", 38], ["BEAD_OFFSET", "Bead off path", 27], ["BEAD_BREAK", "Broken bead", 18, true],
+    ["BEAD_EXCESS", "Excess sealer", 12], ["BEAD_MISSING", "Missing bead", 5, true],
+  ];
+  const el = document.getElementById("pareto");
+  el.innerHTML = rows.map(([t, name, v, crit]) => `<li>
+    <span class="thumb">${beadSVG(t)}</span>
+    <div><span class="pareto__name">${name}${crit ? '<span class="crit">Leak-critical</span>' : ""}</span><div class="pareto__bar"><span style="width:${(v / 38) * 100}%"></span></div></div>
+    <b>${v}%</b></li>`).join("");
+  placeBeads(el);
+})();
+</script>
+</body>
+</html>

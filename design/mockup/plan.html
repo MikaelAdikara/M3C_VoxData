@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Master plan · Learning Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<script>try{var t=localStorage.getItem("ll-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script src="assets/theme.js"></script>
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .hub { max-width: 1240px; margin: 0 auto; padding: var(--s7) var(--s5) var(--s7); }
+  .hub__top { display: flex; justify-content: space-between; align-items: start; gap: var(--s4); }
+  .hub h1 { font-family: "Big Shoulders Display", var(--font); font-weight: 800; text-transform: uppercase; font-size: clamp(44px, 6vw, 80px); line-height: .92; }
+  .hub__lead { margin-top: var(--s4); font-size: 19px; max-width: 64ch; color: var(--ink-2); }
+  .road { list-style: none; margin: var(--s6) 0 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+  .road li { padding: var(--s3); border-radius: var(--r-panel); background: var(--surface); border: 1px solid var(--line); font-size: 13.5px; display: grid; gap: 4px; align-content: start; }
+  .road b { font-size: 15px; }
+  .road li[data-s="done"] { background: var(--safe-tint); border-color: transparent; }
+  .road li[data-s="now"] { box-shadow: inset 0 0 0 2px var(--ink); }
+  .road small { color: var(--muted); font-weight: 600; }
+  .items { list-style: none; margin: var(--s7) 0 0; padding: 0; display: grid; gap: var(--s6); }
+  .item { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: var(--s6); align-items: center; }
+  .item:nth-child(even) .item__shot { order: 2; }
+  .item__shot { display: block; border-radius: 10px; overflow: hidden; border: 1px solid var(--glass-edge); box-shadow: 0 18px 40px -16px rgba(0, 0, 0, .35); transition: transform var(--t-base) var(--ease-out); }
+  .item__shot:hover { transform: translateY(-3px); }
+  .item__shot img { display: block; width: 100%; height: auto; }
+  .item h2 { font-size: 28px; letter-spacing: -.015em; line-height: 1.15; }
+  .item p { margin-top: var(--s3); font-size: 16.5px; color: var(--ink-2); }
+  .item dl { margin: var(--s4) 0 0; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 6px var(--s3); font-size: 14.5px; }
+  .item dt { color: var(--muted); }
+  .item dd { margin: 0; }
+  .item .btns { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
+  .note { margin-top: var(--s7); padding: var(--s5); border-radius: var(--r-panel); border: 1px dashed var(--line-strong); font-size: 15.5px; display: grid; gap: var(--s2); }
+  @media (max-width: 900px) {
+    .road { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .item { grid-template-columns: 1fr; gap: var(--s4); }
+    .item:nth-child(even) .item__shot { order: 0; }
+    .hub { padding: var(--s6) var(--s4); }
+  }
+</style>
+</head>
+<body>
+<main class="hub">
+  <div class="hub__top">
+    <h1>Master plan<br>Learning Line</h1>
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode"><i class="ph-bold ph-moon" aria-hidden="true"></i></button>
+  </div>
+  <p class="hub__lead">Semua isi master plan dalam bentuk mockup yang bisa dibuka dan dicoba. Pilih yang disukai; setelah <span class="mono">handoff/be-4</span> semua ini dipindah ke aplikasi Next. Tidak ada yang di-push.</p>
+
+  <ol class="road" aria-label="Sesi">
+    <li data-s="done"><small>S1</small><b>CCTV + The Line</b>Mockup selesai</li>
+    <li data-s="now"><small>S2</small><b>Landing, metrics, dock, bead</b>Mockup selesai, menunggu pilihan Dinda</li>
+    <li><small>S3 · butuh BE-4</small><b>Port ke app, bagian 1</b>CCTV, The Line, Station</li>
+    <li><small>S4 · butuh BE-4</small><b>Port ke app, bagian 2</b>Landing, metrics, trail, dock</li>
+    <li><small>S5</small><b>Pengerasan</b>HP, a11y, performa, review</li>
+    <li><small>S6</small><b>FINAL</b>Video dan Appendix C</li>
+  </ol>
+
+  <ul class="items">
+    <li class="item">
+      <a class="item__shot" href="landing2.html"><img src="assets/img/plan/landing.jpg" alt="Landing v2: lini K2-Body 3D sebagai hero dengan judul AI detects, people decide" loading="lazy"></a>
+      <div>
+        <h2>Landing v2: lini itu sendiri jadi hero</h2>
+        <p>Video stok diganti maket 3D lini K2-Body. Andon st-04 menyala kuning dan body K2-27-031487 menunggu team leader. Strip gemba di bawah memuat takt, body per shift, override rate, dan target Gate 1, masing-masing dengan chip asal-usul.</p>
+        <dl><dt>Medium</dt><dd>Three.js (maket buatan sendiri), font display Big Shoulders</dd><dt>Pembeda</dt><dd>Bukan pabrik digital generik: satu abnormalitas nyata, sedang menunggu keputusan manusia</dd></dl>
+        <div class="btns"><a class="btn" href="landing2.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Buka landing v2</a><a class="btn btn--ghost" href="index.html">Bandingkan v1</a></div>
+      </div>
+    </li>
+    <li class="item">
+      <a class="item__shot" href="landing2.html#trail"><img src="assets/img/plan/trail.jpg" alt="The Trail: kartu abnormalitas fisik yang distempel di setiap tahap" loading="lazy"></a>
+      <div>
+        <h2>The Trail: satu cacat, lima pasang tangan</h2>
+        <p>Kartu abnormalitas fisik (berlubang, hazard stripe) distempel ala hanko saat pembaca scroll: Flagged, Confirmed, Decided, A3 open, Validated. Di tahap 5 kartunya berubah hijau jadi "Standard". Setiap tahap memisahkan apa yang dikerjakan sistem dan siapa yang memutuskan.</p>
+        <dl><dt>Medium</dt><dd>HTML/CSS, scroll-driven, stempel beranimasi</dd><dt>Dipakai lagi</dt><dd>Station dan Kaizen di aplikasi (S4)</dd></dl>
+        <div class="btns"><a class="btn" href="landing2.html#trail"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Lihat The Trail</a></div>
+      </div>
+    </li>
+    <li class="item">
+      <a class="item__shot" href="line.html"><img src="assets/img/plan/line.jpg" alt="Shift board The Line: maket 3D dengan menara andon dan panel keputusan" loading="lazy"></a>
+      <div>
+        <h2>Shift board: The Line</h2>
+        <p>Grid 8 kartu diganti lini 3D. Body bergerak sesuai takt, dan tiap stasiun punya menara andon empat warna. Klik Stop and fix: lini benar-benar berhenti, lampu jadi merah, dan hanya team leader yang bisa menyalakannya lagi. Di HP, kamera mengikuti stasiun yang dipilih.</p>
+        <dl><dt>Medium</dt><dd>Three.js, label HTML, papan gemba</dd><dt>Aksesibel</dt><dd>Strip stasiun untuk keyboard, tombol jeda gerak, reduced-motion</dd></dl>
+        <div class="btns"><a class="btn" href="line.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Buka The Line</a><a class="btn btn--ghost" href="shift-board.html">Bandingkan grid lama</a></div>
+      </div>
+    </li>
+    <li class="item">
+      <a class="item__shot" href="cameras.html"><img src="assets/img/plan/cameras.jpg" alt="Dinding kamera CCTV dengan garis waktu shift" loading="lazy"></a>
+      <div>
+        <h2>Cameras: CCTV yang jujur</h2>
+        <p>Dinding kamera 2×2, 3×3, dan 4×4, panel fokus dengan frame alert, garis waktu shift yang bisa digeser, dan tab kesehatan kamera (uptime 14 hari, lensa, tiket maintenance). Klip asli tidak pernah diberi kotak deteksi.</p>
+        <dl><dt>Medium</dt><dd>Klip Pexels diproses ffmpeg jadi grade CCTV, adegan SVG prosedural</dd><dt>Butuh BE</dt><dd><span class="mono">getCameraView()</span>, <span class="mono">createCameraTicket</span></dd></dl>
+        <div class="btns"><a class="btn" href="cameras.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Buka Cameras</a></div>
+      </div>
+    </li>
+    <li class="item">
+      <a class="item__shot" href="station.html"><img src="assets/img/plan/station.jpg" alt="Station st-04 dengan umpan kamera dan frame alert" loading="lazy"></a>
+      <div>
+        <h2>Station: dari kamera ke keputusan</h2>
+        <p>Operator bisa beralih antara frame alert (beku di 08:42:17 dengan heatmap) dan Live. Ada link ke semua kamera.</p>
+        <dl><dt>Medium</dt><dd>CameraFeed yang sama dengan dinding kamera</dd></dl>
+        <div class="btns"><a class="btn" href="station.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Buka Station</a></div>
+      </div>
+    </li>
+    <li class="item">
+      <a class="item__shot" href="metrics2.html"><img src="assets/img/plan/beads.jpg" alt="Enam varian ilustrasi bead sealer baru" loading="lazy"></a>
+      <div>
+        <h2>Ilustrasi bead sealer, dibuat ulang</h2>
+        <p>Dulu terlihat seperti jalan. Sekarang: close-up sambungan hem pintu, dua lembar baja bertumpuk dengan bayangan, titik las, garis press, dan lubang pilot. Bead PVC beige-nya doff dan membulat karena diberi filter pencahayaan. Ada enam varian: break, thin, offset, excess, missing, dan normal.</p>
+        <dl><dt>Medium</dt><dd>SVG dengan feDiffuseLighting dan feSpecularLighting: tajam di semua ukuran, ringan, tanpa foto pabrik</dd><dt>Di aplikasi</dt><dd>Komponen <span class="mono">BeadIllustration.tsx</span> milik UI, dipindah di S3 tanpa perlu BE</dd></dl>
+      </div>
+    </li>
+    <li class="item">
+      <a class="item__shot" href="metrics2.html"><img src="assets/img/plan/metrics.jpg" alt="Metrics v2: lintasan Gate 1 dengan chip asal-usul" loading="lazy"></a>
+      <div>
+        <h2>Metrics v2: angka yang jujur</h2>
+        <p>Setiap indikator Gate 1 jadi lintasan dari baseline ke zona target, dengan chip Case data, Target, atau Simulated. Isinya: riwayat override 30 hari (berlabel simulasi, "not there yet"), false alarm per stasiun, Pareto st-04 dengan thumbnail bead, alur Kaizen, kartu pengetahuan, ide, dan seed fingerprint.</p>
+        <dl><dt>Medium</dt><dd>SVG buatan sendiri dengan tooltip, warna dari tema</dd><dt>Dasar</dt><dd>Laporan pilot data: jangan klaim hasil pilot</dd></dl>
+        <div class="btns"><a class="btn" href="metrics2.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Buka Metrics v2</a><a class="btn btn--ghost" href="metrics.html">Bandingkan v1</a></div>
+      </div>
+    </li>
+    <li class="item">
+      <a class="item__shot" href="metrics2.html"><img src="assets/img/plan/dock.jpg" alt="Dock Ask the line terbuka dengan jawaban yang mengutip KC-SEAL-021 r2" loading="lazy"></a>
+      <div>
+        <h2>Ask the line: asisten di setiap layar</h2>
+        <p>Tombol di pojok kanan bawah membuka asisten tanpa meninggalkan layar. Ia menjawab hanya dari kartu tervalidasi dan selalu mengutip ID serta revisinya. Untuk paint orange peel jawabannya: "No validated card covers this yet. I won't guess", lalu menawarkan untuk meneruskan ke engineer pemilik.</p>
+        <dl><dt>Coba</dt><dd>Buka layar mana pun kecuali Knowledge, yang sudah punya asisten bawaan</dd></dl>
+        <div class="btns"><a class="btn" href="line.html"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i>Coba di The Line</a></div>
+      </div>
+    </li>
+  </ul>
+
+  <div class="note">
+    <strong>Semua tampilan</strong>
+    <span><a href="screens.html">screens.html</a>: setiap layar di frame laptop dan HP sekaligus.</span>
+    <span>Semua halaman mendukung terang dan gelap (tombol bulan/matahari), HP 390 px, dan reduced-motion.</span>
+  </div>
+</main>
+</body>
+</html>

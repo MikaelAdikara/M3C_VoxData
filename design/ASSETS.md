@@ -22,3 +22,14 @@ scale=960:-2,format=gray,eq=contrast=1.12:brightness=-0.03,noise=alls=6:allf=t,f
 - Cameras without a clip show a procedural SVG sealer scene, labelled "Simulated scene".
 
 Original work (bead illustrations, sealer scene, icons from Phosphor under MIT) is ours or open source. No code, assets or copy were taken from reference projects.
+
+## Libraries and fonts in the mockups
+
+| Item | Source | License |
+|---|---|---|
+| three.js 0.170 (scale model of the line) | jsDelivr CDN | MIT |
+| Big Shoulders Display (landing display face) | Google Fonts | SIL Open Font License |
+| Source Sans 3 | Google Fonts | SIL Open Font License |
+| Phosphor Icons | unpkg CDN | MIT |
+
+The line model, the car bodies on skids, the andon towers, the sealer bead illustration (SVG lighting filters) and the abnormality tag are drawn from scratch. No 3D models, textures or images were downloaded for them.
