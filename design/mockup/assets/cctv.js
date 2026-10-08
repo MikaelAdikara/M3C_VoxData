@@ -89,10 +89,10 @@ function feedHTML(cam, { focus = false, compact = false, frameAlert = false } = 
 
   const tone = offline ? "stop" : cam.alert ? "caution" : cam.review ? "instruct" : "ok";
   const sourceLabel = showAlertFrame
-    ? `Alert frame ${fmt(cam.alert.at)}:17 · simulated`
+    ? "Alert replay · illustration, simulated"
     : cam.source === "clip"
-      ? "Test clip · no annotation"
-      : "Simulated scene";
+      ? "Public visual reference · not TMMIN footage"
+      : "Generated simulation";
   return `
   <div class="feed" data-tone="${tone}" data-offline="${offline}" data-focus="${focus}">
     ${media}
@@ -100,9 +100,9 @@ function feedHTML(cam, { focus = false, compact = false, frameAlert = false } = 
     ${offline ? `<div class="feed__lost"><strong>Signal lost</strong><span>${cam.note ?? "No frames"}</span></div>` : ""}
     <div class="feed__top">
       <span class="feed__chip"><span class="feed__pip" data-tone="${tone}"></span><span class="mono">${cam.station}</span>${compact ? "" : ` · ${cam.name}`}</span>
-      ${offline ? "" : `<span class="feed__chip num">${showAlertFrame ? fmt(cam.alert.at) + ":17" : "LIVE"}</span>`}
+      ${showAlertFrame ? `<span class="feed__chip num">${fmt(cam.alert.at)}:17</span>` : ""}
     </div>
-    ${compact || offline ? "" : `<div class="feed__bottom"><span class="feed__chip feed__chip--quiet">${sourceLabel}</span><span class="feed__chip feed__rec"><span class="feed__pip" data-tone="stop"></span>REC</span></div>`}
+    ${compact || offline ? "" : `<div class="feed__bottom"><span class="feed__chip feed__chip--quiet">${sourceLabel}</span></div>`}
   </div>`;
 }
 

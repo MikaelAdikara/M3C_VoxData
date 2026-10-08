@@ -60,9 +60,9 @@ setStep(0);
 /* ---------- Cameras: three honest sources ---------- */
 const cams = window.LLCam.CAMERAS;
 const trio = [
-  { cam: cams.find((c) => c.station === "st-03"), opts: { focus: true }, title: "Test clip, no boxes", text: "Real body-shop footage in CCTV grade. We have no per-frame annotation for it, so it never carries a detection box." },
-  { cam: cams.find((c) => c.station === "st-01"), opts: { focus: true }, title: "Simulated scene", text: "Stations without footage show a drawn scene of the sealer robot at takt, and say so on the frame." },
-  { cam: cams.find((c) => c.station === "st-04"), opts: { focus: true, frameAlert: true }, title: "Alert frame, simulated", text: "Only our own simulated bead image carries a heatmap: the region the model found unlike the good beads." },
+  { cam: cams.find((c) => c.station === "st-03"), opts: { focus: true }, title: "Public visual reference, no boxes", text: "Real body-shop footage in CCTV grade. We have no per-frame annotation for it, so it never carries a detection box." },
+  { cam: cams.find((c) => c.station === "st-01"), opts: { focus: true }, title: "Generated simulation", text: "Stations without footage show a drawn scene of the sealer robot at takt, and say so on the frame." },
+  { cam: cams.find((c) => c.station === "st-04"), opts: { focus: true, frameAlert: true }, title: "Alert replay, illustration", text: "Only our own simulated bead image carries a heatmap: the region the model found unlike the good beads." },
 ];
 const grid = document.getElementById("cams-grid");
 grid.innerHTML = trio.map((t) => `
