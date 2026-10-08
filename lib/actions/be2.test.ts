@@ -13,7 +13,7 @@ vi.mock("next/headers", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: context.revalidatePath }));
 
 import { confirmAlert } from "@/lib/actions/alerts";
-import { routeToOwner, returnCard, validateCard } from "@/lib/actions/knowledge";
+import { reviseReturnedCard, routeToOwner, returnCard, validateCard } from "@/lib/actions/knowledge";
 import { advanceTicket, requestValidation, updateA3 } from "@/lib/actions/kaizen";
 import { verifyRejection } from "@/lib/actions/shift";
 import { injectTrueDefect } from "@/lib/actions/simulator";
@@ -130,6 +130,31 @@ describe("BE-2 Kaizen actions", () => {
     await expect(advanceTicket("KZ-SEAL-008")).resolves.toEqual({ ok: true });
     expect((await getTicketView("KZ-SEAL-008"))?.ticket.status).toBe("closed");
   });
+
+  it("requires an A3 revision after return, then creates a new draft revision", async () => {
+    context.role = "engineer";
+    await updateA3("KZ-SEAL-008", completeA3);
+    expect(await requestValidation("KZ-SEAL-008")).toEqual({ ok: true });
+    const first = (await getMemoryStore().getSnapshot()).cards.find((card) => card.sourceTicketId === "KZ-SEAL-008")!;
+    context.role = "senior_expert";
+    expect(await returnCard(first.id, "Add a pressure check.")).toEqual({ ok: true });
+    expect(await validateCard(first.id)).toMatchObject({ ok: false });
+    context.role = "engineer";
+    expect((await getTicketView("KZ-SEAL-008"))?.validation).toMatchObject({
+      draftCardId: null,
+      returnedCardId: first.id,
+      canRequest: false,
+    });
+    expect(await requestValidation("KZ-SEAL-008")).toMatchObject({ ok: false });
+    await updateA3("KZ-SEAL-008", { check: "Pressure held within the trial range." });
+    expect((await getTicketView("KZ-SEAL-008"))?.validation.canRequest).toBe(true);
+    expect(await requestValidation("KZ-SEAL-008")).toEqual({ ok: true });
+    const revisions = (await getMemoryStore().getSnapshot()).cards.filter((card) => card.id === first.id);
+    expect(revisions.map((card) => [card.revision, Boolean(card.returnedAt)])).toEqual([[1, true], [2, false]]);
+    context.role = "senior_expert";
+    expect(await validateCard(first.id)).toEqual({ ok: true });
+    expect((await getTicketView("KZ-SEAL-008"))?.ticket.status).toBe("validated");
+  });
 });
 
 describe("BE-2 knowledge actions", () => {
@@ -163,6 +188,25 @@ describe("BE-2 knowledge actions", () => {
     await expect(returnCard("KC-SEAL-030", "x")).resolves.toMatchObject({ ok: false });
   });
 
+  it("lets an engineer revise a returned standalone draft before senior validation", async () => {
+    context.role = "senior_expert";
+    expect(await returnCard("KC-SEAL-030", "Add trial evidence.")).toEqual({ ok: true });
+    expect(await validateCard("KC-SEAL-030")).toMatchObject({ ok: false });
+    const patch = {
+      rootCause: "Path check was omitted after rotation.",
+      countermeasure: "Require an approved path check at handover.",
+      standardRevised: "Handover checklist updated and trial checked.",
+    };
+    expect(await reviseReturnedCard("KC-SEAL-030", patch)).toMatchObject({ ok: false });
+    context.role = "engineer";
+    expect(await reviseReturnedCard("KC-SEAL-030", patch)).toEqual({ ok: true });
+    expect(await reviseReturnedCard("KC-SEAL-030", patch)).toMatchObject({ ok: false });
+    expect((await getMemoryStore().getSnapshot()).cards.filter((card) => card.id === "KC-SEAL-030").map((card) => card.revision)).toEqual([1, 2]);
+    context.role = "senior_expert";
+    expect(await validateCard("KC-SEAL-030")).toEqual({ ok: true });
+    expect((await getMemoryStore().getSnapshot()).cards.filter((card) => card.id === "KC-SEAL-030").at(-1)).toMatchObject({ revision: 3, status: "validated" });
+  });
+
   it("fails safely for an unknown card ID", async () => {
     context.role = "senior_expert";
     await expect(validateCard("missing-card")).resolves.toEqual({ ok: false, error: "Knowledge card not found." });
@@ -194,5 +238,14 @@ describe("BE-2 knowledge actions", () => {
       status: "verified",
       eligibleForModelUpdate: true,
     }));
+  });
+
+  it("does not verify a review without an operator rejection for every alert", async () => {
+    await getMemoryStore().mutate((draft) => {
+      draft.decisions = draft.decisions.filter((item) => item.alertId !== "alert-st02-reflection-1");
+    });
+    context.role = "team_leader";
+    expect(await verifyRejection("review-st02-current")).toMatchObject({ ok: false });
+    expect((await getShiftBoardView()).modelReviews[0].eligibleForModelUpdate).toBe(false);
   });
 });

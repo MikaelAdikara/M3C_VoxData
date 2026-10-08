@@ -147,6 +147,7 @@ export interface Ticket {
   status: TicketStatus;
   a3: A3;
   aiPrefilledFields: A3Field[];
+  a3UpdatedAt?: string;
   createdAt: string;
   closedAt?: string;
 }
@@ -301,6 +302,8 @@ export interface TicketView {
   validation: {
     requiredFieldsComplete: boolean;
     draftCardId: string | null;
+    returnedCardId: string | null;
+    returnedComment: string | null;
     canRequest: boolean;
   };
 }
@@ -399,12 +402,15 @@ export interface CameraEventView {
   at: string;
   kind: "alert" | "confirm" | "reject" | "stop_fix" | "contain" | "continue" | "gap";
   alertId?: string;
+  defectTypeId?: DefectTypeId | null;
+  visualScenarioId?: string;
   label: string;
   endsAt?: string;
 }
 
 export interface CameraView {
   shift: Shift;
+  asOf: string;
   cameras: (Camera & { openAlertIds: string[]; pendingDecisionAlertIds: string[]; modelReviewNeeded: boolean; modelReview: ModelReviewView | null; maintenanceTicketId: string | null; media: PilotScenarioView["media"] | null })[];
   events: CameraEventView[];
   maintenanceTickets: CameraMaintenanceTicket[];

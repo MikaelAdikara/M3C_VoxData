@@ -53,6 +53,7 @@ export async function updateA3(ticketId: string, patch: Partial<A3>): Promise<Ac
         ticket.a3[field] = value;
         ticket.aiPrefilledFields = ticket.aiPrefilledFields.filter((item) => item !== field);
       }
+      ticket.a3UpdatedAt = nextSimulatedTimestamp(draft);
       return { ok: true };
     });
   } catch {
@@ -101,14 +102,20 @@ export async function requestValidation(ticketId: string): Promise<ActionResult>
       if (!isA3Complete(ticket.a3)) {
         return { ok: false, error: "Complete all six A3 sections before validation." };
       }
-      if (draft.cards.some((card) => card.sourceTicketId === ticket.id && card.status === "draft")) {
+      const priorDraft = draft.cards
+        .filter((card) => card.sourceTicketId === ticket.id && card.status === "draft")
+        .sort((left, right) => right.revision - left.revision)[0];
+      if (priorDraft && !priorDraft.returnedAt) {
         return { ok: false, error: "This ticket already has a draft awaiting validation." };
+      }
+      if (priorDraft?.returnedAt && (!ticket.a3UpdatedAt || Date.parse(ticket.a3UpdatedAt) <= Date.parse(priorDraft.returnedAt))) {
+        return { ok: false, error: "Revise the A3 after the senior expert's return before requesting validation again." };
       }
       const station = draft.stations.find((item) => item.id === ticket.stationId);
       const defectType = draft.defectTypes.find((item) => item.id === ticket.defectTypeId);
       draft.cards.push({
-        id: nextKnowledgeCardId(draft.cards),
-        revision: 1,
+        id: priorDraft?.id ?? nextKnowledgeCardId(draft.cards),
+        revision: priorDraft ? priorDraft.revision + 1 : 1,
         status: "draft",
         process: station?.type === "sealer" ? "Sealer" : (station?.name ?? "Body"),
         stationIds: [ticket.stationId],

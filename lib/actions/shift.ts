@@ -122,8 +122,9 @@ export async function verifyRejection(reviewId: string): Promise<ActionResult> {
       const allRejected = review.alertIds.every((alertId) => {
         const alert = draft.alerts.find((item) => item.id === alertId);
         return (
-          alert?.status === "rejected" ||
-          draft.decisions.some((item) => item.alertId === alertId && item.kind === "reject")
+          alert?.stationId === review.stationId &&
+          alert.status === "rejected" &&
+          draft.decisions.some((item) => item.alertId === alertId && item.kind === "reject" && item.actor === `role:operator@${review.stationId}`)
         );
       });
       if (!allRejected) {

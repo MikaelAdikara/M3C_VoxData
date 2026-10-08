@@ -296,6 +296,8 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
   const draft = snapshot.cards
     .filter((card) => card.sourceTicketId === ticket.id && card.status === "draft")
     .sort((left, right) => right.revision - left.revision)[0];
+  const pendingDraft = draft && !draft.returnedAt ? draft : undefined;
+  const revisedAfterReturn = !draft?.returnedAt || Boolean(ticket.a3UpdatedAt && Date.parse(ticket.a3UpdatedAt) > Date.parse(draft.returnedAt));
   const requiredFieldsComplete = isA3Complete(ticket.a3);
   return {
     ticket,
@@ -308,9 +310,11 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
     aiPrefilledFields: [...ticket.aiPrefilledFields],
     validation: {
       requiredFieldsComplete,
-      draftCardId: draft?.id ?? null,
+      draftCardId: pendingDraft?.id ?? null,
+      returnedCardId: draft?.returnedAt ? draft.id : null,
+      returnedComment: draft?.returnedAt ? draft.returnedComment ?? null : null,
       canRequest:
-        ticket.status === "countermeasure_trial" && requiredFieldsComplete && draft === undefined,
+        ticket.status === "countermeasure_trial" && requiredFieldsComplete && !pendingDraft && revisedAfterReturn,
     },
   };
 }

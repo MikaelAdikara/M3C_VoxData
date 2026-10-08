@@ -1,5 +1,6 @@
 import { pilotScenarios, externalPilotClasses, curatedVisualReferences } from "@/lib/pilot-scenarios";
 import { calculateOverrideRate, calculateOverrideRateForAlerts } from "@/lib/rules/metrics";
+import { simulatedNow } from "@/lib/simulation-clock";
 import type { Alert, AlertView, CameraEventView, CameraView, LineStationView, LineView, PilotView, ShiftBoardView, StoreSnapshot, TrailView } from "@/lib/types";
 
 const SIMULATED_SOURCE = "Simulated K2-Body demo state";
@@ -24,7 +25,7 @@ export function buildCameraView(snapshot: StoreSnapshot, board: ShiftBoardView):
     if (!inShift(alert.createdAt, snapshot)) continue;
     const camera = cameraByStation.get(alert.stationId);
     if (!camera || camera.kind === "paint_tablet") continue;
-    events.push({ cameraId: camera.id, at: alert.createdAt, kind: "alert", alertId: alert.id, label: `Alert · ${snapshot.defectTypes.find((type) => type.id === alert.defectTypeId)?.name ?? "Anomaly"}` });
+    events.push({ cameraId: camera.id, at: alert.createdAt, kind: "alert", alertId: alert.id, defectTypeId: alert.defectTypeId, visualScenarioId: alert.visualScenarioId, label: `Alert · ${snapshot.defectTypes.find((type) => type.id === alert.defectTypeId)?.name ?? "Anomaly"}` });
   }
   for (const decision of snapshot.decisions) {
     if (!inShift(decision.createdAt, snapshot)) continue;
@@ -57,7 +58,7 @@ export function buildCameraView(snapshot: StoreSnapshot, board: ShiftBoardView):
         : { assetId: `procedural-cell-${camera.stationId}`, sourceType: "generated_simulation" as const, provenance: "illustration" as const, sourceLabel: "Generated prototype scene · simulated" },
     };
   });
-  return { shift: snapshot.currentShift, cameras, events, maintenanceTickets: snapshot.cameraMaintenanceTickets, provenance: "simulated", sourceLabel: SIMULATED_SOURCE };
+  return { shift: snapshot.currentShift, asOf: simulatedNow(snapshot), cameras, events, maintenanceTickets: snapshot.cameraMaintenanceTickets, provenance: "simulated", sourceLabel: SIMULATED_SOURCE };
 }
 
 export function buildLineView(snapshot: StoreSnapshot, board: ShiftBoardView): LineView {

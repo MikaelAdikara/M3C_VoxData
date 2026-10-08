@@ -33,6 +33,9 @@ export async function validateCard(cardId: string): Promise<ActionResult> {
       if (card.status !== "draft") {
         return { ok: false, error: "Only the latest draft can be validated." };
       }
+      if (card.returnedAt) {
+        return { ok: false, error: "Returned draft must be revised and submitted again." };
+      }
       const sourceTicket = card.sourceTicketId
         ? draft.tickets.find((item) => item.id === card.sourceTicketId)
         : undefined;
@@ -75,6 +78,7 @@ export async function returnCard(cardId: string, comment: string): Promise<Actio
       const card = latestCard(draft.cards, cardId);
       if (!card) return { ok: false, error: "Knowledge card not found." };
       if (card.status !== "draft") return { ok: false, error: "Only a draft can be returned." };
+      if (card.returnedAt) return { ok: false, error: "This draft has already been returned." };
       card.returnedComment = normalized;
       card.returnedByRole = "role:senior_expert@body";
       card.returnedAt = nextSimulatedTimestamp(draft);
@@ -84,6 +88,49 @@ export async function returnCard(cardId: string, comment: string): Promise<Actio
     return { ok: false, error: "Could not return the knowledge card." };
   } finally {
     revalidatePaths(["/", "/knowledge", "/kaizen", "/metrics"]);
+  }
+}
+
+type CardRevisionPatch = Pick<KnowledgeCard, "rootCause" | "countermeasure" | "standardRevised">;
+
+/** Engineer revision path for standalone draft cards; ticket cards are revised through their A3. */
+export async function reviseReturnedCard(cardId: string, patch: CardRevisionPatch): Promise<ActionResult> {
+  try {
+    if (!isValidId(cardId)) return { ok: false, error: "Invalid card ID." };
+    if (!patch || typeof patch !== "object") return { ok: false, error: "Invalid card revision." };
+    const rootCause = normalizeRequiredText(patch.rootCause, 2_000);
+    const countermeasure = normalizeRequiredText(patch.countermeasure, 2_000);
+    const standardRevised = normalizeRequiredText(patch.standardRevised, 2_000);
+    if (!rootCause || !countermeasure || !standardRevised) {
+      return { ok: false, error: "Complete the root cause, countermeasure, and revised standard." };
+    }
+    if ((await getCurrentRole()) !== "engineer") {
+      return { ok: false, error: "Only the owner engineer can revise a returned knowledge card." };
+    }
+
+    return await getStore().mutate<ActionResult>((draft) => {
+      const card = latestCard(draft.cards, cardId);
+      if (!card) return { ok: false, error: "Knowledge card not found." };
+      if (card.sourceTicketId) return { ok: false, error: "Revise the source ticket A3 instead." };
+      if (card.status !== "draft" || !card.returnedAt) {
+        return { ok: false, error: "Only a returned standalone draft can be revised." };
+      }
+      draft.cards.push({
+        ...card,
+        revision: card.revision + 1,
+        rootCause,
+        countermeasure,
+        standardRevised,
+        returnedComment: undefined,
+        returnedByRole: undefined,
+        returnedAt: undefined,
+      });
+      return { ok: true };
+    });
+  } catch {
+    return { ok: false, error: "Could not revise the knowledge card." };
+  } finally {
+    revalidatePaths(["/", "/knowledge", "/metrics"]);
   }
 }
 

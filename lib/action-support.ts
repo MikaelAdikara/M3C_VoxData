@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 
+import { simulatedNow } from "@/lib/simulation-clock";
 import type { StoreSnapshot } from "@/lib/types";
 
 export const MAX_NOTE_LENGTH = 280;
@@ -33,28 +34,7 @@ export function nextEntityId(prefix: string, existingIds: readonly string[]): st
 }
 
 export function nextSimulatedTimestamp(snapshot: StoreSnapshot): string {
-  const shiftStart = Date.parse(snapshot.currentShift.startsAt);
-  const shiftEnd = Date.parse(snapshot.currentShift.endsAt);
-  const timestamps = [
-    ...snapshot.alerts.map((item) => Date.parse(item.createdAt)),
-    ...snapshot.decisions.map((item) => Date.parse(item.createdAt)),
-    ...snapshot.ideas.map((item) => Date.parse(item.createdAt)),
-    ...snapshot.tickets.map((item) => Date.parse(item.createdAt)),
-    ...snapshot.cards.flatMap((item) =>
-      [item.validatedAt, item.returnedAt].filter(Boolean).map((value) => Date.parse(value!)),
-    ),
-    ...snapshot.modelReviews
-      .map((item) => item.verifiedAt)
-      .filter(Boolean)
-      .map((value) => Date.parse(value!)),
-    ...snapshot.routedQuestions.map((item) => Date.parse(item.createdAt)),
-    ...snapshot.cameraMaintenanceTickets.map((item) => Date.parse(item.createdAt)),
-    ...[snapshot.lineOperation.stoppedAt, snapshot.lineOperation.restartedAt]
-      .filter(Boolean)
-      .map((value) => Date.parse(value!)),
-  ].filter((timestamp) => timestamp >= shiftStart && timestamp <= shiftEnd);
-  const latest = timestamps.length > 0 ? Math.max(...timestamps) : shiftStart;
-  return new Date(Math.min(latest + 1_000, shiftEnd)).toISOString();
+  return new Date(Math.min(Date.parse(simulatedNow(snapshot)) + 1_000, Date.parse(snapshot.currentShift.endsAt))).toISOString();
 }
 
 export function revalidatePaths(paths: readonly string[]) {

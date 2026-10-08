@@ -12,6 +12,7 @@ describe("BE-4 deterministic backend views", () => {
     const seed = createSeedData();
     const view = buildCameraView(seed, buildShiftBoardView(seed));
     expect(view.cameras).toHaveLength(8);
+    expect(view.asOf).toBe(new Date("2027-03-14T08:45:00.000+07:00").toISOString());
     expect(view.cameras.every((camera) => camera.uptime14d.length === 14 && camera.uptime14d.every((n) => n >= 0 && n <= 1))).toBe(true);
     const attention = view.cameras.find((camera) => camera.stationId === "st-02")!;
     expect(attention).toMatchObject({ state: "attention", modelReviewNeeded: true, openAlertIds: [] });
@@ -19,6 +20,10 @@ describe("BE-4 deterministic backend views", () => {
     expect(view.cameras.find((camera) => camera.stationId === "st-05")?.pendingDecisionAlertIds).toContain("alert-st05-confirmed-001");
     expect(view.events.filter((event) => event.cameraId === attention.id && event.kind === "reject")).toHaveLength(3);
     expect(view.events.some((event) => event.kind === "gap" && event.cameraId === "body-edge-06/cam-01")).toBe(true);
+    expect(view.events.find((event) => event.alertId === "alert-st05-confirmed-001" && event.kind === "alert")).toMatchObject({
+      defectTypeId: "BEAD_OFFSET",
+      visualScenarioId: "bead-offset-simulation",
+    });
     expect(view.cameras.find((camera) => camera.stationId === "paint-bm")?.media).toBeNull();
     expect(view.cameras.filter((camera) => camera.media?.sourceType === "public_reference").every((camera) => !camera.media?.assetId.startsWith("/"))).toBe(true);
   });
