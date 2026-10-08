@@ -10,7 +10,7 @@ Subtitle siap pakai ada di `captions-en.srt`, dengan timing yang sama dengan tab
 
 ## 1. Persiapan alat (sekali saja)
 
-- [ ] **URL:** pakai URL live (`https://m3c-learning-line-mvp.vercel.app`) setelah Bonfi mematikan Deployment Protection dan deploy ulang versi UI-4. Kalau belum siap, rekam di lokal: `npm run build && npm start`, lalu buka `http://localhost:3000`.
+- [ ] **URL:** pakai URL live **https://learningline-kohl.vercel.app/**. Situs ini publik dan otomatis ter-update setiap ada push ke `main` (tunggu 1–3 menit, lalu refresh dengan Cmd+Shift+R). Kalau situs sedang bermasalah, rekam di lokal: `npm run build && npm start`, lalu buka `http://localhost:3000`.
 - [ ] **Browser:** Chrome, jendela **1920×1080**, zoom 100%. Sembunyikan bookmark bar (Cmd+Shift+B). Pakai profil kosong tanpa ekstensi atau avatar.
 - [ ] **Tema:** terang. Kalau tombol di bar atas menampilkan matahari, klik sekali sampai muncul ikon bulan.
 - [ ] **Mac:** aktifkan Do Not Disturb, tutup aplikasi lain, dan sembunyikan ikon desktop.
