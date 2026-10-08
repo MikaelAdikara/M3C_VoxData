@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
-import { CameraFeed, defectOfEvent, feedTone, type FeedCamera } from "@/components/cctv/CameraFeed";
+import { CameraFeed, feedTone, type FeedCamera, type FeedReplay } from "@/components/cctv/CameraFeed";
 import { plantTime } from "@/components/format";
 import { Icon } from "@/components/ui/Icon";
 import { createCameraTicket } from "@/lib/actions/camera";
 import type { CameraEventView, CameraView } from "@/lib/types";
 
-const defectOf = defectOfEvent;
 const hhmm = (iso: string) => plantTime(iso).slice(0, 5);
 
 type Layout = "2" | "3" | "4";
@@ -18,7 +17,8 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
   const cams = view.cameras;
   const start = Date.parse(view.shift.startsAt);
   const end = Date.parse(view.shift.endsAt);
-  const now = Math.max(start + 102 * 60_000, ...view.events.map((e) => Date.parse(e.at)));
+  // the simulation clock from the backend is "now"; the timeline never runs past it
+  const now = Math.min(end, Math.max(start, Date.parse(view.asOf)));
 
   // open on the camera behind the most recent alert, the one the team is talking about
   const latestAlert = [...view.events].filter((e) => e.kind === "alert").sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
@@ -26,14 +26,26 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
   const [tab, setTab] = useState<"wall" | "health">("wall");
   const [layout, setLayout] = useState<Layout>("3");
   const [focusId, setFocusId] = useState(firstPending?.id ?? cams.find((c) => c.stationId === "st-04")?.id ?? cams[0].id);
-  const [playhead, setPlayhead] = useState(now);
+  // null = current view (follows the simulation clock); a time = replaying history
+  const [history, setHistory] = useState<number | null>(() => latestAlertOf(view.events, firstPending?.id));
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const focus = cams.find((c) => c.id === focusId) ?? cams[0];
   const focusEvents = view.events.filter((e) => e.cameraId === focus.id).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
-  // the alert frame shown is the latest alert at or before the playhead
-  const frameEvent = [...focusEvents].reverse().find((e) => e.kind === "alert" && Date.parse(e.at) <= playhead && playhead - Date.parse(e.at) < 30 * 60_000);
+  const replaying = history !== null && history >= start && history <= now;
+  const playhead = replaying ? history : now;
+  const gapAt = (t: number) => focusEvents.find((e) => e.kind === "gap" && t >= Date.parse(e.at) && t <= (e.endsAt ? Date.parse(e.endsAt) : now));
+  // replay: a recording gap shows "no recording"; otherwise the latest typed alert within 30 minutes
+  const gapEvent = replaying ? gapAt(playhead) : undefined;
+  const frameEvent = replaying && !gapEvent
+    ? [...focusEvents].reverse().find((e) => e.kind === "alert" && e.defectTypeId && Date.parse(e.at) <= playhead && playhead - Date.parse(e.at) < 30 * 60_000)
+    : undefined;
+  const replay: FeedReplay | null = gapEvent
+    ? { kind: "gap", at: new Date(playhead).toISOString(), reason: gapEvent.label.replace(/^Recording gap · /, "") }
+    : frameEvent?.defectTypeId
+      ? { kind: "alert", at: frameEvent.at, defect: frameEvent.defectTypeId, id: frameEvent.alertId ?? frameEvent.at }
+      : null;
   const shown = layout === "2" ? cams.slice(0, 4) : cams;
 
   const slots = (() => {
@@ -41,16 +53,14 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
     return Array.from({ length: n }, (_, i) => {
       const t = start + i * 5 * 60_000;
       if (t > now) return "future";
-      const gap = focusEvents.some((e) => e.kind === "gap" && t >= Date.parse(e.at) && t <= (e.endsAt ? Date.parse(e.endsAt) : now));
-      return gap ? "gap" : "rec";
+      return gapAt(t) ? "gap" : "rec";
     });
   })();
   const pct = (t: number) => ((t - start) / (end - start)) * 100;
 
   function pick(c: FeedCamera) {
     setFocusId(c.id);
-    const latestAlert = [...view.events].reverse().find((e) => e.cameraId === c.id && e.kind === "alert");
-    setPlayhead(latestAlert ? Date.parse(latestAlert.at) : now);
+    setHistory(latestAlertOf(view.events, c.id));
   }
 
   function ticket(c: FeedCamera) {
@@ -116,13 +126,29 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
             <aside className="panel" aria-label="Focused camera">
               <div className="panel__body focus">
                 <h2>{focus.name}<small>{focus.id}</small></h2>
-                <CameraFeed
-                  cam={focus}
-                  focus
-                  alertFrame={frameEvent ? { at: frameEvent.at, defect: defectOf(frameEvent.label), id: frameEvent.alertId ?? frameEvent.at } : null}
-                />
-                {frameEvent ? (
-                  <p className="focus__note"><span className="badge badge--caution">Alert frame</span>{frameEvent.label.replace("Alert · ", "")} at {hhmm(frameEvent.at)}</p>
+                <div className="seg seg--sm" role="radiogroup" aria-label="Camera mode">
+                  <label>
+                    <input type="radio" name="cam-mode" checked={!replaying} onChange={() => setHistory(null)} />
+                    <span>Current</span>
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="cam-mode"
+                      checked={replaying}
+                      disabled={latestAlertOf(view.events, focus.id) === null}
+                      onChange={() => setHistory(latestAlertOf(view.events, focus.id))}
+                    />
+                    <span>Replay</span>
+                  </label>
+                </div>
+                <CameraFeed cam={focus} focus replay={replay} />
+                {replay?.kind === "alert" && frameEvent ? (
+                  <p className="focus__note"><span className="badge badge--caution">Alert replay</span>{frameEvent.label.replace("Alert · ", "")} at {hhmm(frameEvent.at)} · illustration</p>
+                ) : replay?.kind === "gap" ? (
+                  <p className="focus__note"><span className="badge badge--stop">Recording gap</span>Nothing was recorded at {hhmm(new Date(playhead).toISOString())}.</p>
+                ) : replaying ? (
+                  <p className="focus__note muted">No alert on this camera near {hhmm(new Date(playhead).toISOString())}.</p>
                 ) : focus.note ? (
                   <p className="focus__note">{focus.note}</p>
                 ) : null}
@@ -146,8 +172,8 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
 
           <section className="panel timeline" aria-labelledby="tl-title">
             <div className="panel__head">
-              <h2 id="tl-title">Shift timeline · {focus.stationId} · <span className="num">{hhmm(new Date(playhead).toISOString())}</span></h2>
-              <span className="muted">{hhmm(view.shift.startsAt)} to {hhmm(view.shift.endsAt)} · drag to replay; an alert shows its frame</span>
+              <h2 id="tl-title">Shift timeline · {focus.stationId} · <span className="num">{replaying ? `replay ${hhmm(new Date(playhead).toISOString())}` : "current"}</span></h2>
+              <span className="muted">{hhmm(view.shift.startsAt)} to {hhmm(view.shift.endsAt)} · now {hhmm(view.asOf)} (simulation clock) · drag to replay</span>
             </div>
             <div className="panel__body">
               <div className="tl">
@@ -163,7 +189,7 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
                       data-kind={eventKind(e)}
                       style={{ left: `${pct(Date.parse(e.at))}%` }}
                       aria-label={`${hhmm(e.at)} ${e.label}`}
-                      onClick={() => setPlayhead(Date.parse(e.at))}
+                      onClick={() => setHistory(Date.parse(e.at))}
                     />
                   ))}
                 </div>
@@ -171,7 +197,7 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
                 <div className="tl__axis"><span>{hhmm(view.shift.startsAt)}</span><span>{hhmm(new Date(start + (end - start) / 2).toISOString())}</span><span>{hhmm(view.shift.endsAt)}</span></div>
               </div>
               <label className="sr-only" htmlFor="tl-scrub">Replay time</label>
-              <input id="tl-scrub" className="tl-scrub" type="range" min={start} max={now} step={60_000} value={Math.min(playhead, now)} onChange={(e) => setPlayhead(Number(e.target.value))} />
+              <input id="tl-scrub" className="tl-scrub" type="range" min={start} max={now} step={60_000} value={playhead} onChange={(e) => { const t = Number(e.target.value); setHistory(t >= now ? null : t); }} />
               <div className="tl-row">
                 <div className="tl-key">
                   <span><i style={{ background: "rgba(120,120,120,.6)" }} />Recorded</span>
@@ -229,6 +255,12 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
       )}
     </main>
   );
+}
+
+/** Time of a camera's latest alert that has a defect type, or null for the current view. */
+function latestAlertOf(events: CameraEventView[], cameraId: string | undefined): number | null {
+  const e = events.filter((x) => x.cameraId === cameraId && x.kind === "alert" && x.defectTypeId).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+  return e ? Date.parse(e.at) : null;
 }
 
 function eventKind(e: CameraEventView) {

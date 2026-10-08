@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Plate, type PlateTone } from "@/components/ui/Plate";
 import { Sheet } from "@/components/ui/Sheet";
-import { returnCard, validateCard } from "@/lib/actions/knowledge";
+import { returnCard, reviseReturnedCard, validateCard } from "@/lib/actions/knowledge";
 import type { CardView } from "@/lib/types";
 
 const TONE: Record<CardView["status"], PlateTone> = { validated: "safe", draft: "instruct", retired: "neutral" };
@@ -24,11 +24,14 @@ function shortDate(iso?: string) {
 }
 
 /** One knowledge card with its revision history; the senior expert validates or returns drafts. */
-export function CardDetail({ card, canValidate }: { card: CardView; canValidate: boolean }) {
+export function CardDetail({ card, canValidate, canRevise = false }: { card: CardView; canValidate: boolean; canRevise?: boolean }) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [returnOpen, setReturnOpen] = useState(false);
   const [comment, setComment] = useState("");
+  const [reviseOpen, setReviseOpen] = useState(false);
+  const [rev, setRev] = useState({ rootCause: card.rootCause, countermeasure: card.countermeasure, standardRevised: card.standardRevised ?? "" });
+  const returned = card.status === "draft" && Boolean(card.returnedAt || card.returnedComment);
 
   function act(fn: () => Promise<{ ok: true } | { ok: false; error: string }>, after?: () => void) {
     setError(null);
@@ -109,7 +112,26 @@ export function CardDetail({ card, canValidate }: { card: CardView; canValidate:
             ))}
         </ul>
 
-        {card.status === "draft" ? (
+        {returned ? (
+          <div className="card-actions card-actions--returned">
+            {card.sourceTicketId ? (
+              <Link className={`btn btn--xl${canRevise ? "" : " btn--ghost"}`} href={`/kaizen/${card.sourceTicketId}`}>
+                <Icon name="note-pencil" weight="bold" />
+                Revise the A3 in {card.sourceTicketId}
+              </Link>
+            ) : (
+              <Button size="xl" onClick={() => setReviseOpen(true)} disabled={!canRevise || pending} icon={<Icon name="note-pencil" weight="bold" />}>
+                Revise and resubmit
+              </Button>
+            )}
+            <p className="muted card-note">
+              {card.sourceTicketId
+                ? "The owner engineer revises the A3 and requests validation again; that creates the next revision for the senior expert."
+                : "The owner engineer revises this card; the new revision then waits for the senior expert."}{" "}
+              Validate stays off until a revised draft arrives.
+            </p>
+          </div>
+        ) : card.status === "draft" ? (
           <div className="card-actions">
             <Button
               size="xl"
@@ -170,6 +192,29 @@ export function CardDetail({ card, canValidate }: { card: CardView; canValidate:
           />
           <small className="counter num">{comment.length} / 500</small>
         </div>
+      </Sheet>
+      <Sheet
+        open={reviseOpen}
+        onClose={() => setReviseOpen(false)}
+        title={`Revise ${card.id}`}
+        footer={
+          <Button
+            size="xl"
+            block
+            disabled={pending || !rev.rootCause.trim() || !rev.countermeasure.trim() || !rev.standardRevised.trim()}
+            onClick={() => act(() => reviseReturnedCard(card.id, rev), () => setReviseOpen(false))}
+          >
+            Submit revision {card.revision + 1}
+          </Button>
+        }
+      >
+        {card.returnedComment ? <p className="returned">Senior expert: “{card.returnedComment}”</p> : null}
+        {(["rootCause", "countermeasure", "standardRevised"] as const).map((f) => (
+          <div className="field" key={f} style={{ marginTop: "var(--s3)" }}>
+            <label htmlFor={`rev-${f}`}>{f === "rootCause" ? "Root cause" : f === "countermeasure" ? "Countermeasure" : "Standard revised"}</label>
+            <textarea id={`rev-${f}`} className="textarea" maxLength={2000} value={rev[f]} onChange={(e) => setRev({ ...rev, [f]: e.target.value })} />
+          </div>
+        ))}
       </Sheet>
     </>
   );

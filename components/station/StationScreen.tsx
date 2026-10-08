@@ -16,7 +16,7 @@ import { Plate } from "@/components/ui/Plate";
 import { Sheet } from "@/components/ui/Sheet";
 import { confirmAlert, rejectAlert } from "@/lib/actions/alerts";
 import { submitIdea } from "@/lib/actions/ideas";
-import type { ReasonCode, ShiftDecision, StationView } from "@/lib/types";
+import type { CameraEventView, ReasonCode, ShiftDecision, StationView } from "@/lib/types";
 
 import { BeadIllustration } from "./BeadIllustration";
 import { ScoreScale } from "./ScoreScale";
@@ -32,18 +32,21 @@ type Outcome =
 export function StationScreen({
   view,
   camera,
+  cameraEvents = [],
   canDecide,
   notice,
 }: {
   view: StationView;
-  /** The station's camera, when it has one (BE-4 camera view). */
+  /** The station's camera or tablet (BE-4 camera view); shown whether or not an alert is open. */
   camera?: FeedCamera | null;
+  /** This camera's events this shift (alerts, decisions, recording gaps). */
+  cameraEvents?: CameraEventView[];
   canDecide: boolean;
   notice?: ReactNode;
 }) {
   const { station, openAlert: alert, reasonCodes, ideasOpen, decisionHistory } = view;
   const [outcome, setOutcome] = useState<Outcome | null>(null);
-  const [feedMode, setFeedMode] = useState<"alert" | "live">("alert");
+  const [feedMode, setFeedMode] = useState<"alert" | "current">("alert");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const [rejectOpen, setRejectOpen] = useState(false);
@@ -118,34 +121,38 @@ export function StationScreen({
           </p>
         ) : null}
 
-        {alert ? (
-          <div className="station">
-            <section className="station__media" aria-label="Station camera">
-              {camera ? (
-                <>
-                  <div className="media-head">
+        <div className="station">
+          <section className="station__media" aria-label="Station camera">
+            {camera ? (
+              <>
+                <div className="media-head">
+                  {alert && camera.media ? (
                     <div className="seg" role="radiogroup" aria-label="Camera view">
-                      {(["alert", "live"] as const).map((m) => (
+                      {(["alert", "current"] as const).map((m) => (
                         <label key={m}>
                           <input type="radio" name="feed-mode" checked={feedMode === m} onChange={() => setFeedMode(m)} />
-                          <span>{m === "alert" ? "Alert frame" : "Live"}</span>
+                          <span>{m === "alert" ? "Alert replay" : "Current view"}</span>
                         </label>
                       ))}
                     </div>
-                    <Link className="link-quiet" href="/cameras"><Icon name="video-camera" />All cameras</Link>
-                  </div>
-                  <CameraFeed
-                    cam={camera}
-                    focus
-                    alertFrame={feedMode === "alert" && alert.defectType ? { at: alert.createdAt, defect: alert.defectType.id, id: alert.id } : null}
-                  />
-                </>
-              ) : (
-                <div className="bead">
-                  <BeadIllustration defect={alert.defectType?.id ?? null} id={`bead-${alert.id}`} />
-                  <span className="bead__tag">Illustration · simulated</span>
+                  ) : (
+                    <span className="media-head__title">{camera.media ? "Station camera · current view" : "Paint body-map tablet"}</span>
+                  )}
+                  <Link className="link-quiet" href="/cameras"><Icon name="video-camera" />All cameras</Link>
                 </div>
-              )}
+                <CameraFeed
+                  cam={camera}
+                  focus
+                  replay={alert && feedMode === "alert" && alert.defectType ? { kind: "alert", at: alert.createdAt, defect: alert.defectType.id, id: alert.id } : null}
+                />
+              </>
+            ) : alert ? (
+              <div className="bead">
+                <BeadIllustration defect={alert.defectType?.id ?? null} id={`bead-${alert.id}`} />
+                <span className="bead__tag">Illustration · simulated</span>
+              </div>
+            ) : null}
+            {alert ? (
               <div className="bead__cap">
                 <span>
                   Region <span className="mono">{alert.roi}</span>
@@ -154,78 +161,66 @@ export function StationScreen({
                   Model <span className="mono">{alert.modelVersion}</span>
                 </span>
               </div>
-              <History items={decisionHistory} reasonCodes={reasonCodes} />
-            </section>
-
-            <section className="decide" aria-label="Decision">
-              {shown ? (
-                <OutcomePlate outcome={shown} stationId={station.id} />
-              ) : (
-                <>
-                  <Plate
-                    tone="caution"
-                    title={`Caution: ${alert.defectType?.name.toLowerCase() ?? "bead anomaly"}`}
-                    subtitle="Suggested by the system. You decide."
-                  >
-                    <ScoreScale score={alert.anomalyScore} threshold={alert.threshold} />
-                    <dl className="facts">
-                      <dt>Criticality</dt>
-                      <dd>
-                        {alert.defectType?.criticality === "leak_critical" ? (
-                          <Badge tone="stop" icon={<Icon name="drop" weight="bold" />}>
-                            Leak-critical
-                          </Badge>
-                        ) : (
-                          <Badge tone="outline">Non-critical</Badge>
-                        )}
-                      </dd>
-                    </dl>
-                  </Plate>
-                  <div>
-                    <h2 className="decide__q">Is this a real defect?</h2>
-                    <div className="decide__btns">
-                      <Button
-                        size="xl"
-                        block
-                        onClick={confirm}
-                        disabled={!canDecide || pending}
-                        icon={<Icon name="check" weight="bold" />}
-                      >
-                        Confirm defect
-                      </Button>
-                      <Button
-                        size="xl"
-                        block
-                        variant="ghost"
-                        onClick={() => setRejectOpen(true)}
-                        disabled={!canDecide || pending}
-                        icon={<Icon name="x" weight="bold" />}
-                      >
-                        Reject: false alarm
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              )}
-              <IdeaRow
-                sent={ideaSent}
-                ideasOpen={ideasOpen}
-                disabled={!canDecide}
-                onOpen={() => setIdeaOpen(true)}
-              />
-            </section>
-          </div>
-        ) : (
-          <div className="station station--empty">
-            {shown ? <OutcomePlate outcome={shown} stationId={station.id} /> : null}
-            <EmptyState title={`No open alert at ${station.id}`}>
-              The camera has not flagged anything since the last decision. New alerts appear here within a few
-              seconds.
-            </EmptyState>
-            <IdeaRow sent={ideaSent} ideasOpen={ideasOpen} disabled={!canDecide} onOpen={() => setIdeaOpen(true)} />
+            ) : null}
+            {camera ? <CameraHealth camera={camera} events={cameraEvents} /> : null}
             <History items={decisionHistory} reasonCodes={reasonCodes} />
-          </div>
-        )}
+          </section>
+
+          <section className="decide" aria-label="Decision">
+            {alert && !shown ? (
+              <>
+                <Plate
+                  tone="caution"
+                  title={`Caution: ${alert.defectType?.name.toLowerCase() ?? "bead anomaly"}`}
+                  subtitle="Suggested by the system. You decide."
+                >
+                  <ScoreScale score={alert.anomalyScore} threshold={alert.threshold} />
+                  <dl className="facts">
+                    <dt>Criticality</dt>
+                    <dd>
+                      {alert.defectType?.criticality === "leak_critical" ? (
+                        <Badge tone="stop" icon={<Icon name="drop" weight="bold" />}>
+                          Leak-critical
+                        </Badge>
+                      ) : (
+                        <Badge tone="outline">Non-critical</Badge>
+                      )}
+                    </dd>
+                  </dl>
+                </Plate>
+                <div>
+                  <h2 className="decide__q">Is this a real defect?</h2>
+                  <div className="decide__btns">
+                    <Button
+                      size="xl"
+                      block
+                      onClick={confirm}
+                      disabled={!canDecide || pending}
+                      icon={<Icon name="check" weight="bold" />}
+                    >
+                      Confirm defect
+                    </Button>
+                    <Button
+                      size="xl"
+                      block
+                      variant="ghost"
+                      onClick={() => setRejectOpen(true)}
+                      disabled={!canDecide || pending}
+                      icon={<Icon name="x" weight="bold" />}
+                    >
+                      Reject: false alarm
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : shown ? (
+              <OutcomePlate outcome={shown} stationId={station.id} />
+            ) : (
+              <LatestState station={station.id} items={decisionHistory} reasonCodes={reasonCodes} offline={camera?.state === "offline"} />
+            )}
+            <IdeaRow sent={ideaSent} ideasOpen={ideasOpen} disabled={!canDecide} onOpen={() => setIdeaOpen(true)} />
+          </section>
+        </div>
       </main>
 
       <Sheet
@@ -375,6 +370,98 @@ function History({
             </li>
           ))}
       </ul>
+    </section>
+  );
+}
+
+/** What the operator sees when no alert is open: the last outcome at this station, or a calm "nothing open". */
+function LatestState({
+  station,
+  items,
+  reasonCodes,
+  offline,
+}: {
+  station: string;
+  items: StationView["decisionHistory"];
+  reasonCodes: StationView["reasonCodes"];
+  offline: boolean;
+}) {
+  const last = [...items].sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))[0];
+  if (offline) {
+    return (
+      <EmptyState title={`No alerts from ${station} while the camera is offline`}>
+        The camera cannot check beads until it is back online. Nothing here is a defect; see camera health on the left.
+      </EmptyState>
+    );
+  }
+  if (last && last.operatorDecision.kind === "confirm" && !last.teamLeaderDecision) {
+    return (
+      <Plate tone="caution" icon="bell-ringing" title="Confirmed: waiting for team leader" subtitle={`${last.alert.defectType?.name ?? "Bead anomaly"} · body ${last.alert.bodyId} · ${plantTime(last.operatorDecision.createdAt).slice(0, 5)}`}>
+        <p className="next">
+          <Icon name="arrow-right" weight="bold" />
+          <span>The yellow andon is with the team leader: stop and fix, contain, or continue with check.</span>
+        </p>
+      </Plate>
+    );
+  }
+  if (last && last.teamLeaderDecision) {
+    const label = DECISION_LABEL[last.teamLeaderDecision.kind as ShiftDecision] ?? last.teamLeaderDecision.kind;
+    return (
+      <Plate tone={last.teamLeaderDecision.kind === "stop_fix" ? "stop" : "neutral"} icon="check" title={`Last alert: ${label.toLowerCase()}`} subtitle={`Decided by team leader · ${plantTime(last.teamLeaderDecision.createdAt).slice(0, 5)}`}>
+        <p className="next">
+          <Icon name="check" weight="bold" />
+          <span>No open alert at {station} now. New alerts appear here within a few seconds.</span>
+        </p>
+      </Plate>
+    );
+  }
+  if (last && last.operatorDecision.kind === "reject") {
+    const reason = reasonCodes.find((r) => r.value === last.operatorDecision.reasonCode)?.label ?? "reason given";
+    return (
+      <Plate tone="neutral" icon="x-circle" title={`Last alert rejected: ${reason.toLowerCase()}`} subtitle={`Decided by operator · ${plantTime(last.operatorDecision.createdAt).slice(0, 5)}`}>
+        <p className="next">
+          <Icon name="arrow-right" weight="bold" />
+          <span>Waiting for the team leader to verify the rejection. No open alert at {station} now.</span>
+        </p>
+      </Plate>
+    );
+  }
+  return (
+    <EmptyState title={`No open alert at ${station}`}>
+      The camera has not flagged anything this shift. New alerts appear here within a few seconds.
+    </EmptyState>
+  );
+}
+
+/** Camera health for this station, current state only; replay lives on the camera wall. */
+function CameraHealth({ camera, events }: { camera: FeedCamera; events: CameraEventView[] }) {
+  const gaps = events.filter((e) => e.kind === "gap");
+  const avg = camera.uptime14d.length ? camera.uptime14d.reduce((a, b) => a + b, 0) / camera.uptime14d.length : null;
+  const state = camera.state === "offline" ? "Offline" : camera.state === "attention" ? "Needs attention" : "Online";
+  return (
+    <section className="panel cam-health" aria-labelledby="cam-health-title" data-state={camera.state}>
+      <div className="panel__head">
+        <h2 id="cam-health-title">{camera.media ? "Camera health" : "Tablet"}</h2>
+        <Badge tone={camera.state === "offline" ? "stop" : camera.state === "attention" ? "instruct" : "outline"}>{state}</Badge>
+      </div>
+      <div className="panel__body">
+        {camera.note ? <p className="cam-health__note">{camera.note}</p> : null}
+        <dl className="facts">
+          {avg !== null ? (<><dt>Uptime, 14 days</dt><dd className="num">{(avg * 100).toFixed(1)}%</dd></>) : null}
+          {camera.media ? (<><dt>Model</dt><dd className="mono">{camera.modelVersion}</dd></>) : null}
+          <dt>Lens cleaned</dt><dd>{new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" }).format(new Date(camera.lastLensCleanAt))}</dd>
+          {gaps.map((g) => (
+            <span key={g.at} style={{ display: "contents" }}>
+              <dt>Recording gap</dt>
+              <dd>{plantTime(g.at).slice(0, 5)}{g.endsAt ? `–${plantTime(g.endsAt).slice(0, 5)}` : " to now"}</dd>
+            </span>
+          ))}
+          {camera.maintenanceTicketId ? (<><dt>Maintenance</dt><dd className="mono">{camera.maintenanceTicketId} open</dd></>) : null}
+        </dl>
+        {camera.state !== "online" && !camera.maintenanceTicketId ? (
+          <p className="muted cam-health__foot">The team leader or a DX cell engineer opens a maintenance ticket from <Link href="/cameras">Camera health</Link>.</p>
+        ) : null}
+      </div>
     </section>
   );
 }

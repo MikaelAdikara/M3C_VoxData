@@ -127,7 +127,7 @@ export default async function KnowledgePage({ searchParams }: { searchParams: Pr
 
         <section aria-label="Selected card">
           {selected ? (
-            <CardDetail key={`${selected.id}-${selected.revision}-${selected.returnedAt ?? ""}`} card={selected} canValidate={role === "senior_expert"} />
+            <CardDetail key={`${selected.id}-${selected.revision}-${selected.returnedAt ?? ""}`} card={selected} canValidate={role === "senior_expert"} canRevise={role === "engineer"} />
           ) : (
             <EmptyState icon="books" title="No card selected" />
           )}

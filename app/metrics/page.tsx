@@ -76,7 +76,7 @@ export default async function MetricsPage() {
 
         <div className="m2-row m2-row--3">
           <section className="panel" aria-labelledby="pa-title">
-            <div className="panel__head"><h2 id="pa-title">What st-04 confirms</h2><Prov p="simulated" /></div>
+            <div className="panel__head"><h2 id="pa-title">What the line confirms</h2><Prov p="simulated" /></div>
             <div className="panel__body">
               <ParetoBeads rows={view.pareto} />
               <p className="chart-note">Share of confirmed defects, last 30 days. Images are illustrations.</p>

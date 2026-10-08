@@ -139,3 +139,12 @@
 .link-quiet { display: inline-flex; align-items: center; gap: 6px; min-height: 48px; font-size: 15px; font-weight: 600; color: var(--ink-2); text-decoration: none; }
 .link-quiet:hover { color: var(--ink); text-decoration: underline; }
 .station__media .feed { box-shadow: var(--shadow-1); }
+.feed__blank { position: absolute; inset: 0; background: repeating-linear-gradient(-45deg, #232323 0 10px, #1c1c1c 10px 20px); }
+.feed__lost--gap strong { color: #d6d6d6; }
+.seg--sm span { min-height: 36px; font-size: 14px; padding: 0 var(--s3); }
+.seg input:disabled + span { opacity: .45; cursor: not-allowed; }
+.media-head__title { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+.cam-health { margin-top: var(--s4); }
+.cam-health[data-state="offline"] { box-shadow: inset 0 0 0 2px var(--stop), var(--glass-shadow); }
+.cam-health__note { font-size: 15px; margin-bottom: var(--s3); }
+.cam-health__foot { font-size: 14px; margin-top: var(--s3); }

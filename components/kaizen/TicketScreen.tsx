@@ -150,6 +150,15 @@ export function TicketScreen({
             AI may only pre-fill background and data. The engineer writes root cause and countermeasure; editing a
             pre-filled block removes the AI tag.
           </p>
+          {validation.returnedCardId ? (
+            <p className="returned" role="note">
+              <Icon name="arrow-counter-clockwise" weight="bold" />
+              <span>
+                Senior expert returned <Link href={`/knowledge?card=${validation.returnedCardId}`} className="mono">{validation.returnedCardId}</Link>
+                {validation.returnedComment ? `: “${validation.returnedComment}”` : ""}. Revise the A3, then request validation again.
+              </span>
+            </p>
+          ) : null}
           <div className="a3__actions">
             {validation.draftCardId ? (
               <Link className="btn btn--ghost" href={`/knowledge?card=${validation.draftCardId}`}>
@@ -166,7 +175,9 @@ export function TicketScreen({
                     ? undefined
                     : validation.draftCardId
                       ? "A draft card is already waiting for validation"
-                      : "Complete all six A3 blocks first"
+                      : validation.returnedCardId
+                        ? "Edit the A3 after the senior expert's return first"
+                        : "Complete all six A3 blocks first"
                 }
               >
                 Request validation

@@ -16,13 +16,15 @@ export default async function StationPage({
   const stationId = st ?? "st-04";
   const [view, role, cameras] = await Promise.all([getStationView(stationId), getCurrentRole(), getCameraView()]);
   if (!view) notFound();
+  const camera = cameras.cameras.find((c) => c.stationId === stationId) ?? null;
 
   return (
     <>
       <LiveRefresh />
       <StationScreen
         view={view}
-        camera={cameras.cameras.find((c) => c.stationId === stationId && c.media) ?? null}
+        camera={camera}
+        cameraEvents={camera ? cameras.events.filter((e) => e.cameraId === camera.id) : []}
         canDecide={role === "operator"}
         notice={
           <RoleGate need="operator" current={role}>

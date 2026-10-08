@@ -48,7 +48,7 @@ Every station camera is on one wall.
 
 13
 00:01:14,500 --> 00:01:20,000
-The shift timeline replays each alert frame next to the decision people made, and faces are masked at the edge.
+The shift timeline replays each alert next to the decision people made, and faces are masked at the edge.
 
 14
 00:01:20,500 --> 00:01:30,000

@@ -159,6 +159,7 @@ export function ShiftBoardScreen({
                 key={selected.id}
                 alert={selected}
                 canDecide={canDecide}
+                lineStopped={line?.line.state === "stopped"}
                 onLogged={(l) => {
                   setLogged(l);
                   setSelectedId(null);
@@ -179,10 +180,12 @@ export function ShiftBoardScreen({
 function DecisionPanel({
   alert,
   canDecide,
+  lineStopped = false,
   onLogged,
 }: {
   alert: AlertView;
   canDecide: boolean;
+  lineStopped?: boolean;
   onLogged: (l: Logged) => void;
 }) {
   const [note, setNote] = useState("");
@@ -255,7 +258,7 @@ function DecisionPanel({
             size="xl"
             block
             variant={d.variant}
-            disabled={!canDecide || pending}
+            disabled={!canDecide || pending || (d.kind === "stop_fix" && lineStopped)}
             onClick={() => decide(d.kind)}
             icon={<Icon name={d.icon} weight="bold" />}
           >
@@ -264,7 +267,15 @@ function DecisionPanel({
           </Button>
         ))}
       </div>
-      <p className="muted rec__foot">Nothing stops the line until you choose.</p>
+      <p className="muted rec__foot" role="status">
+        {!canDecide
+          ? "Buttons are off because only the team leader decides. Switch the role to Team leader to act."
+          : lineStopped
+            ? "The line is already stopped for a repair. Restart it before another stop; contain or continue are still open."
+            : note.trim()
+              ? "Nothing stops the line until you choose."
+              : "Write a one-line note first; every decision is logged with it."}
+      </p>
     </Plate>
   );
 }

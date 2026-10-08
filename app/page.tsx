@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { CameraFeed, defectOfEvent } from "@/components/cctv/CameraFeed";
+import { CameraFeed } from "@/components/cctv/CameraFeed";
 import { A3Sheet } from "@/components/landing/A3Sheet";
 import { CoverBar } from "@/components/landing/CoverBar";
 import { HeroLine } from "@/components/landing/HeroLine";
@@ -35,7 +35,7 @@ export default async function CoverPage() {
   const andon = line.stations.find((s) => s.state === "yellow_andon" || s.state === "stopped");
   const byStation = (id: string) => cams.cameras.find((c) => c.stationId === id);
   // the alert frame in the middle is the latest camera alert, if any
-  const lastAlert = [...cams.events].reverse().find((e) => e.kind === "alert");
+  const lastAlert = [...cams.events].filter((e) => e.kind === "alert" && e.defectTypeId).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
   const alertCam = lastAlert ? cams.cameras.find((c) => c.id === lastAlert.cameraId) : undefined;
   const centre = alertCam ?? byStation("st-04");
   const side = ["st-02", "st-03", "st-06", "final-01"].map(byStation).filter((c) => c && c.id !== centre?.id);
@@ -101,16 +101,16 @@ export default async function CoverPage() {
                 <CameraFeed
                   cam={centre}
                   focus
-                  alertFrame={lastAlert && alertCam ? { at: lastAlert.at, defect: defectOfEvent(lastAlert.label), id: lastAlert.alertId ?? "hero" } : null}
+                  replay={lastAlert?.defectTypeId && alertCam ? { kind: "alert", at: lastAlert.at, defect: lastAlert.defectTypeId, id: lastAlert.alertId ?? "hero" } : null}
                 />
               </div>
             ) : null}
             {side.slice(1).map((c) => (c ? <div key={c.id}><CameraFeed cam={c} focus /></div> : null))}
           </div>
           <div className="keys" aria-label="What each frame is">
-            <span><Icon name="film-strip" />Test clip · never boxed</span>
-            <span><Icon name="pen-nib" />Simulated scene</span>
-            <span><span className="feed__pip" data-tone="caution" />Alert frame · simulated</span>
+            <span><Icon name="film-strip" />Public visual reference · never boxed</span>
+            <span><Icon name="pen-nib" />Generated simulation</span>
+            <span><span className="feed__pip" data-tone="caution" />Alert replay · illustration</span>
             <span><span className="feed__pip" data-tone="stop" />Signal lost</span>
           </div>
         </section>
@@ -125,7 +125,7 @@ export default async function CoverPage() {
                   {r.label}
                   <span><Prov p={r.baselineProvenance} label={r.baselineSourceLabel} /><Prov p={r.targetProvenance} label={r.targetSourceLabel} /></span>
                 </div>
-                <span className="ledger__from">{pct(r.baseline)}<small>today</small></span>
+                <span className="ledger__from">{pct(r.baseline)}<small>baseline</small></span>
                 <span className="ledger__arrow" aria-label="to"><Icon name="arrow-right" weight="bold" /></span>
                 <span className="ledger__to">{String(r.target).replace(/\s/g, "")}<small>Gate 1</small></span>
               </li>

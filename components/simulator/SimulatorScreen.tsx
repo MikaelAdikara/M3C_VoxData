@@ -38,7 +38,7 @@ const SCENARIOS: Scenario[] = [
   {
     id: "repeat",
     title: "Inject repeat ×3",
-    what: "Three confirmed excess-sealer alerts at st-04. The third opens a Kaizen ticket with its data.",
+    what: "Accelerated demo fixture: adds three already-confirmed excess-sealer alerts at st-04 in one step, standing in for three operator confirmations. The third opens a Kaizen ticket with its data.",
     next: { label: "See the ticket in Kaizen", href: "/kaizen" },
     icon: "clipboard-text",
     run: injectRepeat3,
