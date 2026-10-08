@@ -607,9 +607,9 @@ dialog.sheet::backdrop { background: rgba(37, 37, 37, .32); -webkit-backdrop-fil
   .brand__name { font-size: 18px; }
   .nav { display: none; }
   .clock__time { font-size: 17px; }
-  .role { height: 40px; padding: 0 var(--s3) 0 var(--s2); font-size: 14px; }
+  .role { height: 44px; padding: 0 var(--s3) 0 var(--s2); font-size: 14px; }
   .role i { display: none; }
-  .topbar .theme-toggle { width: 40px; height: 40px; font-size: 18px; }
+  .topbar .theme-toggle { width: 44px; height: 44px; font-size: 18px; }
   .trail ol { padding: var(--s2) var(--s4); gap: 6px; }
   .trail__who { display: none; }
   .trail__step { font-size: 12px; }
@@ -1189,3 +1189,7 @@ dialog.sheet::backdrop { background: rgba(37, 37, 37, .32); -webkit-backdrop-fil
   .closing h2 { font-size: 32px; }
   .cover-foot { padding: var(--s5) var(--s4) var(--s6); margin-top: 64px; }
 }
+
+/* Touch targets: the role select fills its pill, footer links get a taller hit area. */
+.role select { align-self: stretch; }
+.footer a { display: inline-block; padding: 13px 2px; margin: -13px 0; }
