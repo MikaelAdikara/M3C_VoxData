@@ -16,6 +16,8 @@ import { getStore } from "@/lib/store";
 import { buildCameraView, buildLineView, buildPilotView, buildTrailView } from "@/lib/be4-views";
 import { buildCameraModelView } from "@/lib/vision/model-view";
 import { buildDraftContext } from "@/lib/kaizen/a3-draft";
+import { buildEvents, summarizeEvent } from "@/lib/events/outbox";
+import { lastDelivery, webhookUrl } from "@/lib/events/webhook";
 import { openDraftSentences } from "@/lib/rules/ai-draft";
 import { fingerprintSnapshot, seedFingerprint, SEED_VERSION } from "@/lib/seed-identity";
 import { SEED_REFERENCE_CLOCK } from "@/lib/seed";
@@ -26,6 +28,7 @@ import type {
   CardView,
   CameraModelView,
   CameraView,
+  EventsView,
   Decision,
   DecisionView,
   DefectType,
@@ -575,4 +578,17 @@ export async function getOverviewView(): Promise<OverviewView> {
 
 export async function getCameraModelView(): Promise<CameraModelView> {
   return buildCameraModelView();
+}
+
+export async function getEventsView(limit = 80): Promise<EventsView> {
+  const events = buildEvents(await getStore().getSnapshot());
+  const url = webhookUrl();
+  const counts = new Map<string, number>();
+  for (const e of events) counts.set(e.type, (counts.get(e.type) ?? 0) + 1);
+  return {
+    events: events.slice(0, limit).map((e) => ({ ...e, summary: summarizeEvent(e), json: JSON.stringify(e, null, 2) })),
+    total: events.length,
+    counts: [...counts].map(([type, count]) => ({ type, count })),
+    webhook: { configured: Boolean(url), host: url?.host ?? null, signed: Boolean(process.env.WORKFLOW_WEBHOOK_SECRET), lastDelivery: lastDelivery() },
+  };
 }

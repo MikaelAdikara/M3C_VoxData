@@ -609,3 +609,25 @@ export interface CameraModelView {
   provenance: "simulated";
   sourceLabel: string;
 }
+
+/** /events: the event outbox and optional workflow webhook. */
+export interface EventsView {
+  events: {
+    id: string;
+    type: "alert.raised" | "andon.yellow" | "alert.rejected" | "decision.team_leader" | "ticket.opened" | "card.validated";
+    topic: string;
+    timestamp: string;
+    stationId: string | null;
+    actor: string;
+    summary: string;
+    json: string;
+  }[];
+  total: number;
+  counts: { type: string; count: number }[];
+  webhook: {
+    configured: boolean;
+    host: string | null;
+    signed: boolean;
+    lastDelivery: { at: string; events: number; ok: boolean; status: number | null; error: string | null } | null;
+  };
+}
