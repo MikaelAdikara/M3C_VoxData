@@ -108,6 +108,8 @@ Fase berikutnya **tidak boleh dimulai** sebelum tag di kolom "Butuh" ada di remo
 | FINAL | Berdua | DEMO_SCRIPT dijalankan di URL live setelah Reset; rekam video ≤ 3 menit (UI); link ke Appendix C | `handoff/ui-3` | TODO |
 | BE-4 | BE | Dependency 3D/motion/chart; `getCameraView()` + `createCameraTicket`; `getPilotView()` (pilot data); lihat `design/MASTER_PLAN.md` | `handoff/ui-3` | DONE |
 | UI-4 | UI | Pindahkan mockup `design/mockup/` ke aplikasi: modul CCTV (`/cameras`, Station pakai feed), shift board "The Line" 3D, landing v3 (+ varian realistis), Metrics v2 dengan provenance, dock "Ask the line", ilustrasi bead baru. Hub: `design/mockup/plan.html` | `handoff/be-4` | DONE |
+| BE-5 | BE | W17 AI nyata (`M3C_Workplan/15`): `ml/` (generator bead sintetis, PatchCore, ONNX), `lib/vision`, assistant live Claude + `eval:assistant`, `lib/kaizen` (kasus serupa, draf A3), `lib/events` (outbox + webhook), `eval/` | `handoff/ui-4` | DONE di branch `feat/real-ai` (belum merge) |
+| UI-5 | UI | `/cameras/model` (model di browser), panel kasus serupa + kalimat AI draft di tiket, `/events`, link footer | BE-5 (dikerjakan bersamaan, satu sesi) | DONE di branch `feat/real-ai` (belum merge) |
 
 > Karena file tidak overlap, BE **boleh** menyiapkan BE-(n+1) di lokal selama UI-n berjalan. Tapi push hanya boleh setelah tag `handoff/ui-n` ada, supaya urutan di `main` tetap rapi.
 
@@ -236,6 +238,7 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 | 2026-10-08 | BE | Audit regresi memperluas `CameraEventView` dengan `defectTypeId?`/`visualScenarioId?`, `CameraView.asOf`, dan `TicketView.validation` dengan `returnedCardId`/`returnedComment`; `draftCardId` kini hanya draft yang benar-benar menunggu senior. Action `reviseReturnedCard` menambah jalur revisi kartu mandiri setelah senior return; kartu dari tiket tetap direvisi melalui A3 dan `requestValidation`. Waktu action memakai jam simulasi deterministik. | UI memakai ID semantik, jam simulasi, dan metadata return; tidak menebak defect dari label atau mengaktifkan Validate pada draft yang dikembalikan. Detail ada di `scripts/audit/UI_HANDOFF_2026-10-08.md`. |
 
 ---
+| 2026-10-18 | BE+UI (satu sesi, W17) | Tipe baru: `CameraModelView`, `A3DraftSource`/`A3DraftSentence`/`A3AiDraft` (`Ticket.aiDraft?`), `SimilarCaseView`, `TicketView.similarCases`/`aiDraft`/`liveDrafting`, `EventsView`. Query baru: `getCameraModelView()`, `getEventsView()`. Action baru: `draftA3`, `checkDraftSentence` (kaizen), `sendTestEvent` (events). Aturan: trial menunggu kandidat akar masalah AI dicek/diedit; validasi menunggu tidak ada kalimat AI draft. `LiveAnswerGenerator` kini boleh mengembalikan draf terstruktur. Env opsional baru: `WORKFLOW_WEBHOOK_URL`, `WORKFLOW_WEBHOOK_SECRET`. | UI memakai field baru di `TicketView`; tidak ada field lama yang berubah. Seed tidak berubah (riwayat kasus ada di `lib/kaizen/history.ts`, SEED_DATA §9). |
 
 ## 8. Kontrak BE-4 untuk UI-4
 
