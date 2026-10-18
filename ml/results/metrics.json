@@ -1,0 +1,234 @@
+{
+ "model_version": "bead-patchcore-r18-syn-v1",
+ "config": {
+  "backbone": "resnet18 (ImageNet)",
+  "layers": [
+   1,
+   2
+  ],
+  "bank_per_seam": 1024,
+  "input_scale": 1.0,
+  "feature_dim": 192,
+  "projection": false,
+  "blur_sigma": 4.0
+ },
+ "data": {
+  "train_per_seam": 60,
+  "cal_per_seam": 2500,
+  "test_good_per_seam": 2500,
+  "random_defects_per_type_per_seam": 25,
+  "limit_samples_per_type": 59,
+  "strong_reflection_crops": 400
+ },
+ "false_alarms": {
+  "budget_per_station_shift": 2,
+  "crops_per_shift": 4800,
+  "alpha_per_seam": 0.0004166666666666667,
+  "good_test_crops": 40000,
+  "false_alarms": 8,
+  "expected_per_shift": 0.9600000000000001,
+  "expected_per_shift_95ci": [
+   0.4144782345105589,
+   1.8913991509771442
+  ]
+ },
+ "per_type": {
+  "BEAD_MISSING": {
+   "criticality": "leak_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 1.0
+  },
+  "BEAD_BREAK": {
+   "criticality": "leak_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 1.0
+  },
+  "BEAD_THIN": {
+   "criticality": "non_critical",
+   "random_detected": 381,
+   "random_n": 400,
+   "limit_detected": 50,
+   "limit_n": 59,
+   "auroc": 0.999841
+  },
+  "BEAD_OFFSET": {
+   "criticality": "non_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 1.0
+  },
+  "BEAD_EXCESS": {
+   "criticality": "non_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 0.9999979375000001
+  }
+ },
+ "per_seam": [
+  {
+   "seam": "seam-L-door-01",
+   "threshold": 1.6958760023117065,
+   "auroc": 0.9999904000000001,
+   "false_alarms": 2,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-L-door-02",
+   "threshold": 1.9245436191558838,
+   "auroc": 0.9998848,
+   "false_alarms": 1,
+   "good_n": 2500,
+   "defects_detected": 120,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-L-door-03",
+   "threshold": 1.7657837867736816,
+   "auroc": 0.999984,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 122,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-L-door-04",
+   "threshold": 1.777227520942688,
+   "auroc": 1.0,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-door-05",
+   "threshold": 1.7086230516433716,
+   "auroc": 0.9999328,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 122,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-door-06",
+   "threshold": 1.9347281455993652,
+   "auroc": 0.9999616,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 120,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-door-07",
+   "threshold": 1.9248573780059814,
+   "auroc": 0.9999904000000001,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 124,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-door-08",
+   "threshold": 1.6923627853393555,
+   "auroc": 0.9999872,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 124,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-L-roof-09",
+   "threshold": 1.8547405004501343,
+   "auroc": 1.0,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-L-roof-10",
+   "threshold": 1.9654152393341064,
+   "auroc": 1.0,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-L-roof-11",
+   "threshold": 1.9063143730163574,
+   "auroc": 1.0,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-L-roof-12",
+   "threshold": 1.9518768787384033,
+   "auroc": 0.9999775999999999,
+   "false_alarms": 1,
+   "good_n": 2500,
+   "defects_detected": 124,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-roof-13",
+   "threshold": 1.7452130317687988,
+   "auroc": 1.0,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-roof-14",
+   "threshold": 1.838747501373291,
+   "auroc": 1.0,
+   "false_alarms": 1,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-roof-15",
+   "threshold": 1.671958327293396,
+   "auroc": 1.0,
+   "false_alarms": 3,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  },
+  {
+   "seam": "seam-R-roof-16",
+   "threshold": 1.9697306156158447,
+   "auroc": 1.0,
+   "false_alarms": 0,
+   "good_n": 2500,
+   "defects_detected": 125,
+   "defects_n": 125
+  }
+ ],
+ "strong_reflection": {
+  "flagged": 304,
+  "n": 400
+ },
+ "train_seconds": 374,
+ "onnx": {
+  "bytes": 7672936,
+  "max_rel_score_diff_vs_torch": 0.0003274103021774501,
+  "cpu_ms_1thread": 33.2,
+  "opset": 17
+ }
+}

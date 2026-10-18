@@ -14,6 +14,7 @@ import { getConfirmedRepeatState, isConfirmedAlert } from "@/lib/rules/repeat";
 import { isA3Complete } from "@/lib/rules/lifecycle";
 import { getStore } from "@/lib/store";
 import { buildCameraView, buildLineView, buildPilotView, buildTrailView } from "@/lib/be4-views";
+import { buildCameraModelView } from "@/lib/vision/model-view";
 import { fingerprintSnapshot, seedFingerprint, SEED_VERSION } from "@/lib/seed-identity";
 import { SEED_REFERENCE_CLOCK } from "@/lib/seed";
 import type {
@@ -21,6 +22,7 @@ import type {
   AlertView,
   CardStatus,
   CardView,
+  CameraModelView,
   CameraView,
   Decision,
   DecisionView,
@@ -538,4 +540,8 @@ export async function getOverviewView(): Promise<OverviewView> {
       { id: "ideas", label: "Improvement ideas implemented", baseline: "28%", target: "40%", baselineProvenance: "case_data", targetProvenance: "target", baselineSourceLabel: "ES Table 4", targetSourceLabel: "ES Table 4" },
     ],
   };
+}
+
+export async function getCameraModelView(): Promise<CameraModelView> {
+  return buildCameraModelView();
 }

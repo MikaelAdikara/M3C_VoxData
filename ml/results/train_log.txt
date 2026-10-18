@@ -1,0 +1,94 @@
+bank built 80s
+  batch 0 of 313 (2s)
+  batch 50 of 313 (31s)
+  batch 100 of 313 (52s)
+  batch 150 of 313 (75s)
+  batch 200 of 313 (95s)
+  batch 250 of 313 (118s)
+  batch 300 of 313 (142s)
+calibrated 230s
+  batch 0 of 313 (1s)
+  batch 50 of 313 (18s)
+  batch 100 of 313 (35s)
+  batch 150 of 313 (56s)
+  batch 200 of 313 (79s)
+  batch 250 of 313 (99s)
+  batch 300 of 313 (119s)
+good test scored 358s
+  batch 0 of 4 (1s)
+  batch 0 of 1 (0s)
+  batch 0 of 4 (1s)
+  batch 0 of 1 (0s)
+  batch 0 of 4 (0s)
+  batch 0 of 1 (0s)
+  batch 0 of 4 (1s)
+  batch 0 of 1 (0s)
+  batch 0 of 4 (1s)
+  batch 0 of 1 (0s)
+  batch 0 of 4 (1s)
+defects scored 373s
+{
+ "false_alarms": {
+  "budget_per_station_shift": 2,
+  "crops_per_shift": 4800,
+  "alpha_per_seam": 0.0004166666666666667,
+  "good_test_crops": 40000,
+  "false_alarms": 8,
+  "expected_per_shift": 0.9600000000000001,
+  "expected_per_shift_95ci": [
+   0.4144782345105589,
+   1.8913991509771442
+  ]
+ },
+ "per_type": {
+  "BEAD_MISSING": {
+   "criticality": "leak_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 1.0
+  },
+  "BEAD_BREAK": {
+   "criticality": "leak_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 1.0
+  },
+  "BEAD_THIN": {
+   "criticality": "non_critical",
+   "random_detected": 381,
+   "random_n": 400,
+   "limit_detected": 50,
+   "limit_n": 59,
+   "auroc": 0.999841
+  },
+  "BEAD_OFFSET": {
+   "criticality": "non_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 1.0
+  },
+  "BEAD_EXCESS": {
+   "criticality": "non_critical",
+   "random_detected": 400,
+   "random_n": 400,
+   "limit_detected": 59,
+   "limit_n": 59,
+   "auroc": 0.9999979375000001
+  }
+ },
+ "strong_reflection": {
+  "flagged": 304,
+  "n": 400
+ }
+}
+C:\Users\mikae\AppData\Local\Python\pythoncore-3.11-64\Lib\site-packages\torch\onnx\utils.py:663: UserWarning: Constant folding - Only steps=1 can be constant folded for opset >= 10 onnx::Slice op. Constant folding not applied. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\torch\csrc\jit\passes\onnx\constant_fold.cpp:180.)
+  _C._jit_pass_onnx_graph_shape_type_inference(
+C:\Users\mikae\AppData\Local\Python\pythoncore-3.11-64\Lib\site-packages\torch\onnx\utils.py:1186: UserWarning: Constant folding - Only steps=1 can be constant folded for opset >= 10 onnx::Slice op. Constant folding not applied. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\builder\windows\pytorch\torch\csrc\jit\passes\onnx\constant_fold.cpp:180.)
+  _C._jit_pass_onnx_graph_shape_type_inference(
+onnx {'bytes': 7672936, 'max_rel_score_diff_vs_torch': 0.0003274103021774501, 'cpu_ms_1thread': 33.2, 'opset': 17}

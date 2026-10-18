@@ -531,3 +531,37 @@ export interface StoreSnapshot {
   cameraMaintenanceTickets: CameraMaintenanceTicket[];
   lineOperation: LineOperation;
 }
+
+/** /cameras/model: the real (synthetic-data) sealer-bead model that runs in the browser. */
+export interface CameraModelTypeResult {
+  defectTypeId: DefectTypeId;
+  key: "missing" | "break" | "thin" | "offset" | "excess";
+  name: string;
+  criticality: Criticality;
+  limitDetected: number;
+  limitN: number;
+  randomDetected: number;
+  randomN: number;
+  auroc: number;
+}
+
+export interface CameraModelView {
+  stationId: string;
+  modelVersion: string;
+  modelUrl: string;
+  seams: { index: number; id: string; threshold: number }[];
+  falseAlarmBudget: number;
+  bodiesPerShift: number;
+  evaluation: {
+    goodTestCrops: number;
+    falseAlarms: number;
+    expectedFalseAlarmsPerShift: number;
+    expectedFalseAlarmsPerShift95: [number, number];
+    perType: CameraModelTypeResult[];
+    strongReflection: { flagged: number; n: number };
+    cpuMs: number;
+    modelMegabytes: number;
+  };
+  provenance: "simulated";
+  sourceLabel: string;
+}

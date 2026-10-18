@@ -1,0 +1,9 @@
+# Python 3.11. A CUDA GPU is optional (the full run takes ~15 min on a GTX 1650, longer on CPU).
+numpy>=2.0
+pillow>=10
+scipy>=1.11
+scikit-learn>=1.4
+torch>=2.5
+torchvision>=0.20
+onnx==1.17.0
+onnxruntime>=1.20

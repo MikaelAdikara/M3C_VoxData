@@ -1,0 +1,146 @@
+{
+ "modelVersion": "bead-patchcore-r18-syn-v1",
+ "evaluatedOn": "2026-10-18",
+ "input": {
+  "width": 256,
+  "height": 96,
+  "layout": "NCHW RGB float32 0..1"
+ },
+ "config": {
+  "backbone": "resnet18 (ImageNet)",
+  "layers": [
+   1,
+   2
+  ],
+  "bank_per_seam": 1024,
+  "input_scale": 1.0,
+  "feature_dim": 192,
+  "projection": false,
+  "blur_sigma": 4.0
+ },
+ "seams": [
+  {
+   "id": "seam-L-door-01",
+   "threshold": 1.6959
+  },
+  {
+   "id": "seam-L-door-02",
+   "threshold": 1.9245
+  },
+  {
+   "id": "seam-L-door-03",
+   "threshold": 1.7658
+  },
+  {
+   "id": "seam-L-door-04",
+   "threshold": 1.7772
+  },
+  {
+   "id": "seam-R-door-05",
+   "threshold": 1.7086
+  },
+  {
+   "id": "seam-R-door-06",
+   "threshold": 1.9347
+  },
+  {
+   "id": "seam-R-door-07",
+   "threshold": 1.9249
+  },
+  {
+   "id": "seam-R-door-08",
+   "threshold": 1.6924
+  },
+  {
+   "id": "seam-L-roof-09",
+   "threshold": 1.8547
+  },
+  {
+   "id": "seam-L-roof-10",
+   "threshold": 1.9654
+  },
+  {
+   "id": "seam-L-roof-11",
+   "threshold": 1.9063
+  },
+  {
+   "id": "seam-L-roof-12",
+   "threshold": 1.9519
+  },
+  {
+   "id": "seam-R-roof-13",
+   "threshold": 1.7452
+  },
+  {
+   "id": "seam-R-roof-14",
+   "threshold": 1.8387
+  },
+  {
+   "id": "seam-R-roof-15",
+   "threshold": 1.672
+  },
+  {
+   "id": "seam-R-roof-16",
+   "threshold": 1.9697
+  }
+ ],
+ "falseAlarmBudget": 2,
+ "bodiesPerShift": 300,
+ "evaluation": {
+  "goodTestCrops": 40000,
+  "falseAlarms": 8,
+  "expectedFalseAlarmsPerShift": 0.96,
+  "expectedFalseAlarmsPerShift95": [
+   0.41,
+   1.89
+  ],
+  "perType": {
+   "BEAD_MISSING": {
+    "limitDetected": 59,
+    "limitN": 59,
+    "randomDetected": 400,
+    "randomN": 400,
+    "auroc": 1.0,
+    "criticality": "leak_critical"
+   },
+   "BEAD_BREAK": {
+    "limitDetected": 59,
+    "limitN": 59,
+    "randomDetected": 400,
+    "randomN": 400,
+    "auroc": 1.0,
+    "criticality": "leak_critical"
+   },
+   "BEAD_THIN": {
+    "limitDetected": 50,
+    "limitN": 59,
+    "randomDetected": 381,
+    "randomN": 400,
+    "auroc": 0.9998,
+    "criticality": "non_critical"
+   },
+   "BEAD_OFFSET": {
+    "limitDetected": 59,
+    "limitN": 59,
+    "randomDetected": 400,
+    "randomN": 400,
+    "auroc": 1.0,
+    "criticality": "non_critical"
+   },
+   "BEAD_EXCESS": {
+    "limitDetected": 59,
+    "limitN": 59,
+    "randomDetected": 400,
+    "randomN": 400,
+    "auroc": 1.0,
+    "criticality": "non_critical"
+   }
+  },
+  "strongReflection": {
+   "flagged": 304,
+   "n": 400
+  },
+  "cpuMs": 33.2,
+  "onnxBytes": 7672936
+ }
+}

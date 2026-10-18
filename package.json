@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/copy-ort-wasm.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/copy-ort-wasm.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -20,6 +22,7 @@
     "drizzle-orm": "^0.45.3",
     "motion": "^14.0.0",
     "next": "^16.0.0",
+    "onnxruntime-web": "1.30.0",
     "postgres": "^3.4.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

@@ -6,3 +6,6 @@ node_modules/
 .DS_Store
 .impeccable/review/
 .impeccable/questions/
+public/ort/
+ml/__pycache__/
+ml/results/metrics_quick.json
