@@ -14,6 +14,7 @@ import "./styles/cctv.css";
 import "./styles/line.css";
 import "./styles/dock.css";
 import "./styles/prov.css";
+import "./styles/model.css";
 import "./styles/landing3.css";
 
 const sourceSans = Source_Sans_3({

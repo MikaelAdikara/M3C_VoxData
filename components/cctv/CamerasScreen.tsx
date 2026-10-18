@@ -86,6 +86,7 @@ export function CamerasScreen({ view, canTicket }: { view: CameraView; canTicket
               </label>
             ))}
           </div>
+          <Link className="btn btn--ghost" href="/cameras/model"><Icon name="cpu" />Camera model</Link>
           <span className="loop loop--shift">Shift loop</span>
         </div>
       </div>

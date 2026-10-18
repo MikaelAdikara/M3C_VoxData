@@ -1,0 +1,31 @@
+/* /cameras/model: the in-browser sealer-bead model */
+.cm { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: var(--s5); align-items: start; }
+.cm > * { min-width: 0; }
+.cm-side { display: grid; gap: var(--s4); }
+.cm-canvas { position: relative; aspect-ratio: 256 / 96; border-radius: var(--r-tile); overflow: hidden; background: var(--media-ground, #3a3a3a); }
+.cm-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cm-canvas canvas:last-child { touch-action: none; }
+.cm-canvas[data-tool="erase"] canvas:last-child, .cm-canvas[data-tool="add"] canvas:last-child { cursor: crosshair; }
+.cm-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s3); margin-top: var(--s4); }
+.cm-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s4) var(--s5); margin-top: var(--s5); }
+.cm-span { grid-column: 1 / -1; }
+.cm-label { font-weight: 600; font-size: 15px; }
+.cm-controls .seg { flex-wrap: wrap; }
+.cm-range input[type="range"] { width: 100%; min-height: 32px; accent-color: var(--ink); }
+.cm-range label { display: flex; justify-content: space-between; gap: var(--s2); }
+.cm-check { display: inline-flex; align-items: center; gap: var(--s2); min-height: 44px; font-weight: 600; font-size: 15px; cursor: pointer; }
+.cm-check input { width: 20px; height: 20px; accent-color: var(--ink); }
+.cm-next { margin: var(--s4) 0; font-size: 15px; }
+.cm-honest { font-size: 14px; color: var(--muted-strong); display: grid; gap: var(--s2); justify-items: start; }
+.cm-eval { margin-top: var(--s5); }
+.cm-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); margin-bottom: var(--s5); }
+.cm-kpis div { display: grid; gap: var(--s1); }
+.cm-kpis b { font-size: 32px; line-height: 1.1; }
+.cm-kpis span { font-size: 14px; color: var(--muted); }
+.cm-table tbody tr { cursor: default; }
+.cm-foot { margin-top: var(--s4); font-size: 14px; }
+
+@media (max-width: 1100px) { .cm { grid-template-columns: 1fr; } }
+@media (max-width: 767px) {
+  .cm-controls, .cm-kpis { grid-template-columns: 1fr; }
+}
