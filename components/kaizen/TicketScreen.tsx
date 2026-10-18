@@ -10,8 +10,8 @@ import { BeadIllustration } from "@/components/station/BeadIllustration";
 import { Badge, LoopBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { advanceTicket, requestValidation, updateA3 } from "@/lib/actions/kaizen";
-import type { A3Field, TicketStatus, TicketView } from "@/lib/types";
+import { advanceTicket, checkDraftSentence, draftA3, requestValidation, updateA3 } from "@/lib/actions/kaizen";
+import type { A3DraftSentence, A3Field, TicketStatus, TicketView } from "@/lib/types";
 
 import { A3_BLOCKS, TICKET_LABEL, TICKET_STEPS } from "./labels";
 
@@ -31,7 +31,8 @@ export function TicketScreen({
   canEdit: boolean;
   notice?: ReactNode;
 }) {
-  const { ticket, triggerAlerts, a3, aiPrefilledFields, validation } = view;
+  const { ticket, triggerAlerts, a3, aiPrefilledFields, validation, similarCases, aiDraft } = view;
+  const canDraft = canEdit && ["open", "a3_in_progress"].includes(ticket.status);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const stepIndex = TICKET_STEPS.findIndex((s) => s.status === ticket.status);
@@ -125,6 +126,60 @@ export function TicketScreen({
           </section>
         ) : null}
 
+        {similarCases.length > 0 ? (
+          <section className="panel similar" aria-labelledby="similar-title">
+            <div className="panel__head">
+              <h2 id="similar-title">Similar closed cases</h2>
+              <span className="muted">Ranked from the case history by words and defect type · the engineer decides what applies</span>
+            </div>
+            <ol className="panel__body similar__list">
+              {similarCases.map((c) => (
+                <li key={c.id}>
+                  <div className="similar__top">
+                    <span className="mono">{c.id}</span>
+                    <span>{c.defectType.name} · {c.stationId}</span>
+                    {c.card ? (
+                      <Link className="badge badge--safe" href={`/knowledge?card=${c.card.id}`}>{c.card.id} r{c.card.revision}</Link>
+                    ) : null}
+                  </div>
+                  <p className="similar__symptom">{c.symptom}</p>
+                  <dl className="similar__facts">
+                    <dt>Root cause found</dt><dd>{c.rootCause}</dd>
+                    <dt>Countermeasure</dt><dd>{c.countermeasure}</dd>
+                  </dl>
+                  {c.matched.length ? <p className="muted similar__why">Shared words: {c.matched.join(", ")}</p> : null}
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
+        <div className="ai-bar" role="group" aria-label="AI drafting">
+          <div>
+            <strong><Icon name="sparkle" /> AI draft</strong>
+            <span className="muted">
+              {" "}Drafts background, current condition and ranked root-cause candidates from this ticket&apos;s alerts, the similar cases and validated cards.
+              Every sentence cites its source and stays marked until you edit or check it. It never writes the countermeasure.
+            </span>
+            {aiDraft ? (
+              <span className="ai-bar__meta">
+                {aiDraft.mode === "live" ? `Drafted by ${aiDraft.model}` : "Drafted by the offline template (no API key set)"} ·{" "}
+                {aiDraft.open} sentence{aiDraft.open === 1 ? "" : "s"} to check
+                {aiDraft.rejected ? ` · ${aiDraft.rejected} unsourced sentence${aiDraft.rejected === 1 ? "" : "s"} removed` : ""}
+              </span>
+            ) : null}
+          </div>
+          <Button
+            variant="ghost"
+            onClick={() => run(() => draftA3(ticket.id))}
+            disabled={!canDraft || pending}
+            title={canDraft ? undefined : "Only the owner engineer drafts, while the A3 is being written"}
+            icon={<Icon name="sparkle" />}
+          >
+            {pending ? "Drafting…" : aiDraft ? "Draft again" : view.liveDrafting ? "Draft with Claude" : "Draft from data"}
+          </Button>
+        </div>
+
         <section className="a3" aria-label="A3 problem-solving report">
           {[left, right].map((col, ci) => (
             <div className="a3__col" key={ci}>
@@ -138,6 +193,7 @@ export function TicketScreen({
                   value={a3[b.field]}
                   ai={aiPrefilledFields.includes(b.field)}
                   editable={editable}
+                  drafts={(aiDraft?.sentences ?? []).filter((d) => d.field === b.field && d.status === "draft")}
                   onError={setError}
                 />
               ))}
@@ -147,8 +203,8 @@ export function TicketScreen({
 
         <div className="a3__foot">
           <p className="muted">
-            AI may only pre-fill background and data. The engineer writes root cause and countermeasure; editing a
-            pre-filled block removes the AI tag.
+            AI drafts background, current condition and root-cause candidates, each with its source. The engineer confirms
+            the root cause at the line and writes the countermeasure; a sentence stays marked AI draft until it is edited or checked.
           </p>
           {validation.returnedCardId ? (
             <p className="returned" role="note">
@@ -215,6 +271,7 @@ function A3Block({
   value,
   ai,
   editable,
+  drafts,
   onError,
 }: {
   ticketId: string;
@@ -224,6 +281,7 @@ function A3Block({
   value: string;
   ai: boolean;
   editable: boolean;
+  drafts: A3DraftSentence[];
   onError: (e: string | null) => void;
 }) {
   const [draft, setDraft] = useState(value);
@@ -278,6 +336,41 @@ function A3Block({
           {value.trim() || "Not written yet."}
         </p>
       )}
+      {drafts.length ? (
+        <ul className="a3__drafts" aria-label={`AI-drafted sentences in ${label}`}>
+          {drafts.map((d) => (
+            <li key={d.id}>
+              <Badge tone="ai" icon={<Icon name="sparkle" />}>AI draft</Badge>
+              <span className="a3__draft-text">{d.text}</span>
+              <span className="a3__sources">
+                {d.sources.map((src) =>
+                  src.kind === "card" ? (
+                    <Link key={src.id} className="mono" href={`/knowledge?card=${src.id.split(" ")[0]}`}>{src.id}</Link>
+                  ) : (
+                    <span key={src.id} className="mono">{src.id}</span>
+                  ),
+                )}
+              </span>
+              {editable ? (
+                <button
+                  type="button"
+                  className="btn btn--quiet a3__check"
+                  disabled={saving}
+                  onClick={() => {
+                    onError(null);
+                    start(async () => {
+                      const r = await checkDraftSentence(ticketId, d.id);
+                      if (!r.ok) onError(r.error);
+                    });
+                  }}
+                >
+                  <Icon name="check" /> Checked
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }

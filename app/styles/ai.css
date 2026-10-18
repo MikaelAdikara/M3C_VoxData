@@ -1,0 +1,25 @@
+/* Kaizen ticket: similar cases (AI-3) and AI-drafted A3 sentences (AI-4) */
+.similar { margin-bottom: var(--s5); }
+.similar__list { list-style: none; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--s4); }
+.similar__list li { display: grid; gap: var(--s2); padding: var(--s3) var(--s4); border: 1px solid var(--line); border-radius: var(--r-tile); background: var(--panel); align-content: start; }
+.similar__top { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); font-size: 14px; }
+.similar__top .badge { margin-left: auto; text-decoration: none; }
+.similar__symptom { font-weight: 600; }
+.similar__facts { display: grid; gap: 2px; margin: 0; font-size: 14px; }
+.similar__facts dt { color: var(--muted); font-size: 13px; }
+.similar__facts dd { margin: 0 0 var(--s2); }
+.similar__why { font-size: 13px; }
+
+.ai-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s4); padding: var(--s3) var(--s4); border: 1px dashed var(--instruct-text); border-radius: var(--r-panel); background: rgba(0, 102, 177, .04); font-size: 14px; }
+.ai-bar > div { max-width: 80ch; }
+.ai-bar__meta { display: block; margin-top: 2px; font-weight: 600; color: var(--instruct-text); }
+
+.a3__drafts { list-style: none; margin: var(--s2) 0 0; padding: 0; display: grid; gap: var(--s2); }
+.a3__drafts li { display: grid; grid-template-columns: auto 1fr auto; gap: var(--s2) var(--s3); align-items: start; padding: var(--s2) var(--s3); border-left: 3px solid var(--instruct-text); background: rgba(0, 102, 177, .05); border-radius: 0 var(--r-input) var(--r-input) 0; font-size: 14px; }
+.a3__draft-text { grid-column: 2; }
+.a3__sources { grid-column: 2; display: flex; flex-wrap: wrap; gap: var(--s2); font-size: 13px; color: var(--muted); }
+.a3__check { grid-column: 3; grid-row: 1 / span 2; min-height: 44px; font-size: 14px; }
+@media (max-width: 767px) {
+  .a3__drafts li { grid-template-columns: 1fr; }
+  .a3__draft-text, .a3__sources, .a3__check { grid-column: 1; grid-row: auto; }
+}
