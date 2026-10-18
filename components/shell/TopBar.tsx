@@ -31,7 +31,8 @@ export function Footer() {
   return (
     <footer className="footer">
       Concept prototype · simulated data · not connected to TMMIN systems ·{" "}
-      <Link href="/simulator">Demo control</Link> · <Link href="/">Cover page</Link>
+      <Link href="/simulator">Demo control</Link> · <Link href="/events">Event outbox</Link> ·{" "}
+      <Link href="/cameras/model">Camera model</Link> · <Link href="/">Cover page</Link>
     </footer>
   );
 }
