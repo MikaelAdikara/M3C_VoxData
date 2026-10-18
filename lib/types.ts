@@ -138,6 +138,31 @@ export interface A3 {
 
 export type A3Field = keyof A3;
 
+/** Where an AI-drafted A3 sentence comes from: this ticket's data, a past case, or a validated card. */
+export interface A3DraftSource {
+  kind: "ticket" | "case" | "card";
+  /** Ticket ID, history case ID (HC-…), or "KC-… rN" for a card. */
+  id: string;
+}
+
+export interface A3DraftSentence {
+  id: string;
+  field: A3Field;
+  text: string;
+  sources: A3DraftSource[];
+  /** "draft" until the engineer edits the sentence (edited) or marks it checked. */
+  status: "draft" | "checked" | "edited";
+}
+
+export interface A3AiDraft {
+  mode: "live" | "template";
+  model?: string;
+  generatedAt: string;
+  sentences: A3DraftSentence[];
+  /** Sentences the model wrote without a valid source; dropped before the engineer saw them. */
+  rejected: number;
+}
+
 export interface Ticket {
   id: string;
   stationId: string;
@@ -147,6 +172,7 @@ export interface Ticket {
   status: TicketStatus;
   a3: A3;
   aiPrefilledFields: A3Field[];
+  aiDraft?: A3AiDraft;
   a3UpdatedAt?: string;
   createdAt: string;
   closedAt?: string;
@@ -293,12 +319,30 @@ export interface KaizenView {
   tickets: TicketSummary[];
 }
 
+export interface SimilarCaseView {
+  id: string;
+  stationId: string;
+  defectType: DefectType;
+  symptom: string;
+  rootCause: string;
+  countermeasure: string;
+  ticketId: string | null;
+  /** Set only when the card is validated; a draft or retired card is not shown as a source. */
+  card: { id: string; revision: number } | null;
+  matched: string[];
+  score: number;
+}
+
 export interface TicketView {
   ticket: Ticket;
   defectType: DefectType;
   triggerAlerts: AlertView[];
   a3: A3;
   aiPrefilledFields: A3Field[];
+  similarCases: SimilarCaseView[];
+  aiDraft: { mode: "live" | "template"; model: string | null; generatedAt: string; sentences: A3DraftSentence[]; rejected: number; open: number } | null;
+  /** True when ANTHROPIC_API_KEY is set; otherwise the template drafter runs. */
+  liveDrafting: boolean;
   validation: {
     requiredFieldsComplete: boolean;
     draftCardId: string | null;

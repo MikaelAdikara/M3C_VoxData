@@ -5,7 +5,10 @@ import {
   nextSimulatedTimestamp,
   revalidatePaths,
 } from "@/lib/action-support";
+import { buildDraftContext } from "@/lib/kaizen/a3-draft";
+import { runA3Drafter } from "@/lib/kaizen/drafter";
 import { getCurrentRole } from "@/lib/queries";
+import { composeField, draftableFields, fieldsWithOpenDraft, markEditedSentences, openDraftSentences } from "@/lib/rules/ai-draft";
 import { A3_FIELDS, getNextTicketStatus, isA3Complete } from "@/lib/rules/lifecycle";
 import { getStore } from "@/lib/store";
 import type { A3, A3Field, ActionResult, Factor4M, KnowledgeCard } from "@/lib/types";
@@ -51,7 +54,9 @@ export async function updateA3(ticketId: string, patch: Partial<A3>): Promise<Ac
       }
       for (const [field, value] of Object.entries(normalized) as [A3Field, string][]) {
         ticket.a3[field] = value;
-        ticket.aiPrefilledFields = ticket.aiPrefilledFields.filter((item) => item !== field);
+        ticket.aiDraft = markEditedSentences(ticket.aiDraft, field, value);
+        const stillDraft = fieldsWithOpenDraft(ticket.aiDraft);
+        ticket.aiPrefilledFields = ticket.aiPrefilledFields.filter((item) => item !== field || stillDraft.includes(item));
       }
       ticket.a3UpdatedAt = nextSimulatedTimestamp(draft);
       return { ok: true };
@@ -60,6 +65,66 @@ export async function updateA3(ticketId: string, patch: Partial<A3>): Promise<Ac
     return { ok: false, error: "Could not update the A3." };
   } finally {
     revalidatePaths(["/", "/kaizen", `/kaizen/${ticketId}`, "/metrics"]);
+  }
+}
+
+/** AI-4: draft background, current condition and root-cause candidates from data. Engineer only. */
+export async function draftA3(ticketId: string): Promise<ActionResult> {
+  try {
+    if (!isValidId(ticketId)) return { ok: false, error: "Invalid ticket ID." };
+    if ((await getCurrentRole()) !== "engineer") {
+      return { ok: false, error: "Only the owner engineer can ask for an A3 draft." };
+    }
+    const snapshot = await getStore().getSnapshot();
+    const ticket = snapshot.tickets.find((item) => item.id === ticketId);
+    if (!ticket) return { ok: false, error: "Kaizen ticket not found." };
+    if (!["open", "a3_in_progress"].includes(ticket.status)) {
+      return { ok: false, error: "AI drafting is only for tickets whose A3 is still being written." };
+    }
+    const fields = draftableFields(ticket.a3, ticket.aiPrefilledFields);
+    if (!fields.length) return { ok: false, error: "Background, current condition and root cause already hold your own text." };
+    // Claude runs outside the store mutation; the mutation below is short.
+    const draftResult = await runA3Drafter(buildDraftContext(snapshot, ticket, fields), nextSimulatedTimestamp(snapshot));
+
+    return await getStore().mutate<ActionResult>((draft) => {
+      const current = draft.tickets.find((item) => item.id === ticketId);
+      if (!current) return { ok: false, error: "Kaizen ticket not found." };
+      const kept = (current.aiDraft?.sentences ?? []).filter((s) => !fields.includes(s.field));
+      current.aiDraft = { ...draftResult, sentences: [...kept, ...draftResult.sentences] };
+      for (const field of fields) {
+        const text = composeField(field, draftResult.sentences);
+        if (text) current.a3[field] = text;
+      }
+      current.aiPrefilledFields = [...new Set([...current.aiPrefilledFields.filter((f) => !fields.includes(f)), ...fieldsWithOpenDraft(current.aiDraft)])];
+      return { ok: true };
+    });
+  } catch {
+    return { ok: false, error: "Could not draft the A3." };
+  } finally {
+    revalidatePaths(["/kaizen", `/kaizen/${ticketId}`]);
+  }
+}
+
+/** The engineer has read an AI-drafted sentence and keeps it as is. */
+export async function checkDraftSentence(ticketId: string, sentenceId: string): Promise<ActionResult> {
+  try {
+    if (!isValidId(ticketId) || !/^[a-zA-Z]+-\d+$/.test(sentenceId)) return { ok: false, error: "Invalid sentence." };
+    if ((await getCurrentRole()) !== "engineer") {
+      return { ok: false, error: "Only the owner engineer can check AI-drafted sentences." };
+    }
+    return await getStore().mutate<ActionResult>((draft) => {
+      const ticket = draft.tickets.find((item) => item.id === ticketId);
+      const sentence = ticket?.aiDraft?.sentences.find((s) => s.id === sentenceId);
+      if (!ticket?.aiDraft || !sentence) return { ok: false, error: "Sentence not found." };
+      sentence.status = "checked";
+      const open = fieldsWithOpenDraft(ticket.aiDraft);
+      ticket.aiPrefilledFields = ticket.aiPrefilledFields.filter((f) => f !== sentence.field || open.includes(f));
+      return { ok: true };
+    });
+  } catch {
+    return { ok: false, error: "Could not update the sentence." };
+  } finally {
+    revalidatePaths([`/kaizen/${ticketId}`]);
   }
 }
 
@@ -75,6 +140,9 @@ export async function advanceTicket(ticketId: string): Promise<ActionResult> {
       if (!ticket) return { ok: false, error: "Kaizen ticket not found." };
       const nextStatus = getNextTicketStatus(ticket);
       if (!nextStatus) return { ok: false, error: "Ticket cannot advance from its current state." };
+      if (ticket.status === "a3_in_progress" && openDraftSentences(ticket.aiDraft, ["rootCause"]).length) {
+        return { ok: false, error: "Check or edit the AI root-cause candidates before the countermeasure trial." };
+      }
       ticket.status = nextStatus;
       if (nextStatus === "closed") ticket.closedAt = nextSimulatedTimestamp(draft);
       return { ok: true };
@@ -101,6 +169,9 @@ export async function requestValidation(ticketId: string): Promise<ActionResult>
       }
       if (!isA3Complete(ticket.a3)) {
         return { ok: false, error: "Complete all six A3 sections before validation." };
+      }
+      if (openDraftSentences(ticket.aiDraft).length) {
+        return { ok: false, error: "Check or edit every AI-drafted sentence before requesting validation." };
       }
       const priorDraft = draft.cards
         .filter((card) => card.sourceTicketId === ticket.id && card.status === "draft")

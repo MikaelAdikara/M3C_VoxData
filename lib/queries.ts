@@ -15,6 +15,8 @@ import { isA3Complete } from "@/lib/rules/lifecycle";
 import { getStore } from "@/lib/store";
 import { buildCameraView, buildLineView, buildPilotView, buildTrailView } from "@/lib/be4-views";
 import { buildCameraModelView } from "@/lib/vision/model-view";
+import { buildDraftContext } from "@/lib/kaizen/a3-draft";
+import { openDraftSentences } from "@/lib/rules/ai-draft";
 import { fingerprintSnapshot, seedFingerprint, SEED_VERSION } from "@/lib/seed-identity";
 import { SEED_REFERENCE_CLOCK } from "@/lib/seed";
 import type {
@@ -310,6 +312,35 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
       .map((alert) => toAlertView(alert, defectTypesById)),
     a3: ticket.a3,
     aiPrefilledFields: [...ticket.aiPrefilledFields],
+    similarCases: buildDraftContext(snapshot, ticket).cases.map((c) => {
+      const card = c.case.cardId
+        ? snapshot.cards.filter((k) => k.id === c.case.cardId && k.status === "validated").sort((a, b) => b.revision - a.revision)[0]
+        : undefined;
+      const retired = snapshot.cards.some((k) => k.id === c.case.cardId && k.status === "retired");
+      return {
+        id: c.case.id,
+        stationId: c.case.stationId,
+        defectType: defectTypesById.get(c.case.defectTypeId)!,
+        symptom: c.case.symptom,
+        rootCause: c.case.rootCause,
+        countermeasure: c.case.countermeasure,
+        ticketId: c.case.ticketId ?? null,
+        card: card && !retired ? { id: card.id, revision: card.revision } : null,
+        matched: c.matched,
+        score: c.score,
+      };
+    }),
+    aiDraft: ticket.aiDraft
+      ? {
+          mode: ticket.aiDraft.mode,
+          model: ticket.aiDraft.model ?? null,
+          generatedAt: ticket.aiDraft.generatedAt,
+          sentences: ticket.aiDraft.sentences,
+          rejected: ticket.aiDraft.rejected,
+          open: openDraftSentences(ticket.aiDraft).length,
+        }
+      : null,
+    liveDrafting: Boolean(process.env.ANTHROPIC_API_KEY),
     validation: {
       requiredFieldsComplete,
       draftCardId: pendingDraft?.id ?? null,

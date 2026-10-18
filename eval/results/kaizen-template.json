@@ -1,0 +1,668 @@
+{
+  "runAt": "2026-10-18T09:28:19.170Z",
+  "ai3": {
+    "cases": 32,
+    "groups": 10,
+    "precisionAt3": 0.281,
+    "precisionAt3PlainBm25": 0.177,
+    "randomSameDefectBaseline": 0.145,
+    "ceiling": 0.75
+  },
+  "ai4": {
+    "mode": "template",
+    "tickets": 10,
+    "sentences": 52,
+    "unsourcedClaimsShipped": 0,
+    "unsourcedSentencesRemoved": 0,
+    "countermeasureSentences": 0,
+    "rootCauseGroupInCandidates": {
+      "hit": 5,
+      "of": 8
+    }
+  },
+  "perCase": [
+    {
+      "id": "HC-001",
+      "hits": 2
+    },
+    {
+      "id": "HC-002",
+      "hits": 2
+    },
+    {
+      "id": "HC-003",
+      "hits": 2
+    },
+    {
+      "id": "HC-004",
+      "hits": 1
+    },
+    {
+      "id": "HC-005",
+      "hits": 0
+    },
+    {
+      "id": "HC-006",
+      "hits": 0
+    },
+    {
+      "id": "HC-007",
+      "hits": 0
+    },
+    {
+      "id": "HC-008",
+      "hits": 1
+    },
+    {
+      "id": "HC-009",
+      "hits": 1
+    },
+    {
+      "id": "HC-010",
+      "hits": 2
+    },
+    {
+      "id": "HC-011",
+      "hits": 1
+    },
+    {
+      "id": "HC-012",
+      "hits": 2
+    },
+    {
+      "id": "HC-013",
+      "hits": 1
+    },
+    {
+      "id": "HC-014",
+      "hits": 0
+    },
+    {
+      "id": "HC-015",
+      "hits": 0
+    },
+    {
+      "id": "HC-016",
+      "hits": 1
+    },
+    {
+      "id": "HC-017",
+      "hits": 2
+    },
+    {
+      "id": "HC-018",
+      "hits": 0
+    },
+    {
+      "id": "HC-019",
+      "hits": 1
+    },
+    {
+      "id": "HC-020",
+      "hits": 0
+    },
+    {
+      "id": "HC-021",
+      "hits": 1
+    },
+    {
+      "id": "HC-022",
+      "hits": 0
+    },
+    {
+      "id": "HC-023",
+      "hits": 0
+    },
+    {
+      "id": "HC-024",
+      "hits": 2
+    },
+    {
+      "id": "HC-025",
+      "hits": 0
+    },
+    {
+      "id": "HC-026",
+      "hits": 2
+    },
+    {
+      "id": "HC-027",
+      "hits": 1
+    },
+    {
+      "id": "HC-028",
+      "hits": 0
+    },
+    {
+      "id": "HC-029",
+      "hits": 1
+    },
+    {
+      "id": "HC-030",
+      "hits": 0
+    },
+    {
+      "id": "HC-031",
+      "hits": 1
+    },
+    {
+      "id": "HC-032",
+      "hits": 0
+    }
+  ],
+  "rows": [
+    {
+      "ticket": "KZ-SEAL-007",
+      "mode": "template",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 2,
+      "heldOutGroupInCandidates": null,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "background",
+          "text": "3 confirmed thin bead alerts at st-04 on seam-R-door-04, seam-R-door-12 between 08:11 and 08:23 opened this ticket under the repeat rule.",
+          "sources": [
+            "KZ-SEAL-007"
+          ]
+        },
+        {
+          "field": "background",
+          "text": "Thin bead is non-critical; the cost is rework and repeat alerts at the station.",
+          "sources": [
+            "KZ-SEAL-007"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.65 to 0.86 against a threshold of 0.61 on model sealer-st04-v1.2.",
+          "sources": [
+            "KZ-SEAL-007"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-001 (thin bead on door seams at shift start at st-04); HC-002 (narrow bead on the first five bodies after the monday restart at st-04).",
+          "sources": [
+            "HC-001",
+            "HC-002"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: sealer viscosity high when material is cold after the overnight stop (seen in HC-001, written up in KC-SEAL-014).",
+          "sources": [
+            "HC-001",
+            "KC-SEAL-014 r3"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: partly clogged nozzle tip from cured sealer (seen in HC-006).",
+          "sources": [
+            "HC-006"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-SEAL-008",
+      "mode": "template",
+      "sentences": 7,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": null,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "background",
+          "text": "3 confirmed bead off path alerts at st-02 on seam-R-door-10 between 08:15 and 08:15 opened this ticket under the repeat rule.",
+          "sources": [
+            "KZ-SEAL-008"
+          ]
+        },
+        {
+          "field": "background",
+          "text": "Bead off path is non-critical; the cost is rework and repeat alerts at the station.",
+          "sources": [
+            "KZ-SEAL-008"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.74 to 0.88 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-SEAL-008"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-030 (bead off path on the left door after the jig was serviced at st-04); HC-012 (bead offset after a robot path program change at st-01).",
+          "sources": [
+            "HC-030",
+            "HC-012"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: locating pin worn; body sits 2 mm off the nominal position (seen in HC-030).",
+          "sources": [
+            "HC-030"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: first-off path verification was skipped after recipe selection (seen in HC-012, written up in KC-SEAL-040).",
+          "sources": [
+            "HC-012",
+            "KC-SEAL-040 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: camera bracket moved; region of interest no longer on the seam (seen in HC-011).",
+          "sources": [
+            "HC-011"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-01",
+      "mode": "template",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-01"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-001 (thin bead on door seams at shift start at st-04); HC-024 (bead break after manual robot recovery at st-03).",
+          "sources": [
+            "HC-001",
+            "HC-024"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: sealer viscosity high when material is cold after the overnight stop (seen in HC-001, written up in KC-SEAL-014).",
+          "sources": [
+            "HC-001",
+            "KC-SEAL-014 r3"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: recovery resumed from the middle of the seam instead of its defined restart point (seen in HC-024, written up in KC-SEAL-044).",
+          "sources": [
+            "HC-024",
+            "KC-SEAL-044 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: new tip seated off-centre; jet hits the flange edge (seen in HC-008).",
+          "sources": [
+            "HC-008"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-02",
+      "mode": "template",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-02"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-005 (bead break at seam-r-door-07 at st-04); HC-025 (part of the door seam unsealed on a body that was in station during a fault at st-04).",
+          "sources": [
+            "HC-005",
+            "HC-025"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: nozzle angle drifts after nozzle change (seen in HC-005, written up in KC-SEAL-021).",
+          "sources": [
+            "HC-005",
+            "KC-SEAL-021 r2"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: robot restarted at the next seam after the fault reset (seen in HC-025).",
+          "sources": [
+            "HC-025"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: line was not bled after maintenance; air trapped at the regulator (seen in HC-020).",
+          "sources": [
+            "HC-020"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-03",
+      "mode": "template",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-03"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-030 (bead off path on the left door after the jig was serviced at st-04); HC-012 (bead offset after a robot path program change at st-01).",
+          "sources": [
+            "HC-030",
+            "HC-012"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: locating pin worn; body sits 2 mm off the nominal position (seen in HC-030).",
+          "sources": [
+            "HC-030"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: first-off path verification was skipped after recipe selection (seen in HC-012, written up in KC-SEAL-040).",
+          "sources": [
+            "HC-012",
+            "KC-SEAL-040 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: new ceiling lamp creates a glare spot on glossy sealer (seen in HC-010).",
+          "sources": [
+            "HC-010"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-04",
+      "mode": "template",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": false,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-04"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-025 (part of the door seam unsealed on a body that was in station during a fault at st-04); HC-018 (missing bead immediately after a material cartridge change at st-05).",
+          "sources": [
+            "HC-025",
+            "HC-018"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: robot restarted at the next seam after the fault reset (seen in HC-025).",
+          "sources": [
+            "HC-025"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: an air pocket remained in the supply line after changeover (seen in HC-018, written up in KC-SEAL-042).",
+          "sources": [
+            "HC-018",
+            "KC-SEAL-042 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: new tip seated off-centre; jet hits the flange edge (seen in HC-008).",
+          "sources": [
+            "HC-008"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-05",
+      "mode": "template",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-05"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-016 (blob of sealer where the bead ends on the hood seam at st-05); HC-001 (thin bead on door seams at shift start at st-04).",
+          "sources": [
+            "HC-016",
+            "HC-001"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: applicator valve closing late; seal kit past its service life (seen in HC-016).",
+          "sources": [
+            "HC-016"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: sealer viscosity high when material is cold after the overnight stop (seen in HC-001, written up in KC-SEAL-014).",
+          "sources": [
+            "HC-001",
+            "KC-SEAL-014 r3"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: new ceiling lamp creates a glare spot on glossy sealer (seen in HC-010).",
+          "sources": [
+            "HC-010"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-06",
+      "mode": "template",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": false,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-06"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-025 (part of the door seam unsealed on a body that was in station during a fault at st-04); HC-008 (intermittent gaps in the bead on door seams after the tip was replaced at st-04).",
+          "sources": [
+            "HC-025",
+            "HC-008"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: robot restarted at the next seam after the fault reset (seen in HC-025).",
+          "sources": [
+            "HC-025"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: new tip seated off-centre; jet hits the flange edge (seen in HC-008).",
+          "sources": [
+            "HC-008"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: locating pin worn; body sits 2 mm off the nominal position (seen in HC-030).",
+          "sources": [
+            "HC-030"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-07",
+      "mode": "template",
+      "sentences": 4,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 2,
+      "heldOutGroupInCandidates": false,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-07"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-016 (blob of sealer where the bead ends on the hood seam at st-05); HC-001 (thin bead on door seams at shift start at st-04).",
+          "sources": [
+            "HC-016",
+            "HC-001"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: applicator valve closing late; seal kit past its service life (seen in HC-016).",
+          "sources": [
+            "HC-016"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: sealer viscosity high when material is cold after the overnight stop (seen in HC-001, written up in KC-SEAL-014).",
+          "sources": [
+            "HC-001",
+            "KC-SEAL-014 r3"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-08",
+      "mode": "template",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Anomaly scores were 0.70 to 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-08"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Closest closed cases: HC-025 (part of the door seam unsealed on a body that was in station during a fault at st-04); HC-024 (bead break after manual robot recovery at st-03).",
+          "sources": [
+            "HC-025",
+            "HC-024"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: robot restarted at the next seam after the fault reset (seen in HC-025).",
+          "sources": [
+            "HC-025"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: material cooled in the gun during the stop and did not flow evenly (seen in HC-004).",
+          "sources": [
+            "HC-004"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: new tip seated off-centre; jet hits the flange edge (seen in HC-008).",
+          "sources": [
+            "HC-008"
+          ]
+        }
+      ]
+    }
+  ]
+}

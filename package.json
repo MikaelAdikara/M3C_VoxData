@@ -13,7 +13,8 @@
     "be4:smoke": "vite-node --config vitest.config.ts scripts/be4-smoke.ts",
     "test": "vitest run",
     "db:seed": "vite-node --config vitest.config.ts db/seed.ts",
-    "eval:assistant": "vite-node --config vitest.config.ts scripts/eval-assistant.ts"
+    "eval:assistant": "vite-node --config vitest.config.ts scripts/eval-assistant.ts",
+    "eval:kaizen": "vite-node --config vitest.config.ts scripts/eval-kaizen.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
