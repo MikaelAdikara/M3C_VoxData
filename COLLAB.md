@@ -239,6 +239,7 @@ Setiap perubahan nama/bentuk di `lib/types.ts`, `lib/queries.ts`, `lib/actions/*
 
 ---
 | 2026-10-18 | BE+UI (satu sesi, W17) | Tipe baru: `CameraModelView`, `A3DraftSource`/`A3DraftSentence`/`A3AiDraft` (`Ticket.aiDraft?`), `SimilarCaseView`, `TicketView.similarCases`/`aiDraft`/`liveDrafting`, `EventsView`. Query baru: `getCameraModelView()`, `getEventsView()`. Action baru: `draftA3`, `checkDraftSentence` (kaizen), `sendTestEvent` (events). Aturan: trial menunggu kandidat akar masalah AI dicek/diedit; validasi menunggu tidak ada kalimat AI draft. `LiveAnswerGenerator` kini boleh mengembalikan draf terstruktur. Env opsional baru: `WORKFLOW_WEBHOOK_URL`, `WORKFLOW_WEBHOOK_SECRET`. | UI memakai field baru di `TicketView`; tidak ada field lama yang berubah. Seed tidak berubah (riwayat kasus ada di `lib/kaizen/history.ts`, SEED_DATA §9). |
+| 2026-10-18 | BE (W17) | Default `ANTHROPIC_MODEL` kini `claude-haiku-5-5` (model termurah; evaluasi live dijalankan dengan model ini). `createClaudeAnswerer`/`createClaudeA3Drafter`/`runA3Drafter` menerima `onUsage` opsional; `lib/llm/claude.ts` menambah `usageCost`. | Tidak ada perubahan untuk UI. |
 
 ## 8. Kontrak BE-4 untuk UI-4
 
