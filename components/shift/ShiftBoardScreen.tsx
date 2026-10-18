@@ -102,7 +102,8 @@ export function ShiftBoardScreen({
             <p className="totals">
               Shift {view.shift.label} so far: <b className="num">{totals.open}</b> open ·{" "}
               <b className="num">{totals.confirmed}</b> confirmed · <b className="num">{totals.rejected}</b>{" "}
-              rejected · override rate <b className="num">{override}%</b>
+              rejected ({override}% of {decided} decided, too few to read as a rate; the 30-day override rate is on
+              Metrics)
             </p>
             {mode === "line" && line ? (
               <LineStage
