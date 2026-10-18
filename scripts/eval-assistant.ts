@@ -12,12 +12,21 @@ import { join } from "node:path";
 
 import { createClaudeAnswerer } from "@/lib/assistant/live";
 import { answerAssistantQuestion } from "@/lib/assistant/service";
-import { claudeModel, getClaude } from "@/lib/llm/claude";
+import { claudeModel, getClaude, usageCost, type ClaudeUsage } from "@/lib/llm/claude";
 import { createSeedData } from "@/lib/seed";
 
 interface EvalQuestion { id: string; question: string; expectedCard: string | null; note?: string }
 
 const live = process.argv.includes("--live");
+/** Hard spend cap for one live run (USD). The run stops before the next call once it is reached. */
+const BUDGET_USD = Number(process.env.EVAL_BUDGET_USD ?? 0.12);
+let spent = 0;
+let calls = 0;
+function track(usage: ClaudeUsage, model: string) {
+  spent += usageCost(usage, model);
+  calls += 1;
+}
+
 const root = process.cwd();
 const { questions } = JSON.parse(readFileSync(join(root, "eval/assistant-questions.json"), "utf8")) as { questions: EvalQuestion[] };
 const cards = createSeedData().cards;
@@ -26,10 +35,14 @@ const validated = new Set(cards.filter((c) => c.status === "validated").map((c) 
 async function main() {
   const client = live ? getClaude() : null;
   if (live && !client) throw new Error("--live needs ANTHROPIC_API_KEY in the environment.");
-  const generator = client ? createClaudeAnswerer(client, claudeModel()) : undefined;
+  const generator = client ? createClaudeAnswerer(client, claudeModel(), track) : undefined;
 
   const rows = [];
   for (const q of questions) {
+    if (live && spent >= BUDGET_USD) {
+      console.log(`Budget of $${BUDGET_USD} reached after ${calls} calls; stopping early.`);
+      break;
+    }
     const answer = await answerAssistantQuestion(q.question, cards, generator);
     const answered = answer.mode !== "no_card";
     const citationsValid = answer.citations.every((c) => validated.has(`${c.cardId}:${c.revision}`));
@@ -50,6 +63,9 @@ async function main() {
     answeredWithRightCard: { pass: withCard.filter((r) => r.pass).length, of: withCard.length },
     wrongRefusals: withCard.filter((r) => r.mode === "no_card").length,
     correctRefusals: { pass: noCard.filter((r) => r.pass).length, of: noCard.length, target: ">= 9 of 10" },
+    claudeCalls: calls,
+    budgetUsd: BUDGET_USD,
+    costUsd: Number(spent.toFixed(4)),
   };
   console.log(JSON.stringify(summary, null, 2));
   writeFileSync(join(root, `eval/results/assistant-${live ? "live" : "offline"}.json`), JSON.stringify({ summary, rows }, null, 2) + "\n");

@@ -1,0 +1,331 @@
+{
+  "summary": {
+    "mode": "live (claude-haiku-5-5)",
+    "runAt": "2026-10-18T10:29:47.530Z",
+    "questions": 30,
+    "citationValidity": {
+      "valid": 17,
+      "of": 17,
+      "target": "100%"
+    },
+    "answeredWithRightCard": {
+      "pass": 17,
+      "of": 20
+    },
+    "wrongRefusals": 3,
+    "correctRefusals": {
+      "pass": 10,
+      "of": 10,
+      "target": ">= 9 of 10"
+    },
+    "claudeCalls": 19,
+    "budgetUsd": 0.12,
+    "costUsd": 0.0035
+  },
+  "rows": [
+    {
+      "id": "Q01",
+      "expectedCard": "KC-SEAL-014",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-014 r3"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A thin bead on door seams at shift start on st-04 is linked to sealer viscosity running high when the material is cold after the overnight stop. [KC-SEAL-014 r3] The countermeasure is a 30 s warm-up purge before the first body, and checking gun pressure at start-up. [KC-SEAL-014 r3] The standardized work for st-04, step 2 was revised to cover this. [KC-SEAL-014 r3]"
+    },
+    {
+      "id": "Q02",
+      "expectedCard": "KC-SEAL-014",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-014 r3"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Known cause: after the overnight stop the sealer is cold and viscous, which gives a thin bead on the door seams at shift start. [KC-SEAL-014 r3] Countermeasure: run a 30 s warm-up purge before the first body and check gun pressure at start-up. [KC-SEAL-014 r3] The standardized work for st-04 was revised at step 2 to cover this. [KC-SEAL-014 r3]"
+    },
+    {
+      "id": "Q03",
+      "expectedCard": "KC-SEAL-014",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-014 r3"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A thin bead at shift start is linked to sealer viscosity running high when the material is cold after the overnight stop. [KC-SEAL-014 r3] The countermeasure is a 30 s warm-up purge before the first body, and checking gun pressure at start-up. [KC-SEAL-014 r3]"
+    },
+    {
+      "id": "Q04",
+      "expectedCard": "KC-SEAL-021",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-021 r2"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A known cause of bead break at seam-R-door-07 is nozzle angle drift after a nozzle change. [KC-SEAL-021 r2] The countermeasure is an angle gauge check after every nozzle change, which is added to the change checklist. [KC-SEAL-021 r2]"
+    },
+    {
+      "id": "Q05",
+      "expectedCard": "KC-SEAL-021",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-021 r2"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A bead break at seam-R-door-07 on st-04 has a validated root cause: the nozzle angle drifts after a nozzle change. [KC-SEAL-021 r2] The validated countermeasure is an angle gauge check after every nozzle change, added to the change checklist. [KC-SEAL-021 r2]"
+    },
+    {
+      "id": "Q06",
+      "expectedCard": "KC-SEAL-021",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-021 r2"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "After a sealer nozzle change, check the nozzle angle with an angle gauge, because nozzle angle can drift after a nozzle change and cause bead breaks at seam-R-door-07. [KC-SEAL-021 r2]"
+    },
+    {
+      "id": "Q07",
+      "expectedCard": "KC-SEAL-009",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-009 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "The validated card covers false alarms on the new grey sealer at st-02, and its recorded root cause is lower contrast under the current lighting. [KC-SEAL-009 r1] The recorded countermeasure is to add a polarising filter and re-validate the model as a 4M change. [KC-SEAL-009 r1]"
+    },
+    {
+      "id": "Q08",
+      "expectedCard": "KC-SEAL-009",
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": false,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "Q09",
+      "expectedCard": "KC-SEAL-040",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-040 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "For a bead offset after a robot path program change on st-01, the validated cause is that first-off path verification was skipped after recipe selection. [KC-SEAL-040 r1] The countermeasure is to verify the robot path on the first-off body before normal production. [KC-SEAL-040 r1]"
+    },
+    {
+      "id": "Q10",
+      "expectedCard": "KC-SEAL-040",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-040 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "After a robot path program change, verify the robot path on the first-off body before normal production. [KC-SEAL-040 r1] The related checklist is the robot path change checklist, first-off verification. [KC-SEAL-040 r1]"
+    },
+    {
+      "id": "Q11",
+      "expectedCard": "KC-SEAL-041",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-041 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Card KC-SEAL-041 matches this symptom at st-02: excess sealer at the end of the bead was linked to a slowed shut-off response after applicator valve seal wear. [KC-SEAL-041 r1] The validated countermeasure is to inspect the valve response and confirm a clean cut-off on a trial body, following the applicator inspection standard's valve response check. [KC-SEAL-041 r1]"
+    },
+    {
+      "id": "Q12",
+      "expectedCard": "KC-SEAL-041",
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": false,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "Q13",
+      "expectedCard": "KC-SEAL-042",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-042 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A missing bead right after a material cartridge change matches a known cause: an air pocket left in the supply line after changeover. [KC-SEAL-042 r1] The validated countermeasure is to purge until the flow is continuous and to verify the first bead before release. [KC-SEAL-042 r1]"
+    },
+    {
+      "id": "Q14",
+      "expectedCard": "KC-SEAL-042",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-042 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A missing bead right after a material cartridge change is linked to an air pocket left in the supply line after changeover. [KC-SEAL-042 r1] The countermeasure is to purge until the flow is continuous and to verify the first bead before release. [KC-SEAL-042 r1]"
+    },
+    {
+      "id": "Q15",
+      "expectedCard": "KC-SEAL-043",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-043 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A thin bead on st-06 during rapid sealer pressure fluctuation has been linked to the pressure regulator response lagging during a demand change. [KC-SEAL-043 r1] The validated countermeasure is to check regulator response and hold pressure within the approved start-up range, per the Sealer pressure verification standard. [KC-SEAL-043 r1]"
+    },
+    {
+      "id": "Q16",
+      "expectedCard": "KC-SEAL-043",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-043 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "The validated card covers a thin bead during rapid pressure fluctuation, with the root cause being pressure regulator response lagging during a demand change. [KC-SEAL-043 r1] The recorded countermeasure is to check regulator response and hold pressure within the approved start-up range. [KC-SEAL-043 r1]"
+    },
+    {
+      "id": "Q17",
+      "expectedCard": "KC-SEAL-044",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-044 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "After manual robot recovery on st-03, a bead break is linked to resuming from the middle of the seam instead of its defined restart point. [KC-SEAL-044 r1] The countermeasure is to return to the defined seam restart point and inspect the recovered bead. [KC-SEAL-044 r1]"
+    },
+    {
+      "id": "Q18",
+      "expectedCard": "KC-SEAL-044",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-044 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "After a manual robot recovery, return the robot to the defined seam restart point rather than resuming from the middle of the seam, and inspect the recovered bead. [KC-SEAL-044 r1]"
+    },
+    {
+      "id": "Q19",
+      "expectedCard": "KC-SEAL-045",
+      "mode": "live",
+      "citations": [
+        "KC-SEAL-045 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "A known root cause for excess bead at a corner transition on st-04 is that the robot speed reduction was not paired with a lower flow command. [KC-SEAL-045 r1] The validated countermeasure is to pair the corner speed profile with the approved flow setpoint, as defined in the sealer recipe standard for corner transition settings. [KC-SEAL-045 r1]"
+    },
+    {
+      "id": "Q20",
+      "expectedCard": "KC-SEAL-045",
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": false,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N01",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N02",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N03",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N04",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N05",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N06",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N07",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N08",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N09",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N10",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    }
+  ]
+}

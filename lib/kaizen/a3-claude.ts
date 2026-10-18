@@ -3,6 +3,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 
 import { contextForPrompt, type DraftContext, type RawSentence } from "@/lib/kaizen/a3-draft";
+import type { UsageListener } from "@/lib/llm/claude";
 
 const Sentence = z.object({ text: z.string(), sources: z.array(z.string()) });
 
@@ -24,7 +25,7 @@ Every sentence lists in "sources" the IDs it rests on, exactly as written in the
 Leave a list empty when its field is not in fieldsToDraft.
 Do not write a countermeasure, a decision or a conclusion: the engineer confirms the root cause at the line and writes the countermeasure. Never suggest stopping the line; that is the team leader's decision.`;
 
-export function createClaudeA3Drafter(client: Anthropic, model: string) {
+export function createClaudeA3Drafter(client: Anthropic, model: string, onUsage?: UsageListener) {
   return async (ctx: DraftContext): Promise<RawSentence[]> => {
     const response = await client.messages.parse({
       model,
@@ -33,6 +34,7 @@ export function createClaudeA3Drafter(client: Anthropic, model: string) {
       output_config: { effort: "medium", format: zodOutputFormat(A3DraftSchema) },
       messages: [{ role: "user", content: JSON.stringify(contextForPrompt(ctx), null, 1) }],
     });
+    onUsage?.(response.usage, model);
     if (response.stop_reason === "refusal" || !response.parsed_output) {
       throw new Error(`No structured A3 draft (stop_reason ${response.stop_reason}).`);
     }

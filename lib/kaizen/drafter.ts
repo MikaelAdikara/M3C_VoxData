@@ -1,14 +1,14 @@
 import { createClaudeA3Drafter } from "@/lib/kaizen/a3-claude";
 import { templateDraft, validateSentences, type DraftContext } from "@/lib/kaizen/a3-draft";
-import { claudeModel, getClaude } from "@/lib/llm/claude";
+import { claudeModel, getClaude, type UsageListener } from "@/lib/llm/claude";
 import type { A3AiDraft } from "@/lib/types";
 
 /** Draft with Claude when a key is set; otherwise, or if Claude fails, use the template. */
-export async function runA3Drafter(ctx: DraftContext, generatedAt: string, options: { live?: boolean } = {}): Promise<A3AiDraft> {
+export async function runA3Drafter(ctx: DraftContext, generatedAt: string, options: { live?: boolean; onUsage?: UsageListener } = {}): Promise<A3AiDraft> {
   const client = options.live === false ? null : getClaude();
   if (client) {
     try {
-      const raw = await createClaudeA3Drafter(client, claudeModel())(ctx);
+      const raw = await createClaudeA3Drafter(client, claudeModel(), options.onUsage)(ctx);
       const { sentences, rejected } = validateSentences(raw, ctx);
       if (sentences.length) return { mode: "live", model: claudeModel(), generatedAt, sentences, rejected };
     } catch {

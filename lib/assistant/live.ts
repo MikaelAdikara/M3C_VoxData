@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { ASSISTANT_SYSTEM_PROMPT, buildGroundedQuestion } from "@/lib/assistant/prompt";
 import type { LiveAnswerGenerator } from "@/lib/assistant/service";
+import type { UsageListener } from "@/lib/llm/claude";
 
 /** What Claude must return: sentences, each with the cards that support it. */
 export const LiveDraftSchema = z.object({
@@ -18,7 +19,7 @@ export const LiveDraftSchema = z.object({
 
 export type LiveDraft = z.infer<typeof LiveDraftSchema>;
 
-export function createClaudeAnswerer(client: Anthropic, model: string): LiveAnswerGenerator {
+export function createClaudeAnswerer(client: Anthropic, model: string, onUsage?: UsageListener): LiveAnswerGenerator {
   return async (question, cards) => {
     const response = await client.messages.parse({
       model,
@@ -27,6 +28,7 @@ export function createClaudeAnswerer(client: Anthropic, model: string): LiveAnsw
       output_config: { effort: "low", format: zodOutputFormat(LiveDraftSchema) },
       messages: [{ role: "user", content: buildGroundedQuestion(question, cards) }],
     });
+    onUsage?.(response.usage, model);
     if (response.stop_reason === "refusal" || !response.parsed_output) {
       throw new Error(`No structured answer (stop_reason ${response.stop_reason}).`);
     }

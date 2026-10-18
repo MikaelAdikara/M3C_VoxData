@@ -1,0 +1,741 @@
+{
+  "runAt": "2026-10-18T10:31:31.111Z",
+  "ai3": {
+    "cases": 32,
+    "groups": 10,
+    "precisionAt3": 0.281,
+    "precisionAt3PlainBm25": 0.177,
+    "randomSameDefectBaseline": 0.145,
+    "ceiling": 0.75
+  },
+  "ai4": {
+    "mode": "live (claude-haiku-5-5)",
+    "tickets": 10,
+    "sentences": 60,
+    "unsourcedClaimsShipped": 0,
+    "unsourcedSentencesRemoved": 1,
+    "countermeasureSentences": 0,
+    "rootCauseGroupInCandidates": {
+      "hit": 4,
+      "of": 8
+    },
+    "claudeCalls": 10,
+    "budgetUsd": 0.12,
+    "costUsd": 0.0119,
+    "rescoredAt": "2026-10-18T10:33:14.216Z"
+  },
+  "perCase": [
+    {
+      "id": "HC-001",
+      "hits": 2
+    },
+    {
+      "id": "HC-002",
+      "hits": 2
+    },
+    {
+      "id": "HC-003",
+      "hits": 2
+    },
+    {
+      "id": "HC-004",
+      "hits": 1
+    },
+    {
+      "id": "HC-005",
+      "hits": 0
+    },
+    {
+      "id": "HC-006",
+      "hits": 0
+    },
+    {
+      "id": "HC-007",
+      "hits": 0
+    },
+    {
+      "id": "HC-008",
+      "hits": 1
+    },
+    {
+      "id": "HC-009",
+      "hits": 1
+    },
+    {
+      "id": "HC-010",
+      "hits": 2
+    },
+    {
+      "id": "HC-011",
+      "hits": 1
+    },
+    {
+      "id": "HC-012",
+      "hits": 2
+    },
+    {
+      "id": "HC-013",
+      "hits": 1
+    },
+    {
+      "id": "HC-014",
+      "hits": 0
+    },
+    {
+      "id": "HC-015",
+      "hits": 0
+    },
+    {
+      "id": "HC-016",
+      "hits": 1
+    },
+    {
+      "id": "HC-017",
+      "hits": 2
+    },
+    {
+      "id": "HC-018",
+      "hits": 0
+    },
+    {
+      "id": "HC-019",
+      "hits": 1
+    },
+    {
+      "id": "HC-020",
+      "hits": 0
+    },
+    {
+      "id": "HC-021",
+      "hits": 1
+    },
+    {
+      "id": "HC-022",
+      "hits": 0
+    },
+    {
+      "id": "HC-023",
+      "hits": 0
+    },
+    {
+      "id": "HC-024",
+      "hits": 2
+    },
+    {
+      "id": "HC-025",
+      "hits": 0
+    },
+    {
+      "id": "HC-026",
+      "hits": 2
+    },
+    {
+      "id": "HC-027",
+      "hits": 1
+    },
+    {
+      "id": "HC-028",
+      "hits": 0
+    },
+    {
+      "id": "HC-029",
+      "hits": 1
+    },
+    {
+      "id": "HC-030",
+      "hits": 0
+    },
+    {
+      "id": "HC-031",
+      "hits": 1
+    },
+    {
+      "id": "HC-032",
+      "hits": 0
+    }
+  ],
+  "rows": [
+    {
+      "ticket": "KZ-SEAL-007",
+      "mode": "live",
+      "sentences": 7,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": null,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "background",
+          "text": "Ticket KZ-SEAL-007 was raised for three thin-bead alerts at st-04 in shift A, at 08:11, 08:17 and 08:23.",
+          "sources": [
+            "KZ-SEAL-007"
+          ]
+        },
+        {
+          "field": "background",
+          "text": "The defect is classed non-critical, and the alerts came from model sealer-st04-v1.2 on seam-R-door-04 (twice) and seam-R-door-12.",
+          "sources": [
+            "KZ-SEAL-007"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The alert scores were 0.78 on seam-R-door-04 at 08:11, 0.86 on seam-R-door-12 at 08:17 and 0.65 on seam-R-door-04 at 08:23, all above the 0.61 threshold.",
+          "sources": [
+            "KZ-SEAL-007"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The lowest score, 0.65 at 08:23, is only 0.04 above threshold, so the margin narrowed across the three alerts.",
+          "sources": [
+            "KZ-SEAL-007"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: sealer viscosity running high because the material is cold after the overnight stop, since HC-001 and KC-SEAL-014 r3 record thin bead on door seams at st-04 from this cause.",
+          "sources": [
+            "HC-001",
+            "KC-SEAL-014 r3"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: a partly clogged nozzle tip from cured sealer, since HC-006 records a bead that thins along a seam during the shift, although on st-03.",
+          "sources": [
+            "HC-006"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: nozzle seating or angle drift after a tip or nozzle change, since HC-008 and KC-SEAL-021 r2 record bead defects at st-04 after such changes, although their symptoms are gaps and bead break rather than thin bead.",
+          "sources": [
+            "HC-008",
+            "KC-SEAL-021 r2"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-SEAL-008",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": null,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "background",
+          "text": "Three bead-off-path alerts were raised at 08:15 on seam-R-door-10 at station st-02, on bodies K2-27-002202, K2-27-002282 and K2-27-002362.",
+          "sources": [
+            "KZ-SEAL-008"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "All three alert scores (0.88, 0.81, 0.74) were above the 0.61 threshold, and the scores fell across the three consecutive bodies.",
+          "sources": [
+            "KZ-SEAL-008"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The alerts came from model sealer-st04-v1.3 while the ticket is at st-02, so the model-to-station assignment needs to be confirmed.",
+          "sources": [
+            "KZ-SEAL-008"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: whether a robot path or recipe change preceded the alerts and whether first-off path verification was done, since a closed case and a validated card both link bead offset to skipped first-off path verification after recipe selection.",
+          "sources": [
+            "HC-012",
+            "KC-SEAL-040 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: whether the body is sitting off nominal on the right-door locating pins, since a closed case found a worn locating pin that put the body 2 mm off position and caused bead off path.",
+          "sources": [
+            "HC-030"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: whether the vision camera or its region of interest has moved off the seam, since a closed case found offset alerts were wrongly rejected after the camera bracket was bumped.",
+          "sources": [
+            "HC-011"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-01",
+      "mode": "live",
+      "sentences": 5,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 1,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 2,
+      "heldOutGroupInCandidates": false,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three seam alerts were raised at st-06 on KZ-EVAL-01 at 07:10, 08:10 and 09:10, one per hour, on seam-L-door-03 twice and seam-R-door-07 once.",
+          "sources": [
+            "KZ-EVAL-01"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Each alert scored above the 0.61 threshold and the scores rose from 0.70 to 0.75 to 0.80, all reported by model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-01"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The existing A3 currentCondition field is empty, so the present state of the bead on these seams is not yet recorded.",
+          "sources": [
+            "KZ-EVAL-01"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: recovery or restart resuming mid-seam instead of at the defined restart point, since case HC-024 and card KC-SEAL-044 r1 record a bead break after recovery from the middle of the seam.",
+          "sources": [
+            "KZ-EVAL-01",
+            "HC-024",
+            "KC-SEAL-044 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: pressure regulator response lagging during a demand change at st-06, since card KC-SEAL-043 r1 records a thin bead at this station during rapid pressure fluctuation.",
+          "sources": [
+            "KZ-EVAL-01",
+            "KC-SEAL-043 r1"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-02",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three trigger alerts on st-04 with model sealer-st04-v1.3 scored above the 0.61 threshold: EVAL-10 at 07:11 on seam-L-door-03 (0.70), EVAL-11 at 08:11 on seam-R-door-07 (0.75), and EVAL-12 at 09:11 on seam-L-door-03 (0.80).",
+          "sources": [
+            "KZ-EVAL-02"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Two of the three alerts are on seam-L-door-03, and the score rises from 0.70 to 0.80 between 07:11 and 09:11.",
+          "sources": [
+            "KZ-EVAL-02"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The existing A3 attributes the intermittent bead gaps on door seams to the tip replacement, but its current condition field is empty.",
+          "sources": [
+            "KZ-EVAL-02"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: nozzle angle drift after the nozzle or tip change, since a closed case and a validated card record a bead break at seam-R-door-07 caused by angle drift after a nozzle change, and the ticket reports gaps after the tip was replaced.",
+          "sources": [
+            "HC-005",
+            "KC-SEAL-021 r2",
+            "KZ-EVAL-02"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: locating pin wear on the left door jig, since a closed case recorded a left-door bead off path caused by a worn pin that sat the body 2 mm off nominal, and the ticket's repeat alerts are on seam-L-door-03.",
+          "sources": [
+            "HC-030",
+            "KZ-EVAL-02"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: high sealer viscosity from cold material, since a validated card links thin bead on door seams to cold material after the overnight stop, and the first alert is at 07:11; check gun pressure at start-up to confirm.",
+          "sources": [
+            "KC-SEAL-014 r3",
+            "KZ-EVAL-02"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-03",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": false,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three bead-off-path alerts fired on st-01 between 07:12 and 09:12: two on seam-L-door-03 and one on seam-R-door-07, with scores of 0.70 to 0.80 against a 0.61 threshold.",
+          "sources": [
+            "KZ-EVAL-03"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "All three alerts came from model sealer-st04-v1.3, and the seam-L-door-03 score rose from 0.70 at 07:12 to 0.80 at 09:12.",
+          "sources": [
+            "KZ-EVAL-03"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Earlier offset alerts on this ticket were rejected as within tolerance after the camera was bumped.",
+          "sources": [
+            "KZ-EVAL-03"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: the robot path or recipe selection, since closed case HC-012 and validated card KC-SEAL-040 r1 both record a bead offset at st-01 after a path program change where first-off path verification was skipped, matching this ticket's bead-off-path defect at the same station.",
+          "sources": [
+            "KZ-EVAL-03",
+            "HC-012",
+            "KC-SEAL-040 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: a worn locating pin or jig shifting the body off nominal, since closed case HC-030 found a 2 mm body offset on the left door from a worn pin, and this ticket's repeated alerts on seam-L-door-03 point the same way.",
+          "sources": [
+            "KZ-EVAL-03",
+            "HC-030"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: a shifted camera position after the bump, since the earlier offset alerts were dismissed as within tolerance after the camera was bumped, so the offset reading itself may be biased.",
+          "sources": [
+            "KZ-EVAL-03"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-04",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": false,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three trigger alerts fired at station st-03 at 07:13, 08:13 and 09:13 (EVAL-30, EVAL-31, EVAL-32), each with a score above the 0.61 threshold.",
+          "sources": [
+            "KZ-EVAL-04"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Two alerts were on seam-L-door-03 (scores 0.7 and 0.8) and one was on seam-R-door-07 (score 0.75).",
+          "sources": [
+            "KZ-EVAL-04"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The existing A3 describes a missing sealer at the end of the sill seam after a program edit, and its current condition field is empty.",
+          "sources": [
+            "KZ-EVAL-04"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: recovery or restart point after the program edit, since KC-SEAL-044 r1 at st-03 found that a recovery resumed mid-seam instead of at the defined restart point and produced a bead break, and the ticket links the gap to a program edit at the sill seam.",
+          "sources": [
+            "KC-SEAL-044 r1",
+            "KZ-EVAL-04"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: an air pocket in the supply line, since HC-018 and KC-SEAL-042 r1 both show a missing bead right after a material cartridge change, so check whether a changeover preceded the alerts.",
+          "sources": [
+            "HC-018",
+            "KC-SEAL-042 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: a tip seated off-centre so the jet misses the flange, since HC-008 shows gaps on door seams after a tip change and all three alerts were on door seams.",
+          "sources": [
+            "HC-008",
+            "KZ-EVAL-04"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-05",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three excess-sealer alerts were raised at st-06 by model sealer-st04-v1.3 at 07:14, 08:14 and 09:14, each above the 0.61 threshold.",
+          "sources": [
+            "KZ-EVAL-05"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Alert scores rose from 0.70 to 0.75 to 0.80, with seam-L-door-03 flagged twice (EVAL-40 and EVAL-42) and seam-R-door-07 once (EVAL-41).",
+          "sources": [
+            "KZ-EVAL-05"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The ticket is non-critical and its existing A3 has a background of stringing and drips after the gun closes but no current-condition entry yet.",
+          "sources": [
+            "KZ-EVAL-05"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: applicator valve closing late or seal wear slowing shut-off, since the stringing and drips after the gun closes match the late shut-off pattern seen in similar closed cases.",
+          "sources": [
+            "KZ-EVAL-05",
+            "HC-016",
+            "HC-015",
+            "KC-SEAL-041 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: pressure regulator response lagging during a demand change at st-06, which is the only validated card recorded for this station, although its recorded symptom is thin bead rather than excess.",
+          "sources": [
+            "KC-SEAL-043 r1",
+            "KZ-EVAL-05"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: robot speed reduction not paired with a lower flow command at a transition, which produced excess bead in a validated st-04 case, although the alerts do not state that they occur at a corner.",
+          "sources": [
+            "KC-SEAL-045 r1",
+            "KZ-EVAL-05"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-06",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three trigger alerts fired at st-04 on bodies EVAL-50, EVAL-51 and EVAL-52 at 07:15, 08:15 and 09:15, with scores of 0.70, 0.75 and 0.80 against a threshold of 0.61 on model sealer-st04-v1.3.",
+          "sources": [
+            "KZ-EVAL-06"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Two of the three alerts are on seam-L-door-03 (EVAL-50 and EVAL-52) and one is on seam-R-door-07 (EVAL-51), and the defect is classed as leak_critical.",
+          "sources": [
+            "KZ-EVAL-06"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The existing A3 has no current-condition entry, so the alert data above is the only current evidence available in this draft.",
+          "sources": [
+            "KZ-EVAL-06"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: air or flow interruption in the material supply after the pump was serviced, because the existing A3 links the bead gaps to the first body after pump service and validated card KC-SEAL-042 r1 found an air pocket in the supply line after a changeover, though at st-05.",
+          "sources": [
+            "KZ-EVAL-06",
+            "KC-SEAL-042 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: locating pin wear or body position offset at seam-L-door-03, because similar closed case HC-030 found a worn pin putting the body 2 mm off nominal and seam-L-door-03 raised two of the three alerts.",
+          "sources": [
+            "HC-030",
+            "KZ-EVAL-06"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: nozzle angle drift at seam-R-door-07 after a nozzle change, because validated card KC-SEAL-021 r2 recorded a bead break at that seam from this cause and seam-R-door-07 raised one of the alerts.",
+          "sources": [
+            "KC-SEAL-021 r2",
+            "KZ-EVAL-06"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-07",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": false,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three trigger alerts were raised on KZ-EVAL-07 at station st-05 at 07:16, 08:16 and 09:16, with scores of 0.70, 0.75 and 0.80 against a threshold of 0.61.",
+          "sources": [
+            "KZ-EVAL-07"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Two of the three alerts were on seam-L-door-03 (07:16 and 09:16) and one was on seam-R-door-07 (08:16).",
+          "sources": [
+            "KZ-EVAL-07"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The existing A3 records a wide bead on the first bodies after start-up, and its currentCondition field is still empty.",
+          "sources": [
+            "KZ-EVAL-07"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: applicator valve closing late or valve seal wear at st-05, since HC-016 on the same station found a blob at the bead end from a late-closing valve and an aged seal kit, and HC-015 and KC-SEAL-041 r1 found excess sealer at the bead end after seal wear slowed shut-off.",
+          "sources": [
+            "HC-016",
+            "HC-015",
+            "KC-SEAL-041 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: sealer material temperature or viscosity at start-up, since the existing A3 notes a wide bead on the first bodies after start-up and HC-001 and KC-SEAL-014 r3 link cold material after the overnight stop to a bead change at shift start.",
+          "sources": [
+            "KZ-EVAL-07",
+            "HC-001",
+            "KC-SEAL-014 r3"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: robot speed and flow command mismatch at transitions, since KC-SEAL-045 r1 found excess bead at a corner transition where the robot speed was reduced without a matching lower flow command.",
+          "sources": [
+            "KC-SEAL-045 r1"
+          ]
+        }
+      ]
+    },
+    {
+      "ticket": "KZ-EVAL-08",
+      "mode": "live",
+      "sentences": 6,
+      "unsourcedShipped": 0,
+      "unsourcedRemoved": 0,
+      "countermeasureSentences": 0,
+      "rootCauseCandidates": 3,
+      "heldOutGroupInCandidates": true,
+      "engineerRating": null,
+      "draft": [
+        {
+          "field": "currentCondition",
+          "text": "Three trigger alerts fired on KZ-EVAL-08 at st-01: 07:17 on seam-L-door-03 (score 0.70 vs threshold 0.61), 08:17 on seam-R-door-07 (0.75), and 09:17 on seam-L-door-03 (0.80).",
+          "sources": [
+            "KZ-EVAL-08"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "Scores rose across the three alerts, and seam-L-door-03 triggered twice, with all alerts above the 0.61 threshold.",
+          "sources": [
+            "KZ-EVAL-08"
+          ]
+        },
+        {
+          "field": "currentCondition",
+          "text": "The ticket is leak-critical, and the existing A3 has no current-condition entry, so these alerts are the only recorded data for today.",
+          "sources": [
+            "KZ-EVAL-08"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 1 to check at the line: the robot resumed mid-seam after the collision recovery instead of at the defined restart point, the same cause recorded for bead breaks after manual recovery in HC-024 and KC-SEAL-044 r1.",
+          "sources": [
+            "KZ-EVAL-08",
+            "HC-024",
+            "KC-SEAL-044 r1"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 2 to check at the line: the robot restarted at the next seam after a fault reset, leaving the interrupted seam unsealed as in HC-025, so check whether the affected bodies were in station during a fault.",
+          "sources": [
+            "KZ-EVAL-08",
+            "HC-025"
+          ]
+        },
+        {
+          "field": "rootCause",
+          "text": "Candidate 3 to check at the line: the new tip after a tip change is seated off-centre so the jet hits the flange edge, as recorded in HC-008 for intermittent gaps on door seams.",
+          "sources": [
+            "KZ-EVAL-08",
+            "HC-008"
+          ]
+        }
+      ]
+    }
+  ]
+}

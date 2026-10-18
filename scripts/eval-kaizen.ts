@@ -10,24 +10,51 @@
  *       sentences the drafter wrote without a source (removed), countermeasure sentences (must
  *       be 0) and whether the held-out case's root-cause group is among the candidates.
  * Writes eval/results/kaizen-<mode>.json. The engineer rating (1-5) is filled in by the team.
+ *   npm run eval:kaizen -- --rescore [--live]   # recompute the scores of a saved run, no API calls
  */
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { buildDraftContext } from "@/lib/kaizen/a3-draft";
 import { runA3Drafter } from "@/lib/kaizen/drafter";
 import { HISTORY_CASES } from "@/lib/kaizen/history";
 import { precisionAtK, sameDefectBaseline, setVocabulary } from "@/lib/kaizen/similar";
-import { claudeModel, getClaude } from "@/lib/llm/claude";
+import { claudeModel, getClaude, usageCost, type ClaudeUsage } from "@/lib/llm/claude";
 import { DRAFT_FIELDS, draftableFields } from "@/lib/rules/ai-draft";
 import { createSeedData, defectTypes } from "@/lib/seed";
 import type { Alert, DefectTypeId, Ticket } from "@/lib/types";
 
 const live = process.argv.includes("--live");
+/** Hard spend cap for one live run (USD). The run stops before the next call once it is reached. */
+const BUDGET_USD = Number(process.env.EVAL_BUDGET_USD ?? 0.12);
+let spent = 0;
+let calls = 0;
+function track(usage: ClaudeUsage, model: string) {
+  spent += usageCost(usage, model);
+  calls += 1;
+}
+
+const rescore = process.argv.includes("--rescore");
 const name = (id: DefectTypeId) => defectTypes.find((d) => d.id === id)!.name;
 
+/** Root-cause groups a candidate rests on: cited cases, and cards through the case they were written from. */
+function groupsOf(sourceIds: readonly string[]): Set<string> {
+  const groups = new Set<string>();
+  for (const id of sourceIds) {
+    const byCase = HISTORY_CASES.find((c) => c.id === id);
+    if (byCase) groups.add(byCase.rootCauseGroup);
+    const cardId = id.split(" ")[0];
+    for (const c of HISTORY_CASES) if (c.cardId === cardId) groups.add(c.rootCauseGroup);
+  }
+  return groups;
+}
+
+type DraftRow = { field: string; sources: string[] };
+const candidateGroups = (draft: readonly DraftRow[]) =>
+  new Set(draft.filter((s) => s.field === "rootCause").flatMap((s) => [...groupsOf(s.sources)]));
+
 async function main() {
-  if (live && !getClaude()) throw new Error("--live needs ANTHROPIC_API_KEY in the environment.");
+  if (live && !rescore && !getClaude()) throw new Error("--live needs ANTHROPIC_API_KEY in the environment.");
 
   // ---- AI-3
   setVocabulary(false);
@@ -70,16 +97,31 @@ async function main() {
     });
   });
 
+  if (rescore) {
+    const file = join(process.cwd(), `eval/results/kaizen-${live ? "live" : "template"}.json`);
+    const saved = JSON.parse(readFileSync(file, "utf8"));
+    const groupOf = new Map(tests.map((t) => [t.ticket.id, t.group]));
+    for (const row of saved.rows) {
+      const group = groupOf.get(row.ticket);
+      row.heldOutGroupInCandidates = group ? candidateGroups(row.draft).has(group) : null;
+    }
+    const constructed = saved.rows.filter((r: { heldOutGroupInCandidates: boolean | null }) => r.heldOutGroupInCandidates !== null);
+    saved.ai4.rootCauseGroupInCandidates = { hit: constructed.filter((r: { heldOutGroupInCandidates: boolean }) => r.heldOutGroupInCandidates).length, of: constructed.length };
+    saved.ai4.rescoredAt = new Date().toISOString();
+    writeFileSync(file, JSON.stringify(saved, null, 2) + "\n");
+    console.log("AI-4 rescored", saved.ai4);
+    return;
+  }
+
   const rows = [];
   for (const t of tests) {
+    if (live && spent >= BUDGET_USD) {
+      console.log(`Budget of $${BUDGET_USD} reached after ${calls} calls; stopping early.`);
+      break;
+    }
     const fields = draftableFields(t.ticket.a3, t.ticket.aiPrefilledFields).filter((f) => DRAFT_FIELDS.includes(f));
     const ctx = buildDraftContext(snapshot, t.ticket, fields, t.exclude);
-    const draft = await runA3Drafter(ctx, "2027-03-14T09:00:00.000+07:00", { live });
-    const candidateGroups = new Set(
-      draft.sentences
-        .filter((s) => s.field === "rootCause")
-        .flatMap((s) => s.sources.filter((src) => src.kind === "case").map((src) => HISTORY_CASES.find((c) => c.id === src.id)?.rootCauseGroup)),
-    );
+    const draft = await runA3Drafter(ctx, "2027-03-14T09:00:00.000+07:00", { live, onUsage: track });
     const row = {
       ticket: t.ticket.id,
       mode: draft.mode,
@@ -88,7 +130,7 @@ async function main() {
       unsourcedRemoved: draft.rejected,
       countermeasureSentences: draft.sentences.filter((s) => s.field === "countermeasure").length,
       rootCauseCandidates: draft.sentences.filter((s) => s.field === "rootCause").length,
-      heldOutGroupInCandidates: t.group ? candidateGroups.has(t.group as never) : null,
+      heldOutGroupInCandidates: t.group ? candidateGroups(draft.sentences.map((x) => ({ field: x.field, sources: x.sources.map((y) => y.id) }))).has(t.group) : null,
       engineerRating: null as number | null,
       draft: draft.sentences.map((s) => ({ field: s.field, text: s.text, sources: s.sources.map((x) => x.id) })),
     };
@@ -104,6 +146,9 @@ async function main() {
     unsourcedSentencesRemoved: rows.reduce((s, r) => s + r.unsourcedRemoved, 0),
     countermeasureSentences: rows.reduce((s, r) => s + r.countermeasureSentences, 0),
     rootCauseGroupInCandidates: { hit: constructed.filter((r) => r.heldOutGroupInCandidates).length, of: constructed.length },
+    claudeCalls: calls,
+    budgetUsd: BUDGET_USD,
+    costUsd: Number(spent.toFixed(4)),
   };
   console.log("AI-4", ai4);
   writeFileSync(join(process.cwd(), `eval/results/kaizen-${live ? "live" : "template"}.json`), JSON.stringify({ runAt: new Date().toISOString(), ai3, ai4, perCase: withVocab.perCase, rows }, null, 2) + "\n");
