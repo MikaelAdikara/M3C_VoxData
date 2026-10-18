@@ -11,5 +11,6 @@ export default defineConfig([
     ".agents/**",
     ".codex/**",
     "local_context/**",
+    "public/ort/**",
   ]),
 ]);

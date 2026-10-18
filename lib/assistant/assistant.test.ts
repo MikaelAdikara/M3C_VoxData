@@ -70,6 +70,41 @@ describe("validated knowledge assistant", () => {
     expect(invalid.text).toContain("[KC-SEAL-021 r2]");
   });
 
+  it("turns a structured live draft into a cited answer", async () => {
+    const answer = await answerAssistantQuestion("bead break after nozzle change", cards, async () => ({
+      covered: true,
+      sentences: [
+        { text: "Check the nozzle angle with the gauge after every nozzle change.", citations: [{ cardId: "KC-SEAL-021", revision: 2 }] },
+        { text: "The check is part of the change checklist.", citations: [{ cardId: "KC-SEAL-021", revision: 2 }] },
+      ],
+    }));
+    expect(answer.mode).toBe("live");
+    expect(answer.citations).toEqual([{ cardId: "KC-SEAL-021", revision: 2 }]);
+    expect(answer.text).toContain("[KC-SEAL-021 r2]");
+  });
+
+  it("rejects a structured draft with an uncited sentence or a card it was not given", async () => {
+    const uncited = await answerAssistantQuestion("bead break after nozzle change", cards, async () => ({
+      covered: true,
+      sentences: [{ text: "Raise the pressure to 9 bar.", citations: [] }],
+    }));
+    expect(uncited.mode).toBe("offline");
+    const draftCard = await answerAssistantQuestion("bead break after nozzle change", cards, async () => ({
+      covered: true,
+      sentences: [{ text: "Check the robot path.", citations: [{ cardId: "KC-SEAL-030", revision: 1 }] }],
+    }));
+    expect(draftCard.mode).toBe("offline");
+  });
+
+  it("refuses when the model says the retrieved cards do not cover the question", async () => {
+    const answer = await answerAssistantQuestion("Offset bead after operator rotation at st-04", cards, async () => ({
+      covered: false,
+      sentences: [],
+    }));
+    expect(answer.mode).toBe("no_card");
+    expect(answer.citations).toEqual([]);
+  });
+
   it("falls back offline when the optional model fails", async () => {
     const answer = await answerAssistantQuestion(
       "thin bead at shift start st-04",

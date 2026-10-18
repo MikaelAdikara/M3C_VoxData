@@ -12,7 +12,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "be4:smoke": "vite-node --config vitest.config.ts scripts/be4-smoke.ts",
     "test": "vitest run",
-    "db:seed": "vite-node --config vitest.config.ts db/seed.ts"
+    "db:seed": "vite-node --config vitest.config.ts db/seed.ts",
+    "eval:assistant": "vite-node --config vitest.config.ts scripts/eval-assistant.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
@@ -27,7 +28,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "recharts": "^3.10.1",
-    "three": "^0.186.1"
+    "three": "^0.186.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",

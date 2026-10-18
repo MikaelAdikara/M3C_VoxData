@@ -1,0 +1,332 @@
+{
+  "summary": {
+    "mode": "offline",
+    "runAt": "2026-10-18T09:15:57.575Z",
+    "questions": 30,
+    "citationValidity": {
+      "valid": 19,
+      "of": 19,
+      "target": "100%"
+    },
+    "answeredWithRightCard": {
+      "pass": 17,
+      "of": 20
+    },
+    "wrongRefusals": 3,
+    "correctRefusals": {
+      "pass": 8,
+      "of": 10,
+      "target": ">= 9 of 10"
+    }
+  },
+  "rows": [
+    {
+      "id": "Q01",
+      "expectedCard": "KC-SEAL-014",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-014 r3"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Warm-up purge of 30 s before the first body; check gun pressure at start-up [KC-SEAL-014 r3]"
+    },
+    {
+      "id": "Q02",
+      "expectedCard": "KC-SEAL-014",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-014 r3"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Warm-up purge of 30 s before the first body; check gun pressure at start-up [KC-SEAL-014 r3]"
+    },
+    {
+      "id": "Q03",
+      "expectedCard": "KC-SEAL-014",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-014 r3"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Warm-up purge of 30 s before the first body; check gun pressure at start-up [KC-SEAL-014 r3]"
+    },
+    {
+      "id": "Q04",
+      "expectedCard": "KC-SEAL-021",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-021 r2"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Angle gauge check after every nozzle change; add to change checklist [KC-SEAL-021 r2]"
+    },
+    {
+      "id": "Q05",
+      "expectedCard": "KC-SEAL-021",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-021 r2"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Angle gauge check after every nozzle change; add to change checklist [KC-SEAL-021 r2]"
+    },
+    {
+      "id": "Q06",
+      "expectedCard": "KC-SEAL-021",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-021 r2"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Angle gauge check after every nozzle change; add to change checklist [KC-SEAL-021 r2]"
+    },
+    {
+      "id": "Q07",
+      "expectedCard": "KC-SEAL-009",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-009 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Add polarising filter; re-validate model as a 4M change [KC-SEAL-009 r1]"
+    },
+    {
+      "id": "Q08",
+      "expectedCard": "KC-SEAL-009",
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": false,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "Q09",
+      "expectedCard": "KC-SEAL-040",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-040 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Verify the robot path on the first-off body before normal production [KC-SEAL-040 r1]"
+    },
+    {
+      "id": "Q10",
+      "expectedCard": "KC-SEAL-040",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-040 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Verify the robot path on the first-off body before normal production [KC-SEAL-040 r1]"
+    },
+    {
+      "id": "Q11",
+      "expectedCard": "KC-SEAL-041",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-041 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Inspect valve response and confirm clean cut-off on a trial body [KC-SEAL-041 r1]"
+    },
+    {
+      "id": "Q12",
+      "expectedCard": "KC-SEAL-041",
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": false,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "Q13",
+      "expectedCard": "KC-SEAL-042",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-042 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Purge until flow is continuous and verify the first bead before release [KC-SEAL-042 r1]"
+    },
+    {
+      "id": "Q14",
+      "expectedCard": "KC-SEAL-042",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-042 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Purge until flow is continuous and verify the first bead before release [KC-SEAL-042 r1]"
+    },
+    {
+      "id": "Q15",
+      "expectedCard": "KC-SEAL-043",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-043 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Check regulator response and hold pressure within the approved start-up range [KC-SEAL-043 r1]"
+    },
+    {
+      "id": "Q16",
+      "expectedCard": "KC-SEAL-043",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-043 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Check regulator response and hold pressure within the approved start-up range [KC-SEAL-043 r1]"
+    },
+    {
+      "id": "Q17",
+      "expectedCard": "KC-SEAL-044",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-044 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Return to the defined seam restart point and inspect the recovered bead [KC-SEAL-044 r1]"
+    },
+    {
+      "id": "Q18",
+      "expectedCard": "KC-SEAL-044",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-044 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Return to the defined seam restart point and inspect the recovered bead [KC-SEAL-044 r1]"
+    },
+    {
+      "id": "Q19",
+      "expectedCard": "KC-SEAL-045",
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-045 r1"
+      ],
+      "citationsValid": true,
+      "pass": true,
+      "text": "Pair the corner speed profile with the approved flow setpoint [KC-SEAL-045 r1]"
+    },
+    {
+      "id": "Q20",
+      "expectedCard": "KC-SEAL-045",
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": false,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N01",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N02",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N03",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N04",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N05",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N06",
+      "expectedCard": null,
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-014 r3"
+      ],
+      "citationsValid": true,
+      "pass": false,
+      "text": "Warm-up purge of 30 s before the first body; check gun pressure at start-up [KC-SEAL-014 r3]"
+    },
+    {
+      "id": "N07",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N08",
+      "expectedCard": null,
+      "mode": "offline",
+      "citations": [
+        "KC-SEAL-040 r1"
+      ],
+      "citationsValid": true,
+      "pass": false,
+      "text": "Verify the robot path on the first-off body before normal production [KC-SEAL-040 r1]"
+    },
+    {
+      "id": "N09",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    },
+    {
+      "id": "N10",
+      "expectedCard": null,
+      "mode": "no_card",
+      "citations": [],
+      "citationsValid": true,
+      "pass": true,
+      "text": "No validated card covers this. Route the question to the owner engineer."
+    }
+  ]
+}

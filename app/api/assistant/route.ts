@@ -1,8 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-import { buildGroundedQuestion, ASSISTANT_SYSTEM_PROMPT } from "@/lib/assistant/prompt";
+import { createClaudeAnswerer } from "@/lib/assistant/live";
 import { FixedWindowRateLimiter } from "@/lib/assistant/rate-limit";
 import { answerAssistantQuestion, type LiveAnswerGenerator } from "@/lib/assistant/service";
+import { claudeModel, getClaude } from "@/lib/llm/claude";
 import { getStore } from "@/lib/store";
 
 const MAX_QUESTION_LENGTH = 500;
@@ -23,22 +22,8 @@ function requestKey(request: Request): string {
 }
 
 function createLiveGenerator(): LiveAnswerGenerator | undefined {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return undefined;
-  const client = new Anthropic({ apiKey });
-  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
-  return async (question, cards) => {
-    const response = await client.messages.create({
-      model,
-      max_tokens: 500,
-      system: ASSISTANT_SYSTEM_PROMPT,
-      messages: [{ role: "user", content: buildGroundedQuestion(question, cards) }],
-    });
-    return response.content
-      .filter((block) => block.type === "text")
-      .map((block) => block.text)
-      .join("\n");
-  };
+  const client = getClaude();
+  return client ? createClaudeAnswerer(client, claudeModel()) : undefined;
 }
 
 export async function POST(request: Request): Promise<Response> {
