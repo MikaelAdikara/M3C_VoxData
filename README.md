@@ -28,7 +28,7 @@ Open http://localhost:3000.
 
 Environment variables (see `.env.example`):
 
-- `DATABASE_URL`: Postgres connection string. If empty, the app uses an in-memory store seeded on start (good enough for a demo, resets on redeploy).
+- `DATABASE_URL`: Postgres connection string (one shared demo state). If empty, each visitor gets their own demo session kept in cookies on Vercel (serverless instances share no memory), and an in-memory store locally. `LEARNING_LINE_STORE=session|memory` overrides that choice.
 - `ANTHROPIC_API_KEY`: optional. Without it the assistant uses prepared answers from the same validated cards, and the UI labels them "offline mode".
 - `ANTHROPIC_MODEL`: optional, default `claude-sonnet-5-5`.
 

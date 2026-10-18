@@ -7,7 +7,7 @@ Mirrors the reference architecture in the Executive Summary (Figures D3–D6) at
 | Layer | Choice | Why |
 |---|---|---|
 | App | Next.js (App Router), TypeScript strict, Tailwind | One repo, server actions, free Vercel deploy |
-| Data | Drizzle ORM + Postgres (Neon or Supabase free tier) via `DATABASE_URL`; in-memory fallback | Demo never breaks if the database is missing |
+| Data | Drizzle ORM + Postgres (Neon or Supabase free tier) via `DATABASE_URL`; without it, a per-visitor cookie session on Vercel and an in-memory store locally | Demo never breaks if the database is missing, and judges never reset each other's walkthrough |
 | AI | `@anthropic-ai/sdk`, server-only route `/api/assistant`, model from `ANTHROPIC_MODEL` | Assistant grounded in validated cards |
 | Retrieval | Keyword + field scoring over cards (BM25-style), no vector DB | Small corpus (≈ 12 cards), fully explainable |
 | Tests | Vitest | Rules and guardrails are the claims judges will probe |
@@ -22,7 +22,7 @@ app/
   api/assistant/route.ts
 components/              ui primitives + domain components (AlertCard, HeatmapImage, StationTile, A3Form, CardView)
 lib/
-  store/                 index.ts (interface) · memory.ts · drizzle.ts
+  store/                 index.ts (interface) · memory.ts · drizzle.ts · cookie-session.ts + session-patch.ts
   rules/                 repeat.ts · budget.ts · recommend.ts · metrics.ts  (+ *.test.ts)
   assistant/             retrieve.ts · prompt.ts · offline.ts  (+ *.test.ts)
   actions/               server actions (BE-owned, separate from app pages)
@@ -92,7 +92,7 @@ Server-only secrets; no client exposure of `ANTHROPIC_API_KEY`. Role switcher in
 
 ## 8. BE-4 snapshot and UI parity
 
-`demo_states.snapshot` is the active persistence contract. `MemoryStore` and `DrizzleStore` expose the same `StoreSnapshot`; Postgres updates are row-locked in a transaction. On read or mutation, `normalizeSnapshot()` fills new BE-4 fields for older JSONB snapshots and strips unpublished `/beads/*` references. Reset writes a canonical deterministic seed; `getSimulatorView()` exposes its version and SHA-256 fingerprint plus the current state's fingerprint.
+Without `DATABASE_URL` on Vercel, `CookieSessionStore` keeps each visitor's state as the deterministic seed plus a gzip patch (entities added or changed by id and revision, ids removed, other fields whole) in httpOnly cookies `learning-line-demo-0..7`; a seed fingerprint in the patch discards cookies from an older deploy, and Reset demo clears them. `demo_states.snapshot` is the active persistence contract when a database is configured. `MemoryStore` and `DrizzleStore` expose the same `StoreSnapshot`; Postgres updates are row-locked in a transaction. On read or mutation, `normalizeSnapshot()` fills new BE-4 fields for older JSONB snapshots and strips unpublished `/beads/*` references. Reset writes a canonical deterministic seed; `getSimulatorView()` exposes its version and SHA-256 fingerprint plus the current state's fingerprint.
 
 The snapshot adds camera configuration/health, recording gaps, camera maintenance tickets, and line operation (running/stopped, held body, repair/restart note, simulated body counter). Camera events are derived from existing alerts and decisions, with only recording gaps stored separately. Maintenance tickets are distinct from defect/Kaizen tickets. A team leader's `stop_fix` decision alone stops the simulated line; `restartLine(repairNote)` records the team leader's repair completion. The prototype has no MES body tracking, so current physical body location is unknown.
 

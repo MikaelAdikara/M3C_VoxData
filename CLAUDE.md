@@ -13,7 +13,7 @@ Terms must match the Executive Summary exactly: Shift loop, Kaizen loop, Launch 
 
 ## Stack
 
-Next.js (App Router) + TypeScript (strict) + Tailwind CSS. Drizzle ORM on Postgres when `DATABASE_URL` is set, otherwise the in-memory store in `lib/store/memory.ts` behind the same interface. Anthropic TypeScript SDK (`@anthropic-ai/sdk`) for the assistant, server-side only. No other paid services.
+Next.js (App Router) + TypeScript (strict) + Tailwind CSS. Drizzle ORM on Postgres when `DATABASE_URL` is set; otherwise a per-visitor cookie session (`lib/store/cookie-session.ts`) on Vercel and the in-memory store in `lib/store/memory.ts` locally, all behind the same interface. Anthropic TypeScript SDK (`@anthropic-ai/sdk`) for the assistant, server-side only. No other paid services.
 
 ## Rules
 
