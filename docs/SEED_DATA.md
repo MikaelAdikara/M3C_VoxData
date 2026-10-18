@@ -83,3 +83,9 @@ The BE-4 prototype generator is `scripts/generate-pilot-assets.mjs`. It writes d
 - Historical alert decisions supply the simulated 30-day override trajectory, approximately 31% on the first day to 24% on the final day. The **31% baseline** is case data from the Casebook survey; the subsequent trajectory is simulation, not measured pilot improvement. The 59 limit samples per defect type remain a Gate 1 target and have **not** been evaluated by a trained model.
 - Approved public visuals are mapped as `good → NORMAL`, `gap → BEAD_BREAK` visual reference only, and `overlap → BEAD_EXCESS` visual reference only. `bead_rolloff`, `bead_falloff`, `not_adhered`, `nozzle_drag`, and `swirl` stay external-only or require domain review. Public visuals do not affect alerts, KPI values, or model-performance claims.
 - Landing mockup figures that are absent from the case/ES seed table above (such as 106, 19.1%, and 9 to ~5 months) require source verification before UI-4 labels them case data. BE-4's overview ledger exposes only documented case and target values.
+
+## 9. Simulated Kaizen case history (AI-3 and AI-4, added 18 Oct 2026)
+
+- `lib/kaizen/history.ts` holds 32 closed sealer cases (`HC-001` … `HC-032`), written by the team for the prototype. Six of them are the six closed seeded tickets (`KZ-SEAL-001` … `006`) with the text of their validated cards; the rest are older simulated cases (2025–2026) with varied shop-floor wording. No TMMIN data.
+- Each case carries a `rootCauseGroup` label (10 groups, e.g. material temperature, nozzle condition, air in supply). The label is used only to score similar-case retrieval (Precision@3 in `eval/results/kaizen-*.json`); the app never shows it as a conclusion.
+- The ticket page lists the closest cases; the A3 drafter may cite them as `[HC-…]`. A card is cited only while it is validated.
