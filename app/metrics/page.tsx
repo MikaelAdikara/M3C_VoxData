@@ -17,7 +17,7 @@ export default async function MetricsPage() {
       <div className="page__head">
         <div>
           <h1 className="page__title">Loop metrics · K2-Body pilot</h1>
-          <p className="page__sub">Gate 1 indicators, how far each one is from its target, and where every number comes from</p>
+          <p className="page__sub">Gate 1 indicators, how far each one is from its target, and where every number comes from. Gate 1 is the decision in early December 2027, at the end of the Phase 1 pilot; see <a href="/plan">Plan</a>.</p>
         </div>
         <div className="head-badges">
           <LoopBadge loop="shift" />
@@ -94,8 +94,7 @@ export default async function MetricsPage() {
 
         <div className="seed">
           <Icon name="fingerprint" />
-          <span>Seed <span className="mono">{view.seedVersion}</span> · fingerprint <span className="mono">{view.seedFingerprint.slice(0, 8)}…{view.seedFingerprint.slice(-4)}</span></span>
-          <span>Reset demo restores this exact state.</span>
+          <span title={`Seed ${view.seedVersion} · ${view.seedFingerprint}`}>Every visitor starts from the same simulated plant state; Reset demo restores it.</span>
           <Prov p="simulated" label="not TMMIN data" />
         </div>
       </div>

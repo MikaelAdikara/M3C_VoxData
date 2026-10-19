@@ -1,13 +1,14 @@
 import type { IconName } from "@/components/ui/Icon";
 import type { Role } from "@/lib/types";
 
-export const SCREENS: { href: string; label: string; icon: IconName }[] = [
+export const SCREENS: { href: string; label: string; icon: IconName; topOnly?: boolean }[] = [
   { href: "/station", label: "Station", icon: "monitor" },
   { href: "/shift-board", label: "Shift board", icon: "squares-four" },
   { href: "/cameras", label: "Cameras", icon: "video-camera" },
   { href: "/kaizen", label: "Kaizen", icon: "clipboard-text" },
   { href: "/knowledge", label: "Knowledge", icon: "books" },
   { href: "/metrics", label: "Metrics", icon: "chart-line" },
+  { href: "/plan", label: "Plan", icon: "flag", topOnly: true },
 ];
 
 export const ROLES: { role: Role; label: string; home: string }[] = [

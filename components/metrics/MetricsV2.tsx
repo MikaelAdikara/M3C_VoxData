@@ -174,6 +174,7 @@ export function ParetoBeads({ rows }: { rows: MetricsView["pareto"] }) {
 const COLS: { status: MetricsView["ticketProgress"][number]["status"]; title: string }[] = [
   { status: "a3_in_progress", title: "A3 in progress" },
   { status: "countermeasure_trial", title: "Countermeasure trial" },
+  { status: "validated", title: "Validated" },
   { status: "closed", title: "Closed" },
 ];
 

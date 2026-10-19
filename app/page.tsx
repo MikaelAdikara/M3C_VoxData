@@ -55,11 +55,11 @@ export default async function CoverPage() {
             </h1>
             <p className="hero3__sub">Every abnormality at TMMIN Karawang becomes a standard the whole line can reuse.</p>
             <div className="hero3__ctas">
-              <Link className="btn btn--xl" href="/station">
-                <Icon name="arrow-right" weight="bold" />
-                Enter the prototype
+              <Link className="btn btn--xl" href="/simulator?guide=start">
+                <Icon name="play" weight="bold" />
+                Start the guided demo
               </Link>
-              <a className="btn btn--xl btn--ghost" href="#trail">Follow one defect</a>
+              <Link className="btn btn--xl btn--ghost" href="/station">Explore on my own</Link>
             </div>
           </div>
           <dl className="live" aria-label="Line right now, simulated">
@@ -125,9 +125,9 @@ export default async function CoverPage() {
                   {r.label}
                   <span><Prov p={r.baselineProvenance} label={r.baselineSourceLabel} /><Prov p={r.targetProvenance} label={r.targetSourceLabel} /></span>
                 </div>
-                <span className="ledger__from">{pct(r.baseline)}<small>baseline</small></span>
+                <span className="ledger__from">{r.id === "scrap-index" ? r.baseline : pct(r.baseline)}<small>baseline</small></span>
                 <span className="ledger__arrow" aria-label="to"><Icon name="arrow-right" weight="bold" /></span>
-                <span className="ledger__to">{String(r.target).replace(/\s/g, "")}<small>Gate 1</small></span>
+                <span className="ledger__to">{String(r.target).replace(/\s/g, "")}<small>Gate 1 · Dec 2027</small></span>
               </li>
             ))}
           </ul>

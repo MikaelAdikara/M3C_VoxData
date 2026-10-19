@@ -49,7 +49,7 @@ const STORY = [
   { time: "0:15", step: "Inject true defect, then confirm as the operator", href: "/station" },
   { time: "0:55", step: "Team leader: Stop and fix, with a note", href: "/shift-board" },
   { time: "1:20", step: "Inject repeat ×3; the ticket opens with three alerts", href: "/kaizen" },
-  { time: "1:45", step: "Engineer writes the A3 and requests validation; senior expert validates", href: "/knowledge" },
+  { time: "1:45", step: "Engineer drafts the A3 and selects the root cause; senior expert validates the card", href: "/kaizen" },
   { time: "2:15", step: "Ask the assistant; see the citation and the no-card answer", href: "/knowledge" },
   { time: "2:35", step: "Gate 1 indicators", href: "/metrics" },
 ];
@@ -80,7 +80,7 @@ export function SimulatorScreen() {
       <div className="page__head">
         <div>
           <h1 className="page__title">Demo control</h1>
-          <p className="page__sub">For the presenter. Adds simulated events; people still make every decision.</p>
+          <p className="page__sub">Adds simulated events to your private demo; people still make every decision. New here? Use the guided demo at the bottom left.</p>
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export function SimulatorScreen() {
         <section className="panel" aria-labelledby="story-title">
           <div className="panel__head">
             <h2 id="story-title">Walkthrough, 3 minutes</h2>
-            <span className="muted">From docs/DEMO_SCRIPT.md</span>
+            <span className="muted">Same order as the guided demo</span>
           </div>
           <ol className="story">
             {STORY.map((s) => (

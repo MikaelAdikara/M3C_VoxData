@@ -12,10 +12,10 @@ export function NavLinks({ variant }: { variant: "top" | "tabbar" }) {
   const pathname = usePathname();
   return (
     <nav className={variant === "top" ? "nav" : "tabbar"} aria-label="Screens">
-      {SCREENS.map((s) => {
+      {SCREENS.filter((s) => variant === "top" || !s.topOnly).map((s) => {
         const current = pathname === s.href || pathname.startsWith(`${s.href}/`);
         return (
-          <Link key={s.href} href={s.href} aria-current={current ? "page" : undefined}>
+          <Link key={s.href} href={s.href} aria-current={current ? "page" : undefined} title={s.label}>
             <Icon name={s.icon} />
             {variant === "top" ? <span>{s.label}</span> : s.label}
           </Link>

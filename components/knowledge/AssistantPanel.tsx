@@ -71,7 +71,10 @@ export function AssistantPanel() {
       });
       const data = await res.json();
       if (!res.ok) setError(data.error ?? "The assistant could not answer.");
-      else setAnswer(data as AssistantAnswer);
+      else {
+        setAnswer(data as AssistantAnswer);
+        window.dispatchEvent(new CustomEvent("learning-line:assistant-answered"));
+      }
     } catch {
       setError("The assistant is not reachable. Check the connection and try again.");
     } finally {

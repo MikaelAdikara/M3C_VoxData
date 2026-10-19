@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Big_Shoulders, Source_Sans_3 } from "next/font/google";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
+import { DemoGuide } from "@/components/guide/DemoGuide";
 import { AssistantDock } from "@/components/shell/AssistantDock";
 import { ChromeGate } from "@/components/shell/ChromeGate";
 import { NavLinks } from "@/components/shell/NavLinks";
@@ -16,6 +17,8 @@ import "./styles/dock.css";
 import "./styles/prov.css";
 import "./styles/model.css";
 import "./styles/ai.css";
+import "./styles/guide.css";
+import "./styles/plan.css";
 import "./styles/landing3.css";
 
 const sourceSans = Source_Sans_3({
@@ -60,6 +63,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <Footer />
           <NavLinks variant="tabbar" />
           <AssistantDock />
+          <Suspense fallback={null}>
+            <DemoGuide />
+          </Suspense>
         </ChromeGate>
       </body>
     </html>

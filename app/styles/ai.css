@@ -31,12 +31,17 @@
 .ev-filter select { min-height: 44px; }
 .ev-list { list-style: none; margin: 0; padding: 0; }
 .ev-list li { border-bottom: 1px solid var(--line); }
-.ev-list summary { display: grid; grid-template-columns: 48px auto auto 1fr auto; align-items: center; gap: var(--s3); padding: var(--s3) var(--s5); min-height: 48px; cursor: pointer; font-size: 14px; }
+.ev-list summary { display: grid; grid-template-columns: 96px auto auto 1fr auto; align-items: center; gap: var(--s3); padding: var(--s3) var(--s5); min-height: 48px; cursor: pointer; font-size: 14px; }
 .ev-list summary::-webkit-details-marker { display: none; }
 .ev-list summary:focus-visible { outline: 3px solid var(--instruct-text); outline-offset: -3px; }
 .ev-sum { min-width: 0; }
 .ev-json { margin: 0 var(--s5) var(--s4); padding: var(--s3); border-radius: var(--r-input); background: var(--panel); font-size: 12.5px; overflow-x: auto; white-space: pre; }
 @media (max-width: 767px) {
-  .ev-list summary { grid-template-columns: 48px 1fr; padding: var(--s3) var(--s4); }
+  .ev-list summary { grid-template-columns: 96px 1fr; padding: var(--s3) var(--s4); }
   .ev-sum, .ev-actor { grid-column: 1 / -1; }
 }
+
+/* A3: what to do next, next to the buttons it unlocks */
+.a3__next { display: flex; gap: var(--s2); align-items: flex-start; margin: 0; padding: var(--s2) var(--s3); border-radius: var(--r-input); background: var(--instruct-tint); color: var(--instruct-text); font-size: 14px; font-weight: 600; flex-basis: 100%; }
+.a3__error { flex-basis: 100%; margin: 0; }
+.a3__drafts-note { margin: var(--s2) 0 0; font-size: 13.5px; color: var(--ink-2); }

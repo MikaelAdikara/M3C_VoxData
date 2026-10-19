@@ -7,6 +7,7 @@ const KIND: Record<Provenance, { label: string; icon: IconName }> = {
   simulated: { label: "Simulated", icon: "cpu" },
   illustration: { label: "Illustration", icon: "pen-nib" },
   benchmark: { label: "Benchmark", icon: "ruler" },
+  projection: { label: "Projection", icon: "chart-line" },
 };
 
 /** Where a number comes from. Every figure on screen carries one. */

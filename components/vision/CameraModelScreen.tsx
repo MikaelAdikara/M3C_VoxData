@@ -295,6 +295,10 @@ export function CameraModelScreen({ view }: { view: CameraModelView }) {
             <span className="badge badge--outline">Synthetic data</span>
             Trained and tested on generated bead images. This proves the workflow and the way we measure, not accuracy on TMMIN lines. Real accuracy is shown only at Checkpoint 0 and Gate 1.
           </p>
+          <p className="cm-honest">
+            <span className="badge badge--outline">Score scale</span>
+            This page shows the model&apos;s raw distance score against each seam&apos;s own threshold. The Station and Shift board screens replay the pilot&apos;s simulated alerts on a 0 to 1 scale.
+          </p>
         </aside>
       </div>
 
@@ -326,7 +330,7 @@ export function CameraModelScreen({ view }: { view: CameraModelView }) {
                   <th scope="col">Criticality</th>
                   <th scope="col" className="r">Limit samples detected</th>
                   <th scope="col" className="r">Random sizes detected</th>
-                  <th scope="col" className="r">AUROC</th>
+                  <th scope="col" className="r"><abbr title="Area under the ROC curve: how well scores separate good from defective crops over every possible threshold (1.0 = perfect)">AUROC</abbr></th>
                 </tr>
               </thead>
               <tbody>
@@ -347,7 +351,48 @@ export function CameraModelScreen({ view }: { view: CameraModelView }) {
             </table>
           </div>
           <p className="muted cm-foot">
-            Limit samples sit exactly at our synthetic spec limit (59 per type, as in the Gate 1 test). Strong reflections that never appeared in training were flagged {ev.strongReflection.flagged} of {ev.strongReflection.n} times: the operator rejects these with reason REFLECTION, and a station over budget is flagged for model review.
+            Limit samples sit exactly at our synthetic spec limit (59 per type, as in the Gate 1 test). AUROC can be near 1.0 while detection at the strict threshold is lower: thin beads at the limit score just under it. Strong reflections that never appeared in training were flagged {ev.strongReflection.flagged} of {ev.strongReflection.n} times: the operator rejects these with reason REFLECTION, and a station over budget is flagged for model review.
+          </p>
+        </div>
+      </section>
+
+      <section className="panel cm-eval" id="autovi" aria-labelledby="cm-real">
+        <div className="panel__head">
+          <h2 id="cm-real">Same method on real production images</h2>
+          <span className="muted">{view.realImages.dataset}</span>
+        </div>
+        <div className="panel__body">
+          <p className="cm-real-lead">
+            AutoVI is a public set of images taken on Renault Group assembly lines. It has no sealer beads, so it checks the method on real lighting and part-to-part variation, not sealer accuracy. No defective image was used for training. Images stay with the dataset owner; only our scores are shown.
+          </p>
+          <div className="table-wrap">
+            <table className="table cm-table">
+              <thead>
+                <tr>
+                  <th scope="col">Category (defects)</th>
+                  <th scope="col" className="r">Good training images</th>
+                  <th scope="col" className="r"><abbr title="Area under the ROC curve: how well scores separate good from defective images (1.0 = perfect, 0.5 = chance)">AUROC</abbr></th>
+                  <th scope="col" className="r">Caught if 5% of good flagged</th>
+                  <th scope="col" className="r">Caught if 1% of good flagged</th>
+                  <th scope="col" className="r">Strict threshold: caught · false alarms</th>
+                </tr>
+              </thead>
+              <tbody>
+                {view.realImages.categories.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.name} <span className="muted">({c.defects})</span></td>
+                    <td className="r num">{c.trainGood}</td>
+                    <td className="r num">{c.aurocPatchcoreLike.toFixed(2)}</td>
+                    <td className="r num">{Math.round(c.caughtAt5pct * 100)}%</td>
+                    <td className="r num">{Math.round(c.caughtAt1pct * 100)}%</td>
+                    <td className="r num">{c.strictCaught} / {c.testDefective} · {c.strictFalseAlarms} / {c.testGood}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="muted cm-foot">
+            The method ranks real defects above good parts, but with about 100 good images a strict false-alarm threshold catches few of them. Certifying 0.042% per seam region needs at least 2,400 good images, which is why Checkpoint 0 collects them in shadow mode before any live alert. PatchCore-like settings (layers 2 and 3); the sealer-bead settings score {view.realImages.categories.map((c) => c.aurocBeadConfig.toFixed(2)).join(" / ")}.
           </p>
         </div>
       </section>

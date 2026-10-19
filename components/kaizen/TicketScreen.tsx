@@ -10,7 +10,7 @@ import { BeadIllustration } from "@/components/station/BeadIllustration";
 import { Badge, LoopBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { advanceTicket, checkDraftSentence, draftA3, requestValidation, updateA3 } from "@/lib/actions/kaizen";
+import { advanceTicket, checkDraftSentence, draftA3, requestValidation, selectRootCause, updateA3 } from "@/lib/actions/kaizen";
 import type { A3DraftSentence, A3Field, TicketStatus, TicketView } from "@/lib/types";
 
 import { A3_BLOCKS, TICKET_LABEL, TICKET_STEPS } from "./labels";
@@ -50,6 +50,19 @@ export function TicketScreen({
       if (!r.ok) setError(r.error);
     });
   }
+
+  const openRootCause = (aiDraft?.sentences ?? []).some((d) => d.field === "rootCause" && d.status === "draft");
+  const nextHint = !canEdit
+    ? null
+    : ticket.status === "a3_in_progress" && openRootCause
+      ? "Next: check the AI root-cause candidates at the line, then select the one you confirmed."
+      : ticket.status === "a3_in_progress" && !advanceReady
+        ? "Next: write background, current condition, root cause and countermeasure, then start the trial."
+        : ticket.status === "countermeasure_trial" && aiDraft && aiDraft.open > 0
+          ? "Next: keep or edit every AI-drafted sentence, then request validation."
+          : ticket.status === "countermeasure_trial" && !validation.canRequest && !validation.draftCardId
+            ? "Next: complete all six A3 blocks, then request validation."
+            : null;
 
   const left = A3_BLOCKS.slice(0, 3);
   const right = A3_BLOCKS.slice(3);
@@ -98,12 +111,6 @@ export function TicketScreen({
           ))}
         </ol>
 
-        {error ? (
-          <p className="form-error" role="alert">
-            <Icon name="warning-circle" weight="bold" /> {error}
-          </p>
-        ) : null}
-
         {triggerAlerts.length > 0 ? (
           <section className="panel trigger" aria-labelledby="trigger-title">
             <div className="panel__head">
@@ -147,7 +154,7 @@ export function TicketScreen({
                     <dt>Root cause found</dt><dd>{c.rootCause}</dd>
                     <dt>Countermeasure</dt><dd>{c.countermeasure}</dd>
                   </dl>
-                  {c.matched.length ? <p className="muted similar__why">Shared words: {c.matched.join(", ")}</p> : null}
+                  {c.matched.length ? <p className="muted similar__why">Matched on: {c.matched.join(", ")}</p> : null}
                 </li>
               ))}
             </ol>
@@ -163,7 +170,7 @@ export function TicketScreen({
             </span>
             {aiDraft ? (
               <span className="ai-bar__meta">
-                {aiDraft.mode === "live" ? `Drafted by ${aiDraft.model}` : "Drafted by the offline template (no API key set)"} ·{" "}
+                {aiDraft.mode === "live" ? `Drafted by Claude (${aiDraft.model})` : "Drafted from the ticket data (template mode)"} ·{" "}
                 {aiDraft.open} sentence{aiDraft.open === 1 ? "" : "s"} to check
                 {aiDraft.rejected ? ` · ${aiDraft.rejected} unsourced sentence${aiDraft.rejected === 1 ? "" : "s"} removed` : ""}
               </span>
@@ -215,6 +222,8 @@ export function TicketScreen({
               </span>
             </p>
           ) : null}
+          {nextHint ? <p className="a3__next" role="note"><Icon name="info" weight="bold" /> {nextHint}</p> : null}
+          {error ? <p className="form-error a3__error" role="alert"><Icon name="warning-circle" weight="bold" /> {error}</p> : null}
           <div className="a3__actions">
             {validation.draftCardId ? (
               <Link className="btn btn--ghost" href={`/knowledge?card=${validation.draftCardId}`}>
@@ -337,6 +346,10 @@ function A3Block({
         </p>
       )}
       {drafts.length ? (
+        <>
+        {field === "rootCause" ? (
+          <p className="a3__drafts-note">AI candidates, most likely first. Check them at the line, then select the cause you confirmed; the others are dropped.</p>
+        ) : null}
         <ul className="a3__drafts" aria-label={`AI-drafted sentences in ${label}`}>
           {drafts.map((d) => (
             <li key={d.id}>
@@ -354,22 +367,23 @@ function A3Block({
               {editable ? (
                 <button
                   type="button"
-                  className="btn btn--quiet a3__check"
+                  className={field === "rootCause" ? "btn a3__check" : "btn btn--quiet a3__check"}
                   disabled={saving}
                   onClick={() => {
                     onError(null);
                     start(async () => {
-                      const r = await checkDraftSentence(ticketId, d.id);
+                      const r = field === "rootCause" ? await selectRootCause(ticketId, d.id) : await checkDraftSentence(ticketId, d.id);
                       if (!r.ok) onError(r.error);
                     });
                   }}
                 >
-                  <Icon name="check" /> Checked
+                  <Icon name="check" /> {field === "rootCause" ? "Select as root cause" : "Keep as written"}
                 </button>
               ) : null}
             </li>
           ))}
         </ul>
+        </>
       ) : null}
     </div>
   );
