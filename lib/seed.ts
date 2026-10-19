@@ -12,8 +12,8 @@ import type {
 } from "@/lib/types";
 
 const DAY_MS = 86_400_000;
-const SEED_NOW = Date.parse("2027-03-14T08:45:00.000+07:00");
-export const SEED_REFERENCE_CLOCK = "2027-03-14T08:45:00.000+07:00";
+const SEED_NOW = Date.parse("2027-04-14T08:45:00.000+07:00");
+export const SEED_REFERENCE_CLOCK = "2027-04-14T08:45:00.000+07:00";
 export const SEED_VERSION = "m3c-gate1-v1";
 
 export const stations: Station[] = [
@@ -64,7 +64,7 @@ export function createSeedCameras(): Camera[] {
 }
 
 export function createSeedRecordingGaps(): StoreSnapshot["recordingGaps"] {
-  return [{ id: "gap-body-06-current", cameraId: "body-edge-06/cam-01", startsAt: "2027-03-14T06:12:00.000+07:00", reason: "Camera offline since 06:12; housing power check" }];
+  return [{ id: "gap-body-06-current", cameraId: "body-edge-06/cam-01", startsAt: "2027-04-14T06:12:00.000+07:00", reason: "Camera offline since 06:12; housing power check" }];
 }
 
 export function createSeedLineOperation(): StoreSnapshot["lineOperation"] {
@@ -476,10 +476,10 @@ export function createSeedData(): StoreSnapshot {
   const tickets = createTickets(alerts);
   return {
     currentShift: {
-      id: "shift-a-2027-03-14",
+      id: "shift-a-2027-04-14",
       label: "A",
-      startsAt: "2027-03-14T07:00:00.000+07:00",
-      endsAt: "2027-03-14T15:30:00.000+07:00",
+      startsAt: "2027-04-14T07:00:00.000+07:00",
+      endsAt: "2027-04-14T15:30:00.000+07:00",
     },
     stations: structuredClone(stations),
     defectTypes: structuredClone(defectTypes),

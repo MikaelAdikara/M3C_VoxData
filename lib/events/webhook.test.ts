@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { postEvents, webhookUrl } from "@/lib/events/webhook";
 
-const event = { id: "andon.yellow:x", type: "andon.yellow" as const, topic: "t", timestamp: "2027-03-14T08:00:00Z", stationId: "st-04", actor: "role:operator@st-04", data: {} };
+const event = { id: "andon.yellow:x", type: "andon.yellow" as const, topic: "t", timestamp: "2027-04-14T08:00:00Z", stationId: "st-04", actor: "role:operator@st-04", data: {} };
 
 describe("workflow webhook", () => {
   afterEach(() => {

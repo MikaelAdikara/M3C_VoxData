@@ -42,7 +42,7 @@ export async function injectTrueDefect(): Promise<ActionResult> {
         image: "",
         mask: "",
         visualScenarioId: "bead-break-reference",
-        createdAt: "2027-03-14T08:42:17.412+07:00",
+        createdAt: "2027-04-14T08:42:17.412+07:00",
         status: "open",
       });
       return { ok: true };
@@ -70,7 +70,7 @@ export async function injectFalseAlarm(): Promise<ActionResult> {
         image: "",
         mask: "",
         visualScenarioId: "reflection-false-alarm",
-        createdAt: "2027-03-14T08:44:00.000+07:00",
+        createdAt: "2027-04-14T08:44:00.000+07:00",
         status: "open",
       });
       return { ok: true };
@@ -119,7 +119,7 @@ export async function injectRepeat3(): Promise<ActionResult> {
           image: "",
           mask: "",
           visualScenarioId: "bead-excess-reference",
-          createdAt: `2027-03-14T09:${String(index * 5).padStart(2, "0")}:00.000+07:00`,
+          createdAt: `2027-04-14T09:${String(index * 5).padStart(2, "0")}:00.000+07:00`,
           status: "confirmed",
         };
         draft.alerts.push(alert);

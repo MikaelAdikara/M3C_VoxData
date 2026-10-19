@@ -82,7 +82,7 @@ async function main() {
     const alerts: Alert[] = [0, 1, 2].map((k) => ({
       id: `eval-${c.id}-${k}`, stationId: c.stationId, bodyId: `EVAL-${i}${k}`, roi: k % 2 ? "seam-R-door-07" : "seam-L-door-03",
       defectTypeId: c.defectTypeId, anomalyScore: 0.7 + k * 0.05, threshold: 0.61, modelVersion: "sealer-st04-v1.3",
-      image: "", mask: "", createdAt: `2027-03-14T0${7 + k}:${10 + i}:00.000+07:00`, status: "confirmed",
+      image: "", mask: "", createdAt: `2027-04-14T0${7 + k}:${10 + i}:00.000+07:00`, status: "confirmed",
     }));
     snapshot.alerts.push(...alerts);
     tests.push({
@@ -121,7 +121,7 @@ async function main() {
     }
     const fields = draftableFields(t.ticket.a3, t.ticket.aiPrefilledFields).filter((f) => DRAFT_FIELDS.includes(f));
     const ctx = buildDraftContext(snapshot, t.ticket, fields, t.exclude);
-    const draft = await runA3Drafter(ctx, "2027-03-14T09:00:00.000+07:00", { live, onUsage: track });
+    const draft = await runA3Drafter(ctx, "2027-04-14T09:00:00.000+07:00", { live, onUsage: track });
     const row = {
       ticket: t.ticket.id,
       mode: draft.mode,

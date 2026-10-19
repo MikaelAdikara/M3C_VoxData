@@ -6,8 +6,8 @@ import type { Alert, Decision, DefectTypeId, Shift } from "@/lib/types";
 const shift: Shift = {
   id: "shift-a",
   label: "A",
-  startsAt: "2027-03-14T07:00:00.000+07:00",
-  endsAt: "2027-03-14T15:30:00.000+07:00",
+  startsAt: "2027-04-14T07:00:00.000+07:00",
+  endsAt: "2027-04-14T15:30:00.000+07:00",
 };
 
 function alert(id: string, stationId = "st-04", defectTypeId: DefectTypeId = "BEAD_THIN"): Alert {
@@ -22,7 +22,7 @@ function alert(id: string, stationId = "st-04", defectTypeId: DefectTypeId = "BE
     modelVersion: "sealer-st04-v1.3",
     image: "/beads/test.svg",
     mask: "/beads/test-mask.svg",
-    createdAt: `2027-03-14T08:0${id}:00.000+07:00`,
+    createdAt: `2027-04-14T08:0${id}:00.000+07:00`,
     status: "confirmed",
   };
 }

@@ -5,7 +5,7 @@ import type { A3AiDraft } from "@/lib/types";
 
 const draft: A3AiDraft = {
   mode: "template",
-  generatedAt: "2027-03-14T09:00:00.000+07:00",
+  generatedAt: "2027-04-14T09:00:00.000+07:00",
   rejected: 0,
   sentences: [
     { id: "background-1", field: "background", text: "Three thin-bead alerts at st-04.", sources: [{ kind: "ticket", id: "KZ-SEAL-007" }], status: "draft" },

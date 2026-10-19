@@ -23,7 +23,7 @@ describe("event outbox", () => {
 
   it("finds only the events a change created", () => {
     const after = structuredClone(seed);
-    after.decisions.push({ id: "d-new", alertId: after.alerts[0].id, actor: "role:operator@st-04", kind: "confirm", createdAt: "2027-03-14T08:50:00.000+07:00" });
+    after.decisions.push({ id: "d-new", alertId: after.alerts[0].id, actor: "role:operator@st-04", kind: "confirm", createdAt: "2027-04-14T08:50:00.000+07:00" });
     const created = newEvents(seed, after);
     expect(created.map((e) => e.type)).toEqual(["andon.yellow"]);
     expect(summarizeEvent(created[0])).toMatch(/yellow andon/);

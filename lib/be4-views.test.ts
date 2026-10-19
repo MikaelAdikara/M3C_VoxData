@@ -12,7 +12,7 @@ describe("BE-4 deterministic backend views", () => {
     const seed = createSeedData();
     const view = buildCameraView(seed, buildShiftBoardView(seed));
     expect(view.cameras).toHaveLength(8);
-    expect(view.asOf).toBe(new Date("2027-03-14T08:45:00.000+07:00").toISOString());
+    expect(view.asOf).toBe(new Date("2027-04-14T08:45:00.000+07:00").toISOString());
     expect(view.cameras.every((camera) => camera.uptime14d.length === 14 && camera.uptime14d.every((n) => n >= 0 && n <= 1))).toBe(true);
     const attention = view.cameras.find((camera) => camera.stationId === "st-02")!;
     expect(attention).toMatchObject({ state: "attention", modelReviewNeeded: true, openAlertIds: [] });

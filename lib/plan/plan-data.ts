@@ -1,12 +1,12 @@
 /**
  * Implementation plan shown on /plan. Every value is copied from the semifinal proposal
- * (draft v25, 19 Oct 2026: Tables 5, 6, 8 and 9) and its financial model
+ * (draft v26, 19 Oct 2026: Tables 5, 6, 8 and 9) and its financial model
  * (M3C_Workplan/model/LearningLine_Financial_Model.xlsx, exported to semifinal/w1_w2_data.json).
  * Nothing here is invented: if the proposal changes, change this file and docs/SEED_DATA.md §10.
  * Rp in billions; 2025 prices unless stated; pre-tax unless stated.
  */
 
-export const PLAN_SOURCE = "Proposal draft v25 and its financial model (19 Oct 2026)";
+export const PLAN_SOURCE = "Semifinal proposal v26 and its financial model (19 Oct 2026)";
 
 export interface PlanPhase {
   id: string;
@@ -30,7 +30,7 @@ export const QUARTERS = [
 
 /** Cumulative net cash by quarter (benefits minus capex and opex), financial model. */
 export const CUMULATIVE_CASH = [
-  0.0, 0.0, 0.0, -4.79, -5.96, -8.67, -10.76, -11.76, -17.83, -22.17, -24.85, -28.0, -29.57, -27.12, -28.3, -28.92, -24.22,
+  0.0, 0.0, 0.0, -4.79, -5.96, -8.67, -10.76, -11.76, -17.83, -22.17, -24.85, -28.0, -29.58, -25.84, -27.65, -28.92, -24.22,
   -19.58, -14.99, -10.45,
 ];
 /** Gross benefit by quarter (Rp bn), financial model. */
@@ -108,7 +108,7 @@ export const DECISIONS: Decision[] = [
     name: "Gate 2",
     when: "Mid 2029",
     quarter: "Q2 2029",
-    spendBefore: "Rp51.9 bn",
+    spendBefore: "Rp50.7 bn",
     mustBeTrue: "2028 scrap and downtime targets met; cards used daily.",
     ifNot: "Fix and re-test before Phase 3.",
   },
