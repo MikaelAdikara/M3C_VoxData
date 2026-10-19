@@ -8,7 +8,7 @@ import {
 import { buildDraftContext } from "@/lib/kaizen/a3-draft";
 import { runA3Drafter } from "@/lib/kaizen/drafter";
 import { getCurrentRole } from "@/lib/queries";
-import { composeField, draftableFields, fieldsWithOpenDraft, markEditedSentences, openDraftSentences } from "@/lib/rules/ai-draft";
+import { chooseRootCause, composeField, draftableFields, fieldsWithOpenDraft, markEditedSentences, openDraftSentences } from "@/lib/rules/ai-draft";
 import { A3_FIELDS, getNextTicketStatus, isA3Complete } from "@/lib/rules/lifecycle";
 import { getStore } from "@/lib/store";
 import type { A3, A3Field, ActionResult, Factor4M, KnowledgeCard } from "@/lib/types";
@@ -116,6 +116,7 @@ export async function checkDraftSentence(ticketId: string, sentenceId: string): 
       const ticket = draft.tickets.find((item) => item.id === ticketId);
       const sentence = ticket?.aiDraft?.sentences.find((s) => s.id === sentenceId);
       if (!ticket?.aiDraft || !sentence) return { ok: false, error: "Sentence not found." };
+      if (sentence.field === "rootCause") return { ok: false, error: "Select one root cause instead; the other candidates are then dropped." };
       sentence.status = "checked";
       const open = fieldsWithOpenDraft(ticket.aiDraft);
       ticket.aiPrefilledFields = ticket.aiPrefilledFields.filter((f) => f !== sentence.field || open.includes(f));
@@ -125,6 +126,34 @@ export async function checkDraftSentence(ticketId: string, sentenceId: string): 
     return { ok: false, error: "Could not update the sentence." };
   } finally {
     revalidatePaths([`/kaizen/${ticketId}`]);
+  }
+}
+
+/** The engineer selects the root cause, after checking at the line, from the AI candidates. */
+export async function selectRootCause(ticketId: string, sentenceId: string): Promise<ActionResult> {
+  try {
+    if (!isValidId(ticketId) || !/^rootCause-\d+$/.test(sentenceId)) return { ok: false, error: "Invalid root-cause candidate." };
+    if ((await getCurrentRole()) !== "engineer") {
+      return { ok: false, error: "Only the owner engineer selects the root cause." };
+    }
+    return await getStore().mutate<ActionResult>((draft) => {
+      const ticket = draft.tickets.find((item) => item.id === ticketId);
+      if (!ticket?.aiDraft) return { ok: false, error: "No AI root-cause candidates on this ticket." };
+      if (!["open", "a3_in_progress", "countermeasure_trial"].includes(ticket.status)) {
+        return { ok: false, error: "This ticket no longer accepts A3 updates." };
+      }
+      const result = chooseRootCause(ticket.aiDraft, sentenceId);
+      if (!result) return { ok: false, error: "Root-cause candidate not found." };
+      ticket.aiDraft = result.draft;
+      ticket.a3.rootCause = result.rootCause;
+      ticket.aiPrefilledFields = ticket.aiPrefilledFields.filter((f) => f !== "rootCause");
+      ticket.a3UpdatedAt = nextSimulatedTimestamp(draft);
+      return { ok: true };
+    });
+  } catch {
+    return { ok: false, error: "Could not select the root cause." };
+  } finally {
+    revalidatePaths([`/kaizen/${ticketId}`, "/kaizen"]);
   }
 }
 

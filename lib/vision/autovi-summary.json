@@ -1,0 +1,48 @@
+{
+ "dataset": "AutoVI v1.0.0 (Renault Group & UTC), doi:10.5281/zenodo.10459003, CC BY-NC-SA 4.0",
+ "evaluatedOn": "2026-10-18",
+ "categories": [
+  {
+   "id": "pipe_staple",
+   "name": "Pipe staple",
+   "defects": "missing staple",
+   "trainGood": 191,
+   "testGood": 188,
+   "testDefective": 117,
+   "aurocPatchcoreLike": 0.938,
+   "aurocBeadConfig": 0.681,
+   "caughtAt5pct": 0.453,
+   "caughtAt1pct": 0.068,
+   "strictFalseAlarms": 6,
+   "strictCaught": 5
+  },
+  {
+   "id": "engine_wiring",
+   "name": "Engine wiring",
+   "defects": "fastening, hoop colour, cardboard, obstruction",
+   "trainGood": 285,
+   "testGood": 285,
+   "testDefective": 322,
+   "aurocPatchcoreLike": 0.855,
+   "aurocBeadConfig": 0.837,
+   "caughtAt5pct": 0.379,
+   "caughtAt1pct": 0.152,
+   "strictFalseAlarms": 0,
+   "strictCaught": 15
+  },
+  {
+   "id": "pipe_clip",
+   "name": "Pipe clip",
+   "defects": "clip not closed",
+   "trainGood": 195,
+   "testGood": 195,
+   "testDefective": 142,
+   "aurocPatchcoreLike": 0.706,
+   "aurocBeadConfig": 0.711,
+   "caughtAt5pct": 0.07,
+   "caughtAt1pct": 0.014,
+   "strictFalseAlarms": 0,
+   "strictCaught": 0
+  }
+ ]
+}

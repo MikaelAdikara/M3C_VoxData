@@ -30,6 +30,28 @@ export function markEditedSentences(draft: A3AiDraft | undefined, field: A3Field
   };
 }
 
+/**
+ * The engineer selects one root-cause candidate after checking at the line. Only that cause stays in
+ * the A3 (and later on the card); the other candidates are dropped.
+ */
+export function chooseRootCause(draft: A3AiDraft, sentenceId: string): { draft: A3AiDraft; rootCause: string } | null {
+  const chosen = draft.sentences.find((s) => s.id === sentenceId && s.field === "rootCause");
+  if (!chosen) return null;
+  const cause = chosen.text.replace(/^Candidate \d+ to check at the line:\s*/i, "").trim();
+  const text = cause.charAt(0).toUpperCase() + cause.slice(1);
+  return {
+    rootCause: sentenceLine({ text, sources: chosen.sources }),
+    draft: {
+      ...draft,
+      sentences: draft.sentences.map((s) =>
+        s.field !== "rootCause" || (s.status !== "draft" && s.id !== sentenceId)
+          ? s
+          : { ...s, status: s.id === sentenceId ? "chosen" : "dropped" },
+      ),
+    },
+  };
+}
+
 export function openDraftSentences(draft: A3AiDraft | undefined, fields: readonly A3Field[] = DRAFT_FIELDS): A3DraftSentence[] {
   return (draft?.sentences ?? []).filter((s) => s.status === "draft" && fields.includes(s.field));
 }

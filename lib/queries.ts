@@ -16,6 +16,7 @@ import { getStore } from "@/lib/store";
 import { buildCameraView, buildLineView, buildPilotView, buildTrailView } from "@/lib/be4-views";
 import { buildCameraModelView } from "@/lib/vision/model-view";
 import { buildDraftContext } from "@/lib/kaizen/a3-draft";
+import { matchedWords } from "@/lib/kaizen/similar";
 import { buildEvents, summarizeEvent } from "@/lib/events/outbox";
 import { lastDelivery, webhookUrl } from "@/lib/events/webhook";
 import { openDraftSentences } from "@/lib/rules/ai-draft";
@@ -329,7 +330,7 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
         countermeasure: c.case.countermeasure,
         ticketId: c.case.ticketId ?? null,
         card: card && !retired ? { id: card.id, revision: card.revision } : null,
-        matched: c.matched,
+        matched: matchedWords(c.case, c.matched),
         score: c.score,
       };
     }),

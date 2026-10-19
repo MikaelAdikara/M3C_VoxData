@@ -1,0 +1,42 @@
+/* /plan: implementation plan from the proposal and its financial model */
+.plan-sec { margin-top: var(--s5); }
+.plan-h2 { font-size: 20px; margin: 0 0 var(--s3); }
+.plan-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s3); }
+.plan-tile { display: grid; gap: 2px; padding: var(--s4); border-radius: var(--r-panel); background: var(--surface); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); }
+.plan-tile span { font-size: 14px; color: var(--muted-strong); font-weight: 600; }
+.plan-tile b { font-size: 30px; line-height: 1.1; }
+.plan-tile small { font-size: 13px; color: var(--muted); }
+.plan-bar { fill: var(--line-strong); }
+.plan-bar--now { fill: var(--instruct); }
+.plan-bar__txt { fill: var(--ink); font-size: 13px; font-weight: 700; }
+.plan-bar--now + .plan-bar__txt { fill: #fff; }
+.plan-diamond { fill: var(--ink); }
+.plan-area { fill: rgba(0, 102, 177, .10); }
+.plan-line { fill: none; stroke: var(--instruct); stroke-width: 2; }
+.plan-dot { fill: var(--instruct); }
+.plan-dot--min { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
+.plan-note { font-size: 14px; margin-top: var(--s2); }
+.plan-decisions { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s3); }
+.plan-decisions .panel { height: 100%; }
+.plan-decisions h3 { font-size: 18px; margin: 2px 0 var(--s2); }
+.plan-decisions dl { display: grid; gap: 2px; margin: 0; font-size: 14px; }
+.plan-decisions dt { color: var(--muted); font-size: 13px; margin-top: var(--s2); }
+.plan-decisions dd { margin: 0; }
+.plan-when { margin: 0; font-size: 13px; font-weight: 700; color: var(--instruct-text); }
+.plan-link { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; font-weight: 700; color: var(--instruct-text); margin-top: var(--s2); }
+.plan-phases { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s5); }
+.plan-phases h3 { font-size: 17px; margin: 0; }
+.plan-phases p { margin: var(--s2) 0 0; font-size: 14.5px; }
+.plan-table tbody tr { cursor: default; }
+.plan-table td { font-size: 14px; }
+.plan-provs { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.plan-proof__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); }
+.plan-proof h3 { display: flex; align-items: center; gap: var(--s2); font-size: 17px; margin: 0 0 var(--s2); }
+.plan-proof ul { margin: 0; padding-left: 1.2em; display: grid; gap: var(--s2); font-size: 14.5px; }
+.plan-proof a { color: var(--instruct-text); font-weight: 700; }
+@media (max-width: 1100px) { .plan-decisions { grid-template-columns: repeat(2, minmax(0, 1fr)); } .plan-phases { grid-template-columns: 1fr; } }
+@media (max-width: 767px) {
+  .plan-tiles, .plan-decisions, .plan-proof__cols { grid-template-columns: 1fr; }
+  .plan-timeline { min-width: 720px; }
+  .plan .panel__body:has(.plan-timeline) { overflow-x: auto; }
+}

@@ -32,7 +32,7 @@ export type DecisionKind = "confirm" | "reject" | ShiftDecision;
 export type IdeaStatus = "submitted" | "answered" | "implemented";
 export type ReviewStatus = "pending" | "verified";
 export type Factor4M = "Man" | "Machine" | "Material" | "Method";
-export type Provenance = "simulated" | "illustration" | "target" | "benchmark" | "case_data";
+export type Provenance = "simulated" | "illustration" | "target" | "benchmark" | "case_data" | "projection";
 export type CameraState = "online" | "attention" | "offline";
 export type CameraKind = "sealer" | "paint_tablet" | "final";
 
@@ -150,8 +150,11 @@ export interface A3DraftSentence {
   field: A3Field;
   text: string;
   sources: A3DraftSource[];
-  /** "draft" until the engineer edits the sentence (edited) or marks it checked. */
-  status: "draft" | "checked" | "edited";
+  /**
+   * "draft" until the engineer acts: keeps it (checked), rewrites it (edited), or, for root-cause
+   * candidates, selects one (chosen) which drops the others (dropped).
+   */
+  status: "draft" | "checked" | "edited" | "chosen" | "dropped";
 }
 
 export interface A3AiDraft {
@@ -608,6 +611,25 @@ export interface CameraModelView {
   };
   provenance: "simulated";
   sourceLabel: string;
+  /** Same method on real production images (AutoVI, Renault Group & UTC). Numbers only. */
+  realImages: {
+    dataset: string;
+    evaluatedOn: string;
+    categories: {
+      id: string;
+      name: string;
+      defects: string;
+      trainGood: number;
+      testGood: number;
+      testDefective: number;
+      aurocPatchcoreLike: number;
+      aurocBeadConfig: number;
+      caughtAt5pct: number;
+      caughtAt1pct: number;
+      strictFalseAlarms: number;
+      strictCaught: number;
+    }[];
+  };
 }
 
 /** /events: the event outbox and optional workflow webhook. */

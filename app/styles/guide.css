@@ -1,0 +1,57 @@
+/* Guided demo: a step card docked bottom-left (the assistant dock is bottom-right). */
+.guide {
+  position: fixed; left: var(--s5); bottom: var(--s5); z-index: 41; width: min(352px, calc(100vw - 32px));
+  max-height: calc(100dvh - var(--bar-h, 64px) - 40px); overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--s4) var(--s4) var(--s3); border-radius: 14px; background: var(--surface-strong);
+  border: 1px solid var(--glass-edge); box-shadow: 0 24px 60px rgba(0, 0, 0, .24); animation: guide-in 220ms var(--ease-out);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  display: grid; gap: var(--s2); font-size: 15px;
+}
+.guide--welcome { border-top: 4px solid var(--instruct); }
+.guide__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); }
+.guide__eyebrow { font-size: 13px; font-weight: 700; color: var(--muted-strong); margin: 0; }
+.guide__title { font-size: 19px; line-height: 1.25; margin: 0; }
+.guide__text { margin: 0; color: var(--ink-2); }
+.guide__role { margin: 0; font-size: 14px; color: var(--ink-2); }
+.guide__bar { display: grid; grid-auto-flow: column; gap: 3px; }
+.guide__bar span { height: 4px; border-radius: 2px; background: var(--line-strong); }
+.guide__bar span[data-state="now"] { background: var(--instruct); }
+.guide__bar span[data-state="done"] { background: var(--safe); }
+.guide__todo { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.guide__notice { margin: 0; font-size: 14px; color: var(--ink-2); padding: var(--s2) var(--s3); border-radius: var(--r-input); background: var(--instruct-tint); }
+.guide__done { margin: 0; display: flex; gap: var(--s2); align-items: flex-start; padding: var(--s2) var(--s3); border-radius: var(--r-input); background: var(--safe-tint); color: var(--safe-text); font-size: 14px; }
+.guide__done .icon { font-size: 20px; flex: none; }
+.guide__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); margin-top: var(--s1); }
+.guide__actions .btn { min-height: 44px; }
+.guide__nav { display: flex; gap: 4px; margin-left: auto; }
+.guide__icon { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; display: grid; place-items: center; font-size: 16px; }
+.guide__icon:disabled { opacity: .4; cursor: default; }
+.guide__icon .flip { display: inline-grid; transform: scaleX(-1); }
+.guide__link { border: 0; background: none; padding: 0; color: var(--instruct-text); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.guide__end { margin: 0; font-size: 14px; color: var(--ink-2); }
+.guide__all { font-size: 14px; border-top: 1px solid var(--line); padding-top: var(--s2); }
+.guide__all summary { cursor: pointer; font-weight: 700; color: var(--ink-2); min-height: 32px; display: flex; align-items: center; }
+.guide__all ol { list-style: none; margin: var(--s2) 0; padding: 0; display: grid; gap: 2px; }
+.guide__all li button { display: flex; align-items: center; gap: var(--s2); width: 100%; min-height: 36px; padding: 0 var(--s2); border: 0; border-radius: var(--r-input); background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.guide__all li[aria-current="step"] button { background: var(--panel); font-weight: 700; }
+.guide__all li[data-done] .icon { color: var(--safe); }
+.guide :focus-visible { outline: 3px solid var(--instruct-text); outline-offset: 2px; }
+
+.guide-pill {
+  position: fixed; left: var(--s5); bottom: var(--s5); z-index: 40; display: inline-flex; align-items: center; gap: var(--s2);
+  min-height: 52px; padding: 0 var(--s4); border-radius: var(--r-pill); border: 1px solid var(--line-strong);
+  background: var(--surface-strong); color: var(--ink); font: inherit; font-weight: 700; cursor: pointer; box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
+}
+.guide-pill .num { color: var(--muted-strong); }
+.guide-pill:focus-visible { outline: 3px solid var(--instruct-text); outline-offset: 3px; }
+
+/* the control the current step needs */
+.guide-target { outline: 3px solid var(--instruct) !important; outline-offset: 4px; border-radius: 6px; animation: guide-pulse 1.6s ease-in-out infinite; scroll-margin: 120px; }
+@keyframes guide-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 102, 177, .45); } 50% { box-shadow: 0 0 0 10px rgba(0, 102, 177, 0); } }
+@keyframes guide-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .guide { animation: none; } .guide-target { animation: none; } }
+
+@media (max-width: 767px) {
+  .guide { left: 8px; right: 8px; width: auto; bottom: calc(var(--tabbar-h) + 8px + env(safe-area-inset-bottom)); max-height: 46dvh; }
+  .guide-pill { left: var(--s4); bottom: calc(var(--tabbar-h) + var(--s3) + env(safe-area-inset-bottom)); }
+}

@@ -12,7 +12,7 @@ vi.mock("next/headers", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: context.revalidatePath }));
 
-import { advanceTicket, checkDraftSentence, draftA3, updateA3 } from "@/lib/actions/kaizen";
+import { advanceTicket, checkDraftSentence, draftA3, selectRootCause, updateA3 } from "@/lib/actions/kaizen";
 import { getTicketView } from "@/lib/queries";
 import { resetMemoryStore } from "@/lib/store/memory";
 
@@ -41,16 +41,20 @@ describe("AI-drafted A3 (template mode, no API key)", () => {
     expect(view.similarCases[0]?.defectType.id).toBe("BEAD_THIN");
   });
 
-  it("blocks the countermeasure trial until the engineer checks or edits the root-cause candidates", async () => {
+  it("blocks the countermeasure trial until the engineer selects one root cause", async () => {
     await draftA3("KZ-SEAL-007");
     await updateA3("KZ-SEAL-007", { countermeasure: "Warm-up purge trial on shift A." });
     // ticket starts at a3_in_progress
     const blocked = await advanceTicket("KZ-SEAL-007");
     expect(blocked).toMatchObject({ ok: false });
     const view = (await getTicketView("KZ-SEAL-007"))!;
-    for (const s of view.aiDraft!.sentences.filter((d) => d.field === "rootCause")) {
-      expect(await checkDraftSentence("KZ-SEAL-007", s.id)).toEqual({ ok: true });
-    }
+    const candidates = view.aiDraft!.sentences.filter((d) => d.field === "rootCause");
+    expect(await checkDraftSentence("KZ-SEAL-007", candidates[0].id)).toMatchObject({ ok: false });
+    expect(await selectRootCause("KZ-SEAL-007", candidates[1].id)).toEqual({ ok: true });
+    const after = (await getTicketView("KZ-SEAL-007"))!;
+    expect(after.a3.rootCause).not.toMatch(/Candidate/);
+    expect(after.a3.rootCause).not.toContain("\n");
+    expect(after.aiDraft!.sentences.filter((d) => d.status === "dropped")).toHaveLength(candidates.length - 1);
     expect(await advanceTicket("KZ-SEAL-007")).toEqual({ ok: true });
   });
 

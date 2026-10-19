@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { composeField, draftableFields, markEditedSentences, openDraftSentences, sentenceLine } from "@/lib/rules/ai-draft";
+import { chooseRootCause, composeField, draftableFields, markEditedSentences, openDraftSentences, sentenceLine } from "@/lib/rules/ai-draft";
 import type { A3AiDraft } from "@/lib/types";
 
 const draft: A3AiDraft = {
@@ -27,6 +27,20 @@ describe("AI-drafted A3 sentences", () => {
     const edited = markEditedSentences(draft, "rootCause", field.replace("Regulator lag.", "Regulator lag confirmed on the trend."));
     expect(openDraftSentences(edited, ["rootCause"]).map((s) => s.id)).toEqual(["rootCause-1"]);
     expect(edited?.sentences.find((s) => s.id === "rootCause-2")?.status).toBe("edited");
+  });
+
+  it("keeps only the root cause the engineer selects", () => {
+    const r = chooseRootCause(draft, "rootCause-2")!;
+    expect(r.rootCause).toBe("2. Regulator lag. [HC-021]");
+    expect(r.draft.sentences.find((s) => s.id === "rootCause-2")?.status).toBe("chosen");
+    expect(r.draft.sentences.find((s) => s.id === "rootCause-1")?.status).toBe("dropped");
+    expect(openDraftSentences(r.draft, ["rootCause"])).toHaveLength(0);
+    expect(chooseRootCause(draft, "background-1")).toBeNull();
+  });
+
+  it("strips the candidate label when the engineer selects a cause", () => {
+    const d: A3AiDraft = { ...draft, sentences: [{ ...draft.sentences[1], text: "Candidate 1 to check at the line: cold material after the overnight stop." }] };
+    expect(chooseRootCause(d, "rootCause-1")!.rootCause).toBe("Cold material after the overnight stop. [HC-001] [KC-SEAL-014 r3]");
   });
 
   it("never drafts over text the engineer wrote", () => {

@@ -1,3 +1,4 @@
+import autovi from "@/lib/vision/autovi-summary.json";
 import meta from "@/lib/vision/bead-model.json";
 import type { CameraModelTypeResult, CameraModelView } from "@/lib/types";
 
@@ -42,5 +43,6 @@ export function buildCameraModelView(): CameraModelView {
     },
     provenance: "simulated",
     sourceLabel: `Synthetic bead images, evaluated ${meta.evaluatedOn}; not TMMIN line data`,
+    realImages: autovi,
   };
 }

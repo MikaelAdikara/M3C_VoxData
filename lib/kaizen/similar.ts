@@ -91,6 +91,18 @@ function buildIndex(cases: readonly HistoryCase[]): Index {
 
 let defaultIndex = buildIndex(HISTORY_CASES);
 
+/** The case's own words behind the matched terms, for display ("excess", not the stem "exces"). */
+export function matchedWords(c: HistoryCase, matched: readonly string[]): string[] {
+  const want = new Set(matched);
+  const words = `${c.symptom} ${c.rootCause}`.split(/[^A-Za-z0-9-]+/).filter(Boolean);
+  const out = new Map<string, string>();
+  for (const w of words) {
+    const [t] = terms(w);
+    if (t && want.has(t) && !out.has(t)) out.set(t, w.toLowerCase());
+  }
+  return [...out.values()];
+}
+
 export function findSimilarCases(
   query: CaseQuery,
   options: { limit?: number; cases?: readonly HistoryCase[] } = {},
