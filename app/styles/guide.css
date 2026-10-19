@@ -55,3 +55,13 @@
   .guide { left: 8px; right: 8px; width: auto; bottom: calc(var(--tabbar-h) + 8px + env(safe-area-inset-bottom)); max-height: 46dvh; }
   .guide-pill { left: var(--s4); bottom: calc(var(--tabbar-h) + var(--s3) + env(safe-area-inset-bottom)); }
 }
+
+/* opaque in both themes: the guide sits over live content */
+.guide { background: #ffffff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .guide { background: #2e3034; } }
+:root[data-theme="dark"] .guide { background: #2e3034; }
+@media (max-width: 767px) {
+  body:has(.guide) .dock__fab { display: none; }
+  .guide { gap: 6px; padding: var(--s3); }
+  .guide__title { font-size: 17px; }
+}

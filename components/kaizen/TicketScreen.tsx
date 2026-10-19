@@ -54,6 +54,12 @@ export function TicketScreen({
   const openRootCause = (aiDraft?.sentences ?? []).some((d) => d.field === "rootCause" && d.status === "draft");
   const nextHint = !canEdit
     ? null
+    : ticket.status === "open"
+      ? openRootCause
+        ? "Next: check the AI root-cause candidates at the line, select the one you confirmed, then press Start the A3."
+        : aiDraft
+          ? "Next: press Start the A3, then write the countermeasure."
+          : "Next: draft the A3 from data, or press Start the A3 and write it yourself."
     : ticket.status === "a3_in_progress" && openRootCause
       ? "Next: check the AI root-cause candidates at the line, then select the one you confirmed."
       : ticket.status === "a3_in_progress" && !advanceReady

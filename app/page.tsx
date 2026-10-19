@@ -127,7 +127,7 @@ export default async function CoverPage() {
                 </div>
                 <span className="ledger__from">{r.id === "scrap-index" ? r.baseline : pct(r.baseline)}<small>baseline</small></span>
                 <span className="ledger__arrow" aria-label="to"><Icon name="arrow-right" weight="bold" /></span>
-                <span className="ledger__to">{String(r.target).replace(/\s/g, "")}<small>Gate 1 · Dec 2027</small></span>
+                <span className="ledger__to">{String(r.target).replace(/\s/g, "")}<small>{r.id === "override-rate" ? "Gate 1 · Dec 2027" : "2028 target"}</small></span>
               </li>
             ))}
           </ul>

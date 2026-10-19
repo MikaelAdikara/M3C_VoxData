@@ -72,7 +72,7 @@ export const GUIDE_STEPS: GuideStep[] = [
     href: () => "/cameras/model",
     target: "Break",
     todo: ["Pick a defect type, or paint on the bead with Remove sealer.", "Watch the score and heatmap change."],
-    notice: "A real anomaly model, trained on good beads only, runs in your browser. The evaluation table below it is honest about what it misses.",
+    notice: "A real anomaly model, trained only on synthetic good beads, runs in your browser. The evaluation table below it is honest about what it misses.",
     done: (_p, l) => Boolean(l.sawModel),
   },
   {

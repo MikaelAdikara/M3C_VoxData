@@ -270,7 +270,7 @@ export function PlanScreen() {
               <ul>
                 <li>Who decides at each step: no code path stops the line or validates a card without a person. <Link href="/shift-board">Shift board</Link></li>
                 <li>How the camera threshold is set from the false-alarm budget, and measured: 0.96 false alarms per station per shift on synthetic beads. <Link href="/cameras/model">Camera model</Link></li>
-                <li>The same method on real Renault production images (AutoVI): image AUROC 0.71–0.94 with no defect images in training. <Link href="/cameras/model#autovi">Results</Link></li>
+                <li>The same method on real Renault production images (AutoVI): image AUROC 0.71–0.94 with PatchCore-like settings (0.68–0.84 with the sealer-bead settings), but at a strict threshold only 0–5% of defects are caught. <Link href="/cameras/model#autovi">Results</Link></li>
                 <li>The assistant cites only validated cards: 17 of 17 citations valid and 10 of 10 correct refusals with Claude. <Link href="/knowledge">Knowledge</Link></li>
               </ul>
             </div>
@@ -282,7 +282,7 @@ export function PlanScreen() {
                 <li>Detection on TMMIN&apos;s own sealer beads: Checkpoint 0 collects at least 2,400 good images per seam region before any threshold is trusted.</li>
                 <li>Operator trust (≥75% say the tool helps) and override below 20% at Gate 1.</li>
                 <li>Scrap −30% on targeted defects, booked by finance against Karawang I.</li>
-                <li>How much freed time becomes cash: the labour lever has no published anchor.</li>
+                <li>How much freed operator time becomes cash: the 70% cash share has no published anchor.</li>
               </ul>
             </div>
           </div>
