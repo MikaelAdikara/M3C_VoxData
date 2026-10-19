@@ -89,3 +89,9 @@ The BE-4 prototype generator is `scripts/generate-pilot-assets.mjs`. It writes d
 - `lib/kaizen/history.ts` holds 32 closed sealer cases (`HC-001` … `HC-032`), written by the team for the prototype. Six of them are the six closed seeded tickets (`KZ-SEAL-001` … `006`) with the text of their validated cards; the rest are older simulated cases (2025–2026) with varied shop-floor wording. No TMMIN data.
 - Each case carries a `rootCauseGroup` label (10 groups, e.g. material temperature, nozzle condition, air in supply). The label is used only to score similar-case retrieval (Precision@3 in `eval/results/kaizen-*.json`); the app never shows it as a conclusion.
 - The ticket page lists the closest cases; the A3 drafter may cite them as `[HC-…]`. A card is cited only while it is validated.
+
+## 10. Implementation plan shown on /plan (added 19 Oct 2026)
+
+- `lib/plan/plan-data.ts` copies the semifinal proposal (draft v25, 18 Oct 2026: Table 5 phase plan, Table 6 decision ladder, Table 8 KPI targets, Table 9 benefit chain) and the quarterly series of the financial model (`model/LearningLine_Financial_Model.xlsx`, exported to `semifinal/w1_w2_data.json`): cumulative net cash and gross benefit per quarter, Q1 2026 to Q4 2030.
+- Labelled on screen as **Projection** (financial model), **Target** (2028, 2030) or **Case data** (2025 baselines). Nothing is added that the proposal does not state; `lib/plan/plan-data.test.ts` checks the totals (Rp56.4 bn investment, Rp35.2 bn gross benefit 2030, peak cash need Rp29.6 bn in Q1 2029).
+- If the proposal changes before submission, update this file and the test in the same commit.
