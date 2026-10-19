@@ -24,7 +24,7 @@ Body of each POST:
       "id": "andon.yellow:decision-…",
       "type": "andon.yellow",
       "topic": "learning-line/K2-Body/st-04/andon",
-      "timestamp": "2027-03-14T08:47:12.000Z",
+      "timestamp": "2027-04-14T08:47:12.000Z",
       "stationId": "st-04",
       "actor": "role:operator@st-04",
       "data": { "alert_id": "…", "body_id": "K2-27-031487", "roi": "seam-R-door-07", "defect_type": "BEAD_BREAK", "decided_by": "role:operator@st-04", "decision": "confirmed" }

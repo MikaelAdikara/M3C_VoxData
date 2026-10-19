@@ -68,7 +68,7 @@ The Executive Summary proposes the following UNS-style event envelope. The proto
 ```json
 {
   "topic": "spBv1.0/K2-Body/DDATA/sealer-edge-04/cam-01",
-  "timestamp": "2027-03-14T08:42:17.412+07:00",
+  "timestamp": "2027-04-14T08:42:17.412+07:00",
   "metrics": {
     "body_id": "K2-27-031487", "roi": "seam-R-door-07",
     "anomaly_score": 0.83, "threshold": 0.61, "model_version": "sealer-st04-v1.3",

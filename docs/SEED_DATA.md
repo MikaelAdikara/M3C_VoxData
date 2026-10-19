@@ -76,7 +76,7 @@ The BE-4 prototype generator is `scripts/generate-pilot-assets.mjs`. It writes d
 
 ## 8. BE-4 operational seed and provenance
 
-- `SEED_VERSION = "m3c-gate1-v1"`. The canonical reset snapshot has a stable SHA-256 fingerprint and a reference clock of 14 Mar 2027 08:45 WIB. The fingerprint is computed from canonically sorted JSON keys and survives a JSONB round trip.
+- `SEED_VERSION = "m3c-gate1-v1"`. The canonical reset snapshot has a stable SHA-256 fingerprint and a reference clock of 14 Apr 2027 08:45 WIB (live alerts start in April 2027, after the Lebaran restart; proposal §4.2). The fingerprint is computed from canonically sorted JSON keys and survives a JSONB round trip.
 - The simulated K2-Body production counter starts at **68 bodies completed**; ~300 per shift is an ES Appendix D assumption, and 1.5 min takt is the lower bound of the ES Section 2.2 range. The counter is not MES data. UI may advance it through the backend action only while the line is running.
 - The line is running at reset. st-05 has an operator-confirmed alert awaiting a team-leader decision. Injecting and confirming the st-04 bead-break alert creates its yellow andon; a team-leader `stop_fix` decision then stops the simulated line. Restart requires a team-leader repair note.
 - Eight camera endpoints are seeded across st-01…st-06, the paint body-map tablet, and final inspection. st-02 needs attention because of the reflection/false-alarm review. st-06 has a recording gap from 06:12 and is offline. The paint tablet has no CCTV stream.
@@ -92,6 +92,6 @@ The BE-4 prototype generator is `scripts/generate-pilot-assets.mjs`. It writes d
 
 ## 10. Implementation plan shown on /plan (added 19 Oct 2026)
 
-- `lib/plan/plan-data.ts` copies the semifinal proposal (draft v25, 18 Oct 2026: Table 5 phase plan, Table 6 decision ladder, Table 8 KPI targets, Table 9 benefit chain) and the quarterly series of the financial model (`model/LearningLine_Financial_Model.xlsx`, exported to `semifinal/w1_w2_data.json`): cumulative net cash and gross benefit per quarter, Q1 2026 to Q4 2030.
+- `lib/plan/plan-data.ts` copies the semifinal proposal (semifinal v26, 19 Oct 2026: Table 5 phase plan, Table 6 decision ladder, Table 8 KPI targets, Table 9 benefit chain) and the quarterly series of the financial model (`model/LearningLine_Financial_Model.xlsx`, exported to `semifinal/w1_w2_data.json`): cumulative net cash and gross benefit per quarter, Q1 2026 to Q4 2030.
 - Labelled on screen as **Projection** (financial model), **Target** (2028, 2030) or **Case data** (2025 baselines). Nothing is added that the proposal does not state; `lib/plan/plan-data.test.ts` checks the totals (Rp56.4 bn investment, Rp35.2 bn gross benefit 2030, peak cash need Rp29.6 bn in Q1 2029).
 - If the proposal changes before submission, update this file and the test in the same commit.
