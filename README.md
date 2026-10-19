@@ -2,7 +2,7 @@
 
 **Concept prototype with simulated data; not connected to TMMIN systems.**
 
-Companion to the M3C 2026 Business Executive Summary *"The Learning Line: Turning Every Abnormality into a Reusable Standard at TMMIN Karawang, 2026–2030"* (Appendix C). It shows one sealer abnormality travelling through the **Shift loop** (minutes) and the **Kaizen loop** (weeks), and where people decide at each step. AI detects and drafts; operators, team leaders and engineers decide.
+Companion to the M3C 2026 Executive Summary and semifinal proposal *"The Learning Line: Turning Every Abnormality into a Reusable Standard at TMMIN Karawang, 2026–2030"* (Appendix C). Start with **Start the guided demo** on the cover (nine steps, about five minutes); `/plan` shows the proposal's roadmap, decision ladder and quarterly cash. It shows one sealer abnormality travelling through the **Shift loop** (minutes) and the **Kaizen loop** (weeks), and where people decide at each step. AI detects and drafts; operators, team leaders and engineers decide.
 
 ## What you can do in the demo
 
