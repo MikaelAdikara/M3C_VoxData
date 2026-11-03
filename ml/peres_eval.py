@@ -142,6 +142,11 @@ def evaluate(scorer, name):
                           "detected_discontinuity": f"{sum(d for d, b in zip(det, rec['box']) if b['cls'] == 0)}/{sum(b['cls'] == 0 for b in rec['box'])}",
                           "detected_excess": f"{sum(d for d, b in zip(det, rec['box']) if b['cls'] == 1)}/{sum(b['cls'] == 1 for b in rec['box'])}",
                           "false_alarm_rate_regions": round(float(np.mean(fa)), 4)}
+    # upper bound, not a deployable setting: threshold just above the highest good-region score on the test folds (zero false alarms)
+    top = float(ns.max()); det0 = [b["s"] > top for b in rec["box"]]
+    res["zero_fa_upper_bound"] = {"detected_all": f"{sum(det0)}/{len(det0)}",
+                                  "detected_discontinuity": f"{sum(d for d, b in zip(det0, rec['box']) if b['cls'] == 0)}/{sum(b['cls'] == 0 for b in rec['box'])}",
+                                  "detected_excess": f"{sum(d for d, b in zip(det0, rec['box']) if b['cls'] == 1)}/{sum(b['cls'] == 1 for b in rec['box'])}"}
     return res, rec
 
 out = {}

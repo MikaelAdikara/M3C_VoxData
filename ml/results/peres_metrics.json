@@ -20,6 +20,12 @@
    "detected_discontinuity": "0/100",
    "detected_excess": "0/77",
    "false_alarm_rate_regions": 0.0
+  },
+  "zero_fa_upper_bound": {
+   "detected_all": "92/177",
+   "detected_discontinuity": "52/100",
+   "detected_excess": "40/77",
+   "note": "Threshold set on the test folds so that none of the 2,822 good regions alarms (upper bound, not deployable). Recorded from the per-region records of the 19 Oct 2026 run; the zero_fa_upper_bound block in ml/peres_eval.py computes it. The dataset is not redistributed, so this file was not re-run."
   }
  },
  "global": {
