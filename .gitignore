@@ -9,3 +9,6 @@ node_modules/
 public/ort/
 ml/__pycache__/
 ml/results/metrics_quick.json
+finance/__pycache__/
+finance/results/mc_data.json
+scripts/qa/qa_out/

@@ -1,0 +1,46 @@
+{
+ "source": "Peres et al. (2021), structural-adhesive bead images on a car-body part, data release v1.0. Images are not included in this repository.",
+ "protocol": "5-fold GroupKFold over near-duplicate groups; memory bank of good regions only; split-conformal thresholds. Code: ml/peres_eval.py",
+ "positional": {
+  "n_images": 77,
+  "n_groups": 44,
+  "n_boxes": 177,
+  "n_normal_regions": 2822,
+  "auroc_box_vs_normal_region": 0.9912951907330217,
+  "auroc_discontinuity": 0.9952941176470588,
+  "auroc_excess": 0.9861017791563503,
+  "at_1%": {
+   "detected_all": "121/177",
+   "detected_discontinuity": "74/100",
+   "detected_excess": "47/77",
+   "false_alarm_rate_regions": 0.0188
+  },
+  "at_0.1%": {
+   "detected_all": "0/177",
+   "detected_discontinuity": "0/100",
+   "detected_excess": "0/77",
+   "false_alarm_rate_regions": 0.0
+  }
+ },
+ "global": {
+  "n_images": 77,
+  "n_groups": 44,
+  "n_boxes": 177,
+  "n_normal_regions": 2822,
+  "auroc_box_vs_normal_region": 0.9833351351567786,
+  "auroc_discontinuity": 0.9817505315379164,
+  "auroc_excess": 0.9853930619345219,
+  "at_1%": {
+   "detected_all": "88/177",
+   "detected_discontinuity": "43/100",
+   "detected_excess": "45/77",
+   "false_alarm_rate_regions": 0.0156
+  },
+  "at_0.1%": {
+   "detected_all": "0/177",
+   "detected_discontinuity": "0/100",
+   "detected_excess": "0/77",
+   "false_alarm_rate_regions": 0.0
+  }
+ }
+}

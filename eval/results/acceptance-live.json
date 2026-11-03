@@ -1,0 +1,95 @@
+{
+ "runAt": "2026-11-03T08:36Z",
+ "url": "https://learningline-kohl.vercel.app",
+ "deployedCommit": "f723bad",
+ "runner": "scripts/qa/acceptance_live.py (Playwright, Chromium)",
+ "passed": 17,
+ "total": 17,
+ "checks": [
+  {
+   "check": "Landing shows the simulated-data label",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Alert reaches st-04 with score and threshold",
+   "pass": true,
+   "detail": "Sealer 04 · st-04  Body K2-27-031487 · detected 08:42:17  Shift loop Alert repla"
+  },
+  {
+   "check": "Model version shown on alert",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Operator confirm reaches the shift board as a yellow andon",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Operator cannot decide stop/contain/continue",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Yellow andon for st-04 with leak-critical suggestion",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "st-02 over false-alarm budget flagged for model review",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Team leader decision closes the andon",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Third repeat opens a Kaizen ticket",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Ticket shows trigger alerts and A3 form",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Assistant answer cites a validated card",
+   "pass": true,
+   "detail": "KC-SEAL-004 r4"
+  },
+  {
+   "check": "Assistant mode label",
+   "pass": true,
+   "detail": "offline mode"
+  },
+  {
+   "check": "No validated card -> says so and routes to owner engineer",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "Gate 1 panel lists the five indicators",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "F2 fresh sessions are isolated (start from seed)",
+   "pass": true,
+   "detail": "[False, False, False, False, False]"
+  },
+  {
+   "check": "F2 same session keeps the alert across 5 reloads",
+   "pass": true,
+   "detail": "[True, True, True, True, True]"
+  },
+  {
+   "check": "Demo reset to seeded start",
+   "pass": true,
+   "detail": ""
+  }
+ ]
+}

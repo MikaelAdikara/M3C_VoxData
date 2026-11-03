@@ -38,6 +38,17 @@ Keys are entered by the team in the Vercel dashboard, never committed.
 
 Push to GitHub → import the repo in Vercel → add env vars → deploy. Check the public URL from an incognito window before adding it to Appendix C.
 
+## Evidence behind the proposal's numbers
+
+| Claim in the proposal | Where to check it |
+|---|---|
+| NPV, Monte Carlo and the value of Gate 1 (Appendix A) | `finance/` (workbook, `mc_model.py`, `decision_analysis.py`) |
+| Camera model on synthetic beads (Table 8, Appendix C) | `ml/train_eval.py`, `ml/results/metrics.json` |
+| Same method on real Renault images (AutoVI) | `ml/autovi_eval.py`, `ml/results/autovi_metrics.json` |
+| Same method on real adhesive beads (Peres et al., 2021) | `ml/peres_eval.py`, `ml/results/peres_metrics.json` (images not included) |
+| Assistant and A3 drafter | `scripts/eval-assistant.ts`, `scripts/eval-kaizen.ts`, `eval/results/` |
+| 17 acceptance checks on the live site | `scripts/qa/acceptance_live.py`, `eval/results/acceptance-live.json` |
+
 ## Docs
 
 - `docs/PRD.md`: scope, user stories, acceptance criteria
