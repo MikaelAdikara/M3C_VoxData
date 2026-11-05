@@ -9,8 +9,7 @@ import {
   revalidatePaths,
 } from "@/lib/action-support";
 import { getCurrentRole } from "@/lib/queries";
-import { proposeCorrectionIfNeeded } from "@/lib/corrections/propose";
-import { openRepeatTicketIfNeeded } from "@/lib/repeat-ticket";
+import { handleConfirmedBeadAlert } from "@/lib/repeat-ticket";
 import { getFalseAlarmBudgetState } from "@/lib/rules/budget";
 import { getStore } from "@/lib/store";
 import type { ActionResult, Actor, ReasonCode } from "@/lib/types";
@@ -45,8 +44,7 @@ export async function confirmAlert(alertId: string): Promise<ActionResult> {
         createdAt: nextSimulatedTimestamp(draft),
       });
 
-      openRepeatTicketIfNeeded(draft, alert);
-      proposeCorrectionIfNeeded(draft, alert);
+      handleConfirmedBeadAlert(draft, alert);
       return { ok: true };
     });
   } catch {

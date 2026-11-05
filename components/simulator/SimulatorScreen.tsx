@@ -5,8 +5,8 @@ import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { fastForwardApprovals, injectCorrectionRepeat } from "@/lib/actions/corrections";
 import { injectRobotErrors } from "@/lib/actions/signals";
+import { injectStepRepeat } from "@/lib/actions/standard-steps";
 import { injectFalseAlarm, injectRepeat3, injectTrueDefect, resetDemo } from "@/lib/actions/simulator";
 import type { ActionResult } from "@/lib/types";
 
@@ -47,30 +47,22 @@ const SCENARIOS: Scenario[] = [
   },
   {
     id: "robot",
-    title: "Inject robot error ×3",
-    what: "Sealer robot 1 at st-04 reports minor error E-2210 (simulated code) three times, before any breakdown. Same repeat rule: the third opens a Kaizen ticket marked Robot error code.",
+    title: "Add robot error report",
+    what: "Sealer robot 1 at st-04 reports minor error E-2210 (simulated code) once more. The seeded history has it at 4 this week against a 4-week average of 1.5; at 5 it rises in the weekly Pareto and a Kaizen ticket opens for maintenance.",
     next: { label: "See it in Line signals", href: "/signals" },
     icon: "cpu",
-    run: () => injectRobotErrors(3),
+    run: () => injectRobotErrors(1),
   },
 ];
 
-const CORRECTION_SCENARIOS: Scenario[] = [
+const STEP_SCENARIOS: Scenario[] = [
   {
-    id: "fast-forward",
-    title: "Fast-forward approvals",
-    what: "Adds 19 simulated past team-leader approvals of the sealer pressure step at st-04 (one per earlier day, no reversal) and one waiting proposal. Approve it as the team leader: the 20th approval unlocks auto within window.",
-    next: { label: "Approve on the Shift board", href: "/shift-board" },
-    icon: "arrow-bend-up-right",
-    run: fastForwardApprovals,
-  },
-  {
-    id: "correction-repeat",
+    id: "step-repeat",
     title: "Add thin-bead repeat at st-04",
-    what: "The operator confirms another thin bead at st-04. With auto unlocked, a +2% step runs within the ±5% window and the team leader is notified; a step past the window goes to the engineer.",
+    what: "The operator confirms thin beads at st-04 until the defect repeats in the shift. The shift board shows the nozzle purge from card KC-SEAL-014 for the team leader to run on the robot panel, and the pressure change only as \"ask the engineer\". The repeat is logged on the open Kaizen ticket either way.",
     next: { label: "See it on the Shift board", href: "/shift-board" },
     icon: "warning",
-    run: injectCorrectionRepeat,
+    run: injectStepRepeat,
   },
 ];
 
@@ -146,8 +138,8 @@ export function SimulatorScreen() {
               </div>
             </article>
           ))}
-          <h2 className="sim__group" id="corrections">Bounded correction (Shift loop)</h2>
-          {CORRECTION_SCENARIOS.map((s) => (
+          <h2 className="sim__group" id="steps">Standard step (Shift loop)</h2>
+          {STEP_SCENARIOS.map((s) => (
             <article key={s.id} className="panel sim__card">
               <div className="panel__body">
                 <h2>

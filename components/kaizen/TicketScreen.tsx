@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { ReactNode } from "react";
 
-import { actorLabel, plantTime } from "@/components/format";
+import { actorLabel, plantTime, roleName } from "@/components/format";
 import { Trail } from "@/components/shell/Trail";
 import { BeadIllustration } from "@/components/station/BeadIllustration";
 import { Badge, LoopBadge } from "@/components/ui/Badge";
@@ -15,6 +15,9 @@ import { advanceTicket, checkDraftSentence, draftA3, requestValidation, selectRo
 import type { A3DraftSentence, A3Field, TicketStatus, TicketView } from "@/lib/types";
 
 import { A3_BLOCKS, TICKET_LABEL, TICKET_STEPS } from "./labels";
+
+const dayFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
+const dayTime = (iso: string) => `${dayFmt.format(new Date(iso))} ${plantTime(iso).slice(0, 5)}`;
 
 const ADVANCE_LABEL: Partial<Record<TicketStatus, string>> = {
   open: "Start the A3",
@@ -32,7 +35,7 @@ export function TicketScreen({
   canEdit: boolean;
   notice?: ReactNode;
 }) {
-  const { ticket, triggerAlerts, triggerSignals, a3, aiPrefilledFields, validation, similarCases, aiDraft } = view;
+  const { ticket, triggerAlerts, repeatAlerts, triggerSignals, a3, aiPrefilledFields, validation, similarCases, aiDraft } = view;
   const canDraft = canEdit && ["open", "a3_in_progress"].includes(ticket.status);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -92,13 +95,16 @@ export function TicketScreen({
               <span className="mono">{ticket.id}</span> · {view.subject} at {ticket.stationId}
             </h1>
             <p className="page__sub">
-              Opened {plantTime(ticket.createdAt).slice(0, 5)} · owner {ticket.ownerRole} · trigger:{" "}
+              Opened {plantTime(ticket.createdAt).slice(0, 5)} · trigger:{" "}
               {view.source === "bead"
-                ? `${ticket.triggerAlertIds.length} confirmed alert${ticket.triggerAlertIds.length === 1 ? "" : "s"}`
-                : `${triggerSignals.length} ${view.source === "robot_error" ? "controller reports" : "walk-check findings"}`}
+                ? `${ticket.triggerAlertIds.length} confirmed alert${ticket.triggerAlertIds.length === 1 ? "" : "s"}${repeatAlerts.length ? `, ${repeatAlerts.length} repeat${repeatAlerts.length === 1 ? "" : "s"} logged since` : ""}`
+                : view.source === "robot_error"
+                  ? `code rose in the weekly Pareto (${triggerSignals.length} this week)`
+                  : `finding back after ${ticket.returnedAfterWorkOrderId ?? "its work order"} closed`}
             </p>
           </div>
           <div className="head-badges">
+            <span className="owner-badge">Owner: {roleName(ticket.ownerRole)}</span>
             <span className="sig-badge" data-source={view.source}>{SIGNAL_SOURCE_LABEL[view.source]}</span>
             {defect?.criticality === "leak_critical" ? (
               <Badge tone="stop" icon={<Icon name="drop" weight="bold" />}>
@@ -145,18 +151,42 @@ export function TicketScreen({
           </section>
         ) : null}
 
+        {repeatAlerts.length > 0 ? (
+          <section className="panel trigger" aria-labelledby="repeat-title">
+            <div className="panel__head">
+              <h2 id="repeat-title">Repeats logged on this ticket</h2>
+              <span className="muted">Confirmed after it opened · whatever the standard step did</span>
+            </div>
+            <ol className="panel__body sig-trigger">
+              {repeatAlerts.map((a) => (
+                <li key={a.id}>
+                  <span className="num">{plantTime(a.createdAt).slice(0, 5)}</span>
+                  <span>
+                    <strong>{a.defectType?.name ?? "Bead defect"}</strong> · body <span className="mono">{a.bodyId}</span> · <span className="mono">{a.roi}</span>
+                  </span>
+                  <span className="muted">Confirmed by operator</span>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ) : null}
+
         {triggerSignals.length > 0 ? (
           <section className="panel trigger" aria-labelledby="trigger-sig-title">
             <div className="panel__head">
               <h2 id="trigger-sig-title">
                 Trigger: {view.source === "robot_error" ? "robot controller error codes" : "member walk-check findings"}
               </h2>
-              <span className="muted">Same repeat rule as bead alerts · simulated</span>
+              <span className="muted">
+                {view.source === "robot_error"
+                  ? "Rule: this week ≥ 5 and ≥ 2× the trailing 4-week weekly average · simulated"
+                  : "Rule: the same finding back after its work order closed · simulated"}
+              </span>
             </div>
             <ol className="panel__body sig-trigger">
               {triggerSignals.map((sg) => (
                 <li key={sg.id}>
-                  <span className="num">{plantTime(sg.createdAt).slice(0, 5)}</span>
+                  <span className="num">{dayTime(sg.createdAt)}</span>
                   <span>
                     <strong>{sg.label}</strong> · {sg.equipmentName}
                     {sg.photoAttached ? <small> · photo attached</small> : null}

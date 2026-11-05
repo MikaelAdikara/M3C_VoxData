@@ -39,23 +39,17 @@ export function webhookFormat(): WebhookFormat {
   return process.env.WORKFLOW_WEBHOOK_FORMAT?.trim().toLowerCase() === "chat" ? "chat" : "events";
 }
 
-/** Events that ask a person to act, or tell the team leader something ran on its own. */
+/** Events that ask a person to act. */
 export const CHAT_ESCALATION_TYPES: readonly WorkflowEventType[] = [
   "andon.yellow",
   "ticket.opened",
-  "correction.proposed",
-  "correction.auto_executed",
-  "correction.escalated",
-  "autonomy.switched_off",
+  "step.not_done",
 ];
 
 const WHO: Partial<Record<WorkflowEventType, string>> = {
   "andon.yellow": "Team leader: decide stop and fix, contain or continue.",
-  "ticket.opened": "Owner engineer: start the A3.",
-  "correction.proposed": "Team leader: approve or reject on the shift board.",
-  "correction.auto_executed": "Team leader: logged for you; reverse it or switch auto off on the shift board.",
-  "correction.escalated": "Engineer: outside what the standardized work allows.",
-  "autonomy.switched_off": "Corrections of this type go back to the team leader.",
+  "ticket.opened": "Ticket owner: start the A3.",
+  "step.not_done": "Engineer: the standard step could not be done; the repeat is on the Kaizen ticket.",
 };
 
 const chatTime = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" });

@@ -2,28 +2,31 @@ import { describe, expect, it } from "vitest";
 
 import { buildEvents } from "@/lib/events/outbox";
 import { buildKaizenView } from "@/lib/queries";
-import { openRepeatTicketIfNeeded, openSignalTicketIfNeeded } from "@/lib/repeat-ticket";
-import { getConfirmedRepeatState, REPEAT_TICKET_THRESHOLD } from "@/lib/rules/repeat";
-import { getSignalRepeatState, getSignalTicketTrigger, signalRepeatKey } from "@/lib/rules/signals";
+import { MAINTENANCE_OWNER, openRepeatTicketIfNeeded, openRobotTicketIfNeeded, routeWalkCheck } from "@/lib/repeat-ticket";
+import {
+  getRobotTicketTrigger,
+  PARETO_RULE,
+  returnedAfterClosedWorkOrder,
+  robotCodeWeek,
+  robotPareto,
+  signalKey,
+} from "@/lib/rules/signals";
 import { createSeedData } from "@/lib/seed";
-import type { Alert, LineSignal, Shift, StoreSnapshot } from "@/lib/types";
+import type { Alert, LineSignal, StoreSnapshot } from "@/lib/types";
 
-const shift: Shift = {
-  id: "shift-a",
-  label: "A",
-  startsAt: "2027-04-14T07:00:00.000+07:00",
-  endsAt: "2027-04-14T15:30:00.000+07:00",
-};
+const DAY = 86_400_000;
+const NOW = "2027-04-14T08:45:00.000+07:00";
+const daysAgo = (days: number) => new Date(Date.parse(NOW) - days * DAY).toISOString();
 
-function robot(id: string, minute: number, overrides: Partial<LineSignal> = {}): LineSignal {
+function robot(id: string, createdAt: string, overrides: Partial<LineSignal> = {}): LineSignal {
   return {
     id,
     source: "robot_error",
     stationId: "st-04",
     equipmentId: "st-04/robot-1",
-    code: "E-2210",
+    code: "E-0562",
     actor: "controller:st-04/robot-1",
-    createdAt: `2027-04-14T09:${String(minute).padStart(2, "0")}:00.000+07:00`,
+    createdAt,
     ...overrides,
   };
 }
@@ -33,8 +36,8 @@ function walk(id: string, minute: number, overrides: Partial<LineSignal> = {}): 
     id,
     source: "walk_check",
     stationId: "st-04",
-    equipmentId: "st-04/hose",
-    code: "cable_wear",
+    equipmentId: "st-04/robot-2",
+    code: "noise",
     actor: "role:operator@st-04",
     createdAt: `2027-04-14T10:${String(minute).padStart(2, "0")}:00.000+07:00`,
     ...overrides,
@@ -43,91 +46,136 @@ function walk(id: string, minute: number, overrides: Partial<LineSignal> = {}): 
 
 function bead(id: string, minute: number): Alert {
   return {
-    id, stationId: "st-04", bodyId: `K2-27-0399${minute}`, roi: "seam-R-door-07", defectTypeId: "BEAD_THIN",
+    id, stationId: "st-04", bodyId: `K2-27-0399${minute}`, roi: "seam-R-door-07", defectTypeId: "BEAD_MISSING",
     anomalyScore: 0.7, threshold: 0.61, modelVersion: "sealer-st04-v1.3", image: "", mask: "",
     createdAt: `2027-04-14T11:${String(minute).padStart(2, "0")}:00.000+07:00`, status: "confirmed",
   };
 }
 
-describe("one repeat rule for three signal sources", () => {
-  it("uses the same threshold for bead alerts, robot error codes and walk-checks", () => {
-    const beads = getConfirmedRepeatState([bead("b1", 1), bead("b2", 2), bead("b3", 3)], [], "st-04", "BEAD_THIN", shift);
-    const robots = getSignalRepeatState([robot("r1", 1), robot("r2", 2), robot("r3", 3)], robot("x", 0), shift);
-    const walks = getSignalRepeatState([walk("w1", 1), walk("w2", 2), walk("w3", 3)], walk("x", 0), shift);
-    for (const state of [beads, robots, walks]) {
-      expect(state).toMatchObject({ count: REPEAT_TICKET_THRESHOLD, isThirdRepeat: true, thresholdReached: true });
-    }
+const KEY = "robot_error:st-04/robot-1:E-0562";
+
+describe("robot error code: rises in the weekly Pareto", () => {
+  it("needs this week >= 5 and >= 2x the trailing 4-week weekly average", () => {
+    expect(PARETO_RULE).toEqual({ minThisWeek: 5, multiple: 2, trailingWeeks: 4 });
+    // Trailing weeks 3, 3, 3, 2: average 2.75, so this week needs 6.
+    const trailing = [8, 9, 10, 15, 16, 17, 22, 23, 24, 29, 30].map((d, i) => robot(`t${i}`, daysAgo(d)));
+    const four = [1, 2, 3, 4].map((d, i) => robot(`n${i}`, daysAgo(d)));
+    expect(robotCodeWeek([...trailing, ...four], KEY, NOW)).toMatchObject({ thisWeek: 4, trailing: [3, 3, 3, 2], needed: 6, rising: false });
+
+    const low = [8, 15, 22, 29].map((d, i) => robot(`l${i}`, daysAgo(d)));
+    const five = [1, 2, 3, 4, 5].map((d, i) => robot(`f${i}`, daysAgo(d)));
+    expect(robotCodeWeek([...low, ...five], KEY, NOW)).toMatchObject({ thisWeek: 5, trailingAverage: 1, needed: 5, rising: true });
+    // Five is not enough when the code is always that high.
+    const high = Array.from({ length: 16 }, (_, i) => robot(`h${i}`, daysAgo(8 + (i % 4) * 7)));
+    expect(robotCodeWeek([...high, ...five], KEY, NOW)).toMatchObject({ thisWeek: 5, trailingAverage: 4, needed: 8, rising: false });
   });
 
-  it("robot: counts only the same code on the same robot in this shift", () => {
+  it("counts only the same code on the same robot, and nothing after now", () => {
     const signals = [
-      robot("r1", 1),
-      robot("r2", 2, { code: "E-1043" }),
-      robot("r3", 3, { equipmentId: "st-04/robot-2", actor: "controller:st-04/robot-2" }),
-      robot("r4", 4, { createdAt: "2027-04-13T09:04:00.000+07:00" }),
-      robot("r5", 5),
+      robot("a", daysAgo(1)),
+      robot("b", daysAgo(1), { code: "E-1043" }),
+      robot("c", daysAgo(1), { equipmentId: "st-04/robot-2" }),
+      robot("d", new Date(Date.parse(NOW) + 60_000).toISOString()),
     ];
-    const state = getSignalRepeatState(signals, robot("x", 0), shift);
-    expect(state).toMatchObject({ count: 2, alertIds: ["r1", "r5"], thresholdReached: false });
+    expect(robotCodeWeek(signals, KEY, NOW).thisWeek).toBe(1);
+    expect(signalKey(signals[0])).toBe(KEY);
   });
 
-  it("walk-check: counts only the same symptom on the same equipment", () => {
-    const signals = [walk("w1", 1), walk("w2", 2, { code: "noise" }), walk("w3", 3, { equipmentId: "st-04/pump" }), walk("w4", 4)];
-    expect(getSignalRepeatState(signals, walk("x", 0), shift).count).toBe(2);
-    expect(signalRepeatKey(walk("x", 0))).not.toBe(signalRepeatKey(robot("x", 0)));
+  it("seed: E-2210 on sealer robot 1 at st-04 is one short of the rule; E-1043 is high but steady", () => {
+    const seed = createSeedData();
+    const rows = robotPareto(seed);
+    expect(rows.find((r) => r.key === "robot_error:st-04/robot-1:E-2210")).toMatchObject({ thisWeek: 4, trailingAverage: 1.5, needed: 5, rising: false });
+    expect(rows.find((r) => r.key === "robot_error:st-04/robot-1:E-1043")).toMatchObject({ thisWeek: 9, rising: false });
+    expect(rows.some((r) => r.rising)).toBe(false);
+    expect(seed.tickets.some((t) => t.source && t.source !== "bead")).toBe(false);
   });
 
-  function withSignals(signals: LineSignal[]): StoreSnapshot {
+  it("the report that crosses the rule opens one maintenance ticket, not one per shift count", () => {
     const snapshot = createSeedData();
-    snapshot.signals.push(...signals);
-    return snapshot;
+    const add = (id: string) => {
+      const signal = robot(id, "2027-04-14T09:00:00.000+07:00", { code: "E-2210" });
+      snapshot.signals.push(signal);
+      return openRobotTicketIfNeeded(snapshot, signal);
+    };
+    const ticket = add("x1");
+    expect(ticket).toMatchObject({ source: "robot_error", defectTypeId: null, ownerRole: MAINTENANCE_OWNER, signalKey: "robot_error:st-04/robot-1:E-2210" });
+    expect(ticket!.triggerSignalIds).toHaveLength(5);
+    expect(ticket!.a3.background).toMatch(/weekly Pareto: 5 this week against a trailing 4-week average of 1\.5/);
+    expect(add("x2")).toBeNull();
+    expect(getRobotTicketTrigger(snapshot, snapshot.signals.at(-1)!)).toBeNull();
+
+    const event = buildEvents(snapshot).find((e) => e.id === `ticket.opened:${ticket!.id}`);
+    expect(event).toMatchObject({ actor: "rule:weekly-pareto-rise", data: { signal_source: "robot_error", owner_role: "role:maintenance@body" } });
+    expect(buildKaizenView(snapshot).tickets.find((t) => t.id === ticket!.id)).toMatchObject({ source: "robot_error", ownerRole: MAINTENANCE_OWNER });
+  });
+});
+
+describe("walk-check finding: back after its work order closed", () => {
+  function snapshotWith(): StoreSnapshot {
+    return createSeedData();
+  }
+  function log(snapshot: StoreSnapshot, signal: LineSignal) {
+    snapshot.signals.push(signal);
+    return routeWalkCheck(snapshot, signal);
   }
 
-  it("robot: the third code opens one ticket in the same list and outbox, marked as a robot error", () => {
-    const snapshot = withSignals([robot("r1", 1), robot("r2", 2)]);
-    expect(getSignalTicketTrigger(snapshot, snapshot.signals.at(-1)!)).toBeNull();
-    snapshot.signals.push(robot("r3", 3));
-    const ticket = openSignalTicketIfNeeded(snapshot, snapshot.signals.at(-1)!);
-    expect(ticket).toMatchObject({ source: "robot_error", defectTypeId: null, triggerSignalIds: ["r1", "r2", "r3"], status: "open" });
-    expect(ticket!.id).toMatch(/^KZ-SEAL-\d{3}$/);
-    // A fourth repeat does not open a second ticket while the first is open.
-    snapshot.signals.push(robot("r4", 4));
-    expect(openSignalTicketIfNeeded(snapshot, snapshot.signals.at(-1)!)).toBeNull();
-
-    const summary = buildKaizenView(snapshot).tickets.find((t) => t.id === ticket!.id);
-    expect(summary).toMatchObject({ source: "robot_error", defectType: null, subject: expect.stringContaining("E-2210") });
-    const events = buildEvents(snapshot);
-    expect(events.find((e) => e.id === `ticket.opened:${ticket!.id}`)?.data).toMatchObject({ signal_source: "robot_error", trigger_signals: 3 });
-    expect(events.filter((e) => e.type === "signal.robot_error" && ["r1", "r2", "r3", "r4"].includes(String(e.data.signal_id)))).toHaveLength(4);
+  it("a finding opens a work order; the same finding while it is open joins it", () => {
+    const snapshot = snapshotWith();
+    const first = log(snapshot, walk("w1", 1));
+    expect(first.ticket).toBeNull();
+    expect(first.workOrder).toMatchObject({ status: "open", findingIds: ["w1"], equipmentId: "st-04/robot-2", symptom: "noise" });
+    const second = log(snapshot, walk("w2", 2));
+    expect(second.workOrder.id).toBe(first.workOrder.id);
+    expect(second.workOrder.findingIds).toEqual(["w1", "w2"]);
+    expect(second.ticket).toBeNull();
+    // A third the same shift still opens no ticket: the old shift count is gone.
+    expect(log(snapshot, walk("w3", 3)).ticket).toBeNull();
+    expect(snapshot.tickets.some((t) => t.source === "walk_check")).toBe(false);
   });
 
-  it("walk-check: the third finding opens a ticket marked as a walk-check", () => {
-    const snapshot = withSignals([walk("w1", 1), walk("w2", 2), walk("w3", 3, { photoAttached: true })]);
-    const ticket = openSignalTicketIfNeeded(snapshot, snapshot.signals.at(-1)!);
-    expect(ticket).toMatchObject({ source: "walk_check", signalKey: "walk_check:st-04/hose:cable_wear" });
-    const event = buildEvents(snapshot).find((e) => e.id === "signal.walk_check:w3");
-    expect(event?.data).toMatchObject({ symptom: "cable_wear", photo_attached: "yes" });
-    expect(event?.data).not.toHaveProperty("note");
+  it("closed, then the same finding again: a new work order and a maintenance ticket", () => {
+    const snapshot = snapshotWith();
+    const { workOrder } = log(snapshot, walk("w1", 1));
+    workOrder.status = "closed";
+    workOrder.closedAt = "2027-04-14T10:05:00.000+07:00";
+    workOrder.closedBy = MAINTENANCE_OWNER;
+
+    // A different symptom on the same equipment is not a return.
+    expect(log(snapshot, walk("w2", 6, { code: "leak" })).ticket).toBeNull();
+    expect(returnedAfterClosedWorkOrder(snapshot, walk("probe", 7))).toMatchObject({ id: workOrder.id });
+
+    const back = log(snapshot, walk("w3", 8));
+    expect(back.workOrder).toMatchObject({ status: "open", returnOf: workOrder.id });
+    expect(back.ticket).toMatchObject({
+      source: "walk_check",
+      ownerRole: MAINTENANCE_OWNER,
+      returnedAfterWorkOrderId: workOrder.id,
+      triggerSignalIds: ["w1", "w3"],
+      signalKey: "walk_check:st-04/robot-2:noise",
+    });
+    expect(back.ticket!.a3.background).toMatch(new RegExp(`came back after work order ${workOrder.id} was closed`));
+
+    const types = buildEvents(snapshot).filter((e) => e.stationId === "st-04").map((e) => e.type);
+    expect(types).toEqual(expect.arrayContaining(["work_order.opened", "work_order.closed", "ticket.opened"]));
+    expect(buildEvents(snapshot).find((e) => e.id === `ticket.opened:${back.ticket!.id}`)).toMatchObject({ actor: "rule:finding-back-after-work-order" });
   });
 
-  it("bead: the existing rule still opens tickets with the bead source", () => {
+  it("seed: work orders match the findings and none of them came back", () => {
+    const seed = createSeedData();
+    expect(seed.workOrders.map((o) => o.status)).toEqual(["closed", "closed", "open", "open"]);
+    for (const order of seed.workOrders) {
+      for (const id of order.findingIds) expect(seed.signals.find((s) => s.id === id)?.equipmentId).toBe(order.equipmentId);
+    }
+  });
+});
+
+describe("bead alerts keep their shift repeat rule", () => {
+  it("the third confirmed bead defect in a shift opens an engineer-owned ticket", () => {
     const snapshot = createSeedData();
-    const alerts = [1, 2, 3].map((m) => ({ ...bead(`b${m}`, m), defectTypeId: "BEAD_MISSING" as const }));
+    const alerts = [1, 2, 3].map((m) => bead(`b${m}`, m));
     snapshot.alerts.push(...alerts);
     const ticket = openRepeatTicketIfNeeded(snapshot, alerts[2]);
-    expect(ticket).toMatchObject({ defectTypeId: "BEAD_MISSING", triggerAlertIds: ["b1", "b2", "b3"] });
+    expect(ticket).toMatchObject({ defectTypeId: "BEAD_MISSING", triggerAlertIds: ["b1", "b2", "b3"], ownerRole: "role:engineer@body" });
     expect(buildKaizenView(snapshot).tickets.find((t) => t.id === ticket!.id)?.source).toBe("bead");
-  });
-
-  it("seed history never reached the rule, so it opened no signal ticket", () => {
-    const seed = createSeedData();
-    expect(seed.signals.length).toBeGreaterThan(0);
-    expect(seed.tickets.some((t) => t.source && t.source !== "bead")).toBe(false);
-    const perDay = new Map<string, number>();
-    for (const s of seed.signals) {
-      const key = `${signalRepeatKey(s)}@${s.createdAt.slice(0, 10)}`;
-      perDay.set(key, (perDay.get(key) ?? 0) + 1);
-    }
-    expect(Math.max(...perDay.values())).toBeLessThan(REPEAT_TICKET_THRESHOLD);
   });
 });

@@ -1,8 +1,7 @@
 "use server";
 
 import { nextEntityId, revalidatePaths } from "@/lib/action-support";
-import { proposeCorrectionIfNeeded } from "@/lib/corrections/propose";
-import { openRepeatTicketIfNeeded } from "@/lib/repeat-ticket";
+import { handleConfirmedBeadAlert } from "@/lib/repeat-ticket";
 import { getStore } from "@/lib/store";
 import type { ActionResult, Alert } from "@/lib/types";
 
@@ -133,8 +132,7 @@ export async function injectRepeat3(): Promise<ActionResult> {
           kind: "confirm",
           createdAt: alert.createdAt,
         });
-        openRepeatTicketIfNeeded(draft, alert);
-        proposeCorrectionIfNeeded(draft, alert);
+        handleConfirmedBeadAlert(draft, alert);
       });
       return { ok: true };
     });

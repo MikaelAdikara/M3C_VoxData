@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { roleName } from "@/components/format";
 import { TICKET_LABEL } from "@/components/kaizen/labels";
 import { RoleGate } from "@/components/live/RoleGate";
 import { Badge, LoopBadge } from "@/components/ui/Badge";
@@ -20,7 +21,7 @@ export default async function KaizenPage() {
       <div className="page__head">
         <div>
           <h1 className="page__title">Kaizen cockpit</h1>
-          <p className="page__sub">Sealer process · owner role:engineer@body</p>
+          <p className="page__sub">Sealer process · bead tickets owned by the engineer, robot and walk-check tickets by maintenance</p>
         </div>
         <LoopBadge loop="kaizen" />
       </div>
@@ -68,12 +69,12 @@ export default async function KaizenPage() {
             <Badge tone="outline">{view.tickets.length} open</Badge>
           </div>
           <p className="panel__note muted">
-            Three sources, one repeat rule: camera bead alerts, robot controller error codes and member walk-checks. <Link href="/signals">Line signals</Link>
+            Three sources, three rules: a bead defect confirmed three times in a shift, a robot error code rising in the weekly Pareto, a walk-check finding back after its work order closed. <Link href="/signals">Line signals</Link>
           </p>
           <div className="panel__body">
             {view.tickets.length === 0 ? (
               <EmptyState title="No open tickets">
-                A ticket opens automatically on the third repeat at one station in a shift: a confirmed bead defect, the same robot error code, or the same walk-check finding.
+                A ticket opens automatically on the third confirmed bead defect at one station in a shift, when a robot error code rises in the weekly Pareto, or when a walk-check finding comes back after its work order closed.
               </EmptyState>
             ) : (
               <ul className="ticket-list">
@@ -83,7 +84,7 @@ export default async function KaizenPage() {
                       <span className="ticket-row__id mono">{t.id}</span>
                       <span className="ticket-row__what">
                         {t.subject} · {t.stationId}
-                        <small>{t.ownerRole}</small>
+                        <small>Owner: {roleName(t.ownerRole)}</small>
                       </span>
                       <span className="ticket-row__status">
                         <span className="sig-badge" data-source={t.source}>{SIGNAL_SOURCE_LABEL[t.source]}</span>

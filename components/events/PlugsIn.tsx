@@ -11,13 +11,14 @@ const CAMERA_PATH: Node[] = [
 
 const OTHER_SOURCES: Node[] = [
   { label: "Model-detection camera", note: "body type for each body; selects the bead model", icon: "camera" },
-  { label: "Robot controller error codes", note: "minor codes, before any breakdown", icon: "wrench" },
-  { label: "Member walk-check", note: "tablet: noise, leak, cable wear", icon: "clipboard-text" },
+  { label: "Robot controller error codes", note: "minor codes, weekly Pareto, before any breakdown", icon: "wrench" },
+  { label: "Member walk-check", note: "tablet finding opens a work order", icon: "clipboard-text" },
 ];
 
 const OUTPUTS: Node[] = [
   { label: "Andon screen at the station", icon: "bell-ringing" },
-  { label: "Kaizen ticket", note: "third repeat in a shift", icon: "clipboard-text" },
+  { label: "Shift board", note: "standard step from a validated card", icon: "squares-four" },
+  { label: "Kaizen ticket", note: "bead: third repeat in a shift · robot code: rises in the weekly Pareto · walk-check: back after its work order closed", icon: "clipboard-text" },
   { label: "Chat webhook", note: "Teams/Slack-compatible", icon: "chat-circle-text" },
 ];
 
@@ -57,7 +58,7 @@ export function PlugsIn() {
         <div className="plug__hub" aria-hidden="false">
           <Icon name="arrow-right" />
           <strong>Event outbox</strong>
-          <small>one JSON event per step · same repeat rule for every source</small>
+          <small>one JSON event per step · each source keeps its own trigger rule</small>
           <Icon name="arrow-right" />
         </div>
         <div className="plug__col">
@@ -68,7 +69,7 @@ export function PlugsIn() {
         </div>
       </div>
       <p className="plug__foot muted">
-        The layer reads from these tools and never writes to line control. A bounded correction is recorded here; the robot&apos;s own routine runs it.
+        The layer reads from these tools and never writes to line control. A standard step is shown only when a validated card holds it; the team leader runs it on the robot panel and the app records the tap.
       </p>
     </section>
   );

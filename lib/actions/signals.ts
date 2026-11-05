@@ -1,16 +1,17 @@
 "use server";
 
 import {
+  isValidId,
   nextEntityId,
   nextSimulatedTimestamp,
   normalizeOptionalText,
   revalidatePaths,
 } from "@/lib/action-support";
 import { getCurrentRole } from "@/lib/queries";
-import { openSignalTicketIfNeeded } from "@/lib/repeat-ticket";
+import { MAINTENANCE_OWNER, openRobotTicketIfNeeded, routeWalkCheck } from "@/lib/repeat-ticket";
 import { equipmentById, isWalkCheckSymptom, ROBOT_CODES } from "@/lib/signals/catalog";
 import { getStore } from "@/lib/store";
-import type { ActionResult, Actor, LineSignal } from "@/lib/types";
+import type { ActionResult, Actor, LineSignal, WalkCheckSymptom } from "@/lib/types";
 
 const MAX_WALK_NOTE = 120;
 const DEMO_ROBOT = "st-04/robot-1";
@@ -20,7 +21,10 @@ function refresh() {
   revalidatePaths(["/signals", "/kaizen", "/events", "/metrics", "/simulator"]);
 }
 
-/** A member's tablet walk-check finding. Operators and team leaders log them. */
+/**
+ * A member's tablet walk-check finding. Operators and team leaders log them. The finding
+ * opens a work order (or joins the open one); back after its work order closed, it opens a ticket.
+ */
 export async function submitWalkCheck(input: {
   equipmentId: string;
   symptom: string;
@@ -44,14 +48,14 @@ export async function submitWalkCheck(input: {
         source: "walk_check",
         stationId: equipment.stationId,
         equipmentId: equipment.id,
-        code: input.symptom,
+        code: input.symptom as WalkCheckSymptom,
         photoAttached: Boolean(input.photoAttached),
         ...(note ? { note } : {}),
         actor: `role:${role}@${role === "operator" ? equipment.stationId : "body"}` as Actor,
         createdAt: nextSimulatedTimestamp(draft),
       };
       draft.signals.push(signal);
-      openSignalTicketIfNeeded(draft, signal);
+      routeWalkCheck(draft, signal);
       return { ok: true };
     });
   } catch {
@@ -62,8 +66,32 @@ export async function submitWalkCheck(input: {
 }
 
 /**
- * Demo: the robot controller at st-04 reports the same minor error code (simulated),
- * as it would through the plant's existing error-code feed. The third in a shift opens a ticket.
+ * Demo: maintenance closes a work order in its own system; the app mirrors the closure
+ * (simulated). If the same finding is logged again afterwards, a Kaizen ticket opens.
+ */
+export async function closeWorkOrder(workOrderId: string): Promise<ActionResult> {
+  try {
+    if (!isValidId(workOrderId)) return { ok: false, error: "Invalid work order ID." };
+    return await getStore().mutate<ActionResult>((draft) => {
+      const order = draft.workOrders.find((item) => item.id === workOrderId);
+      if (!order) return { ok: false, error: "Work order not found." };
+      if (order.status === "closed") return { ok: false, error: "This work order is already closed." };
+      order.status = "closed";
+      order.closedAt = nextSimulatedTimestamp(draft);
+      order.closedBy = MAINTENANCE_OWNER;
+      return { ok: true };
+    });
+  } catch {
+    return { ok: false, error: "Could not close the work order." };
+  } finally {
+    refresh();
+  }
+}
+
+/**
+ * Demo: the robot controller at st-04 reports a minor error code (simulated), as it would
+ * through the plant's existing error-code feed. A ticket opens once the code rises in the
+ * weekly Pareto, not on a count within one shift.
  */
 export async function injectRobotErrors(count: number): Promise<ActionResult> {
   try {
@@ -85,7 +113,7 @@ export async function injectRobotErrors(count: number): Promise<ActionResult> {
           createdAt,
         };
         draft.signals.push(signal);
-        openSignalTicketIfNeeded(draft, signal);
+        openRobotTicketIfNeeded(draft, signal);
       }
       return { ok: true };
     });

@@ -28,6 +28,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   engineer: "Engineer",
   senior_expert: "Senior expert",
   management: "Management",
+  maintenance: "Maintenance",
 };
 
 export const GUIDE_STEPS: GuideStep[] = [

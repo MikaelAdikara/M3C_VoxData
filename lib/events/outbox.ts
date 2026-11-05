@@ -1,15 +1,14 @@
-import { correctionLabel } from "@/lib/corrections/standard";
-import { AUTONOMY_RULE, getAutonomyState } from "@/lib/rules/autonomy";
 import { signalLabel } from "@/lib/signals/catalog";
+import { stepLabel } from "@/lib/standard-steps/catalog";
 import { detectBodyType } from "@/lib/vision/body-type";
-import type { CorrectionTypeId, StoreSnapshot, WorkflowEventType } from "@/lib/types";
+import type { StoreSnapshot, WorkflowEventType } from "@/lib/types";
 
 export type { WorkflowEventType };
 
 /**
  * Event outbox (UNS-style envelope, ES Figure D4). Every alert, operator decision,
  * team-leader decision, Kaizen ticket and validated card is one JSON event, and so is
- * every robot error code, walk-check finding and bounded-correction step. Events are
+ * every robot error code, walk-check finding, work order and standard step. Events are
  * derived from the stored state, so the outbox needs no storage of its own. Actors are
  * roles, rules, models or controllers; no names, no images, no free-text notes.
  */
@@ -25,6 +24,12 @@ export interface WorkflowEvent {
 }
 
 const edge = (stationId: string) => `sealer-edge-${stationId.replace("st-", "")}`;
+
+const TICKET_RULE = {
+  bead: "rule:repeat-3-per-shift",
+  robot_error: "rule:weekly-pareto-rise",
+  walk_check: "rule:finding-back-after-work-order",
+} as const;
 
 export function buildEvents(snapshot: StoreSnapshot): WorkflowEvent[] {
   const events: WorkflowEvent[] = [];
@@ -57,45 +62,32 @@ export function buildEvents(snapshot: StoreSnapshot): WorkflowEvent[] {
     });
   }
 
-  for (const c of snapshot.corrections ?? []) {
-    const topic = `learning-line/K2-Body/${c.stationId}/correction`;
-    const base = { correction_id: c.id, correction: c.correctionType, label: correctionLabel(c.correctionType, c.stepPercent), step_percent: c.stepPercent ?? null, defect_type: c.defectTypeId, alert_id: c.alertId, ...(c.fastForward ? { fast_forward: "yes" } : {}) };
-    const rule = "rule:bounded-correction";
-    if (c.mode === "auto") {
-      events.push({ id: `correction.auto_executed:${c.id}`, type: "correction.auto_executed", topic, timestamp: c.createdAt, stationId: c.stationId, actor: rule, data: { ...base, notify: "team_leader", executed_by: "robot_routine" } });
-    } else if (c.mode === "engineer") {
-      events.push({ id: `correction.escalated:${c.id}`, type: "correction.escalated", topic, timestamp: c.createdAt, stationId: c.stationId, actor: rule, data: { ...base, reason: c.escalationReason ?? null, owner_role: "role:engineer@body" } });
-    } else {
-      events.push({ id: `correction.proposed:${c.id}`, type: "correction.proposed", topic, timestamp: c.createdAt, stationId: c.stationId, actor: rule, data: { ...base, decides: "team_leader" } });
-      if (c.decidedAt && c.decidedBy) {
-        const type = c.status === "rejected" ? "correction.rejected" : "correction.approved";
-        events.push({ id: `${type}:${c.id}`, type, topic, timestamp: c.decidedAt, stationId: c.stationId, actor: c.decidedBy, data: base });
-      }
-    }
-    if (c.status === "reversed" && c.reversedAt && c.reversedBy) {
-      events.push({ id: `correction.reversed:${c.id}`, type: "correction.reversed", topic, timestamp: c.reversedAt, stationId: c.stationId, actor: c.reversedBy, data: base });
+  for (const w of snapshot.workOrders ?? []) {
+    const topic = `learning-line/K2-Body/${w.stationId}/work-order`;
+    const base = { work_order_id: w.id, equipment_id: w.equipmentId, symptom: w.symptom, returned_after: w.returnOf ?? null };
+    events.push({ id: `work_order.opened:${w.id}`, type: "work_order.opened", topic, timestamp: w.openedAt, stationId: w.stationId, actor: "rule:walk-check-finding", data: base });
+    if (w.status === "closed" && w.closedAt) {
+      events.push({ id: `work_order.closed:${w.id}`, type: "work_order.closed", topic, timestamp: w.closedAt, stationId: w.stationId, actor: w.closedBy ?? "role:maintenance@body", data: base });
     }
   }
 
-  const autonomyKeys = new Set((snapshot.corrections ?? []).filter((c) => c.correctionType).map((c) => `${c.stationId}|${c.correctionType}`));
-  for (const key of autonomyKeys) {
-    const [stationId, correctionType] = key.split("|") as [string, CorrectionTypeId];
-    const state = getAutonomyState(snapshot.corrections, snapshot.autonomySwitches ?? [], stationId, correctionType);
-    if (!state.unlockedAt) continue;
-    events.push({
-      id: `autonomy.unlocked:${key}`,
-      type: "autonomy.unlocked",
-      topic: `learning-line/K2-Body/${stationId}/correction`,
-      timestamp: state.unlockedAt,
-      stationId,
-      actor: "rule:earned-autonomy",
-      data: { correction: correctionType, approvals: state.approvals, reversals: state.reversals, rule: `>= ${AUTONOMY_RULE.minApprovals} approvals and ${AUTONOMY_RULE.maxReversals} reversals` },
-    });
-  }
-
-  for (const w of snapshot.autonomySwitches ?? []) {
-    const type = w.state === "off" ? "autonomy.switched_off" : "autonomy.switched_on";
-    events.push({ id: `${type}:${w.id}`, type, topic: `learning-line/K2-Body/${w.stationId}/correction`, timestamp: w.createdAt, stationId: w.stationId, actor: w.actor, data: { correction: w.correctionType, level: w.state === "off" ? "propose" : "auto_within_window" } });
+  for (const st of snapshot.standardSteps ?? []) {
+    const topic = `learning-line/K2-Body/${st.stationId}/standard-step`;
+    const base = {
+      step_id: st.id,
+      step: st.stepType,
+      label: stepLabel(st),
+      in_standard: st.inStandard ? "yes" : "no",
+      source_card: st.sourceCardId,
+      defect_type: st.defectTypeId,
+      alert_id: st.alertId,
+      ticket_id: st.ticketId,
+    };
+    events.push({ id: `step.shown:${st.id}`, type: "step.shown", topic, timestamp: st.createdAt, stationId: st.stationId, actor: "rule:standard-step", data: { ...base, next: st.inStandard ? "team_leader" : "ask_engineer" } });
+    if (st.status !== "shown" && st.recordedAt && st.recordedBy) {
+      const type = st.status === "done" ? "step.done" : "step.not_done";
+      events.push({ id: `${type}:${st.id}`, type, topic, timestamp: st.recordedAt, stationId: st.stationId, actor: st.recordedBy, data: { ...base, ...(st.status === "not_done" ? { reason_code: st.notDoneReason ?? null } : { done_on: "robot_panel" }) } });
+    }
   }
 
   for (const d of snapshot.decisions) {
@@ -118,15 +110,31 @@ export function buildEvents(snapshot: StoreSnapshot): WorkflowEvent[] {
       topic: `learning-line/K2-Body/${t.stationId}/kaizen`,
       timestamp: t.createdAt,
       stationId: t.stationId,
-      actor: "rule:repeat-3-per-shift",
+      actor: TICKET_RULE[t.source ?? "bead"],
       data: {
         ticket_id: t.id,
         signal_source: t.source ?? "bead",
         defect_type: t.defectTypeId,
-        ...(t.source && t.source !== "bead" ? { subject: t.subject ?? null, trigger_signals: t.triggerSignalIds?.length ?? 0 } : { trigger_alerts: t.triggerAlertIds.length }),
+        ...(t.source && t.source !== "bead"
+          ? { subject: t.subject ?? null, trigger_signals: t.triggerSignalIds?.length ?? 0, ...(t.returnedAfterWorkOrderId ? { returned_after: t.returnedAfterWorkOrderId } : {}) }
+          : { trigger_alerts: t.triggerAlertIds.length }),
         owner_role: t.ownerRole,
       },
     });
+    for (const alertId of t.repeatAlertIds ?? []) {
+      const a = alertsById.get(alertId);
+      if (!a) continue;
+      const confirmedAt = snapshot.decisions.find((d) => d.alertId === alertId && d.kind === "confirm")?.createdAt ?? a.createdAt;
+      events.push({
+        id: `ticket.repeat_logged:${t.id}:${alertId}`,
+        type: "ticket.repeat_logged",
+        topic: `learning-line/K2-Body/${t.stationId}/kaizen`,
+        timestamp: confirmedAt,
+        stationId: t.stationId,
+        actor: "rule:repeat-on-open-ticket",
+        data: { ticket_id: t.id, alert_id: alertId, body_id: a.bodyId, defect_type: a.defectTypeId, repeats_logged: (t.repeatAlertIds ?? []).indexOf(alertId) + 1 },
+      });
+    }
   }
 
   for (const c of snapshot.cards) {
@@ -163,32 +171,32 @@ export function summarizeEvent(e: WorkflowEvent): string {
     case "decision.team_leader":
       return `Team leader decided ${String(d.decision).replace("_", " and ")}`;
     case "ticket.opened":
-      return d.signal_source && d.signal_source !== "bead"
-        ? `Kaizen ticket ${d.ticket_id} opened: ${d.subject} (${d.trigger_signals} repeats)`
-        : `Kaizen ticket ${d.ticket_id} opened for ${d.defect_type} (${d.trigger_alerts} alerts)`;
+      if (d.signal_source === "robot_error") return `Kaizen ticket ${d.ticket_id} opened: ${d.subject} rose in the weekly Pareto; owner maintenance`;
+      if (d.signal_source === "walk_check") return `Kaizen ticket ${d.ticket_id} opened: ${d.subject} came back after ${d.returned_after ?? "its work order"} closed; owner maintenance`;
+      return `Kaizen ticket ${d.ticket_id} opened for ${d.defect_type} (${d.trigger_alerts} alerts)`;
+    case "ticket.repeat_logged":
+      return `Repeat of ${d.defect_type} on body ${d.body_id} logged on open ticket ${d.ticket_id}`;
     case "card.validated":
       return `Card ${d.card_id} r${d.revision} validated`;
     case "signal.robot_error":
       return `Robot controller ${d.equipment_id}: minor error ${signalLabel({ source: "robot_error", code: String(d.error_code) })}`;
     case "signal.walk_check":
       return `Walk-check on ${d.equipment_id}: ${signalLabel({ source: "walk_check", code: String(d.symptom) }).toLowerCase()}${d.photo_attached === "yes" ? ", photo attached" : ""}`;
-    case "correction.proposed":
-      return `Correction proposed: ${d.label}; team leader decides${d.fast_forward ? " (fast-forward)" : ""}`;
-    case "correction.approved":
-      return `Team leader approved ${d.label}; the robot's own routine runs it${d.fast_forward ? " (fast-forward)" : ""}`;
-    case "correction.rejected":
-      return `Team leader rejected ${d.label}`;
-    case "correction.auto_executed":
-      return `Auto within window: ${d.label}; team leader notified`;
-    case "correction.escalated":
-      return d.reason === "outside_window" ? `${d.label} is outside the window: sent to the engineer` : `No standardized correction for ${d.defect_type}: sent to the engineer`;
-    case "correction.reversed":
-      return `Team leader reversed ${d.label}`;
-    case "autonomy.unlocked":
-      return `Auto within window unlocked for ${d.correction} (${d.approvals} approvals, ${d.reversals} reversals)`;
-    case "autonomy.switched_off":
-      return `Team leader switched auto off for ${d.correction}`;
-    case "autonomy.switched_on":
-      return `Team leader switched auto back on for ${d.correction}`;
+    case "work_order.opened":
+      return d.returned_after
+        ? `Work order ${d.work_order_id} opened: ${walkLabel(d.symptom)} on ${d.equipment_id} is back after ${d.returned_after}`
+        : `Work order ${d.work_order_id} opened for ${walkLabel(d.symptom)} on ${d.equipment_id}`;
+    case "work_order.closed":
+      return `Maintenance closed work order ${d.work_order_id}`;
+    case "step.shown":
+      return d.in_standard === "yes"
+        ? `Standard step shown: ${d.label} (card ${d.source_card}); team leader runs it on the robot panel`
+        : `${d.label} is not in the standard: ask the engineer`;
+    case "step.done":
+      return `Team leader: ${d.label} done on the robot panel (card ${d.source_card})`;
+    case "step.not_done":
+      return `Team leader: ${d.label} not done, reason ${d.reason_code ?? "none"}`;
   }
 }
+
+const walkLabel = (code: string | number | null) => signalLabel({ source: "walk_check", code: String(code) }).toLowerCase();

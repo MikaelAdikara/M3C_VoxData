@@ -12,10 +12,10 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { Plate } from "@/components/ui/Plate";
 import { decideShift, restartLine, verifyRejection } from "@/lib/actions/shift";
-import type { CorrectionsView } from "@/lib/learning-layer-views";
+import type { StandardStepsView } from "@/lib/learning-layer-views";
 import type { AlertView, LineView, ShiftBoardView, ShiftDecision } from "@/lib/types";
 
-import { CorrectionsPanel } from "./CorrectionsPanel";
+import { StandardStepPanel } from "./StandardStepPanel";
 import { StationTile, type TileState } from "./StationTile";
 
 const DECISIONS: { kind: ShiftDecision; icon: IconName; variant: "stop" | "ghost" }[] = [
@@ -33,13 +33,13 @@ type Logged = { stationId: string; decision: ShiftDecision; note: string };
 export function ShiftBoardScreen({
   view,
   line,
-  corrections,
+  steps,
   canDecide,
   notice,
 }: {
   view: ShiftBoardView;
-  /** Bounded corrections and earned autonomy; shown under the review queue. */
-  corrections?: CorrectionsView;
+  /** Standard steps from validated cards; shown under the review queue. */
+  steps?: StandardStepsView;
   /** BE-4 line view; when present the board opens on the 3D line. */
   line?: LineView;
   canDecide: boolean;
@@ -137,7 +137,7 @@ export function ShiftBoardScreen({
             </div>
             )}
             <ReviewQueue reviews={view.modelReviews} canVerify={canDecide} />
-            {corrections ? <CorrectionsPanel view={corrections} canDecide={canDecide} /> : null}
+            {steps ? <StandardStepPanel view={steps} canRecord={canDecide} /> : null}
             <div className="legend">
               <AndonBadge state="yellow" />
               <AndonBadge state="review" />

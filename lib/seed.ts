@@ -10,6 +10,8 @@ import type {
   Station,
   StoreSnapshot,
   Ticket,
+  WalkCheckSymptom,
+  WorkOrder,
 } from "@/lib/types";
 
 const DAY_MS = 86_400_000;
@@ -476,36 +478,48 @@ function createIdeas(): Idea[] {
  * Seven days of simulated robot controller minor errors and member walk-check findings
  * before the current shift, at most two of one kind per day, so none reached the repeat rule.
  */
+/**
+ * Robot error codes for the last five weeks, as the controller's error-code feed would
+ * hold them (simulated). Counts per week, this week first. E-2210 on sealer robot 1 at
+ * st-04 is one short of rising in the weekly Pareto; E-1043 is high but steady, so it
+ * does not rise.
+ */
+const ROBOT_HISTORY: { equipmentId: string; code: string; perWeek: [number, number, number, number, number] }[] = [
+  { equipmentId: "st-04/robot-1", code: "E-1043", perWeek: [9, 8, 9, 7, 8] },
+  { equipmentId: "st-04/robot-1", code: "E-2210", perWeek: [4, 1, 2, 1, 2] },
+  { equipmentId: "st-02/robot-1", code: "W-0317", perWeek: [3, 2, 3, 2, 3] },
+  { equipmentId: "st-01/robot-1", code: "E-0562", perWeek: [1, 0, 1, 1, 0] },
+];
+
+/** Walk-check findings of the last two weeks and the work orders they opened (simulated). */
+const WALK_HISTORY: { day: number; equipmentId: string; code: WalkCheckSymptom; closedAfterDays?: number }[] = [
+  { day: 12, equipmentId: "st-04/hose", code: "cable_wear", closedAfterDays: 1 },
+  { day: 5, equipmentId: "st-04/pump", code: "leak", closedAfterDays: 1 },
+  { day: 3, equipmentId: "st-02/pump", code: "noise" },
+  { day: 1, equipmentId: "st-01/robot-1", code: "loose_fixing" },
+];
+
 export function createSeedSignals(): LineSignal[] {
-  const robotPattern: { equipmentId: string; code: string; perDay: number[] }[] = [
-    { equipmentId: "st-04/robot-1", code: "E-1043", perDay: [2, 1, 2, 0, 1, 2, 1] },
-    { equipmentId: "st-04/robot-2", code: "E-2210", perDay: [1, 1, 0, 1, 0, 1, 0] },
-    { equipmentId: "st-02/robot-1", code: "W-0317", perDay: [1, 0, 1, 1, 1, 0, 1] },
-    { equipmentId: "st-01/robot-1", code: "E-0562", perDay: [0, 1, 0, 0, 1, 0, 0] },
-  ];
   const signals: LineSignal[] = [];
-  for (let day = 1; day <= 7; day += 1) {
-    robotPattern.forEach((pattern, patternIndex) => {
-      for (let n = 0; n < pattern.perDay[day - 1]; n += 1) {
+  ROBOT_HISTORY.forEach((pattern, patternIndex) => {
+    pattern.perWeek.forEach((count, week) => {
+      for (let n = 0; n < count; n += 1) {
+        // Day 1 to 7 back within the week; under 24 h after that day's clock time, so it stays in the week.
+        const day = 7 * week + 1 + ((n * 3) % 7);
+        const minutes = 30 + (n % 4) * 173 + patternIndex * 17;
         signals.push({
-          id: `signal-history-r${day}-${patternIndex}-${n}`,
+          id: `signal-history-r${patternIndex}-w${week}-${n}`,
           source: "robot_error",
           stationId: pattern.equipmentId.split("/")[0],
           equipmentId: pattern.equipmentId,
           code: pattern.code,
           actor: `controller:${pattern.equipmentId}`,
-          createdAt: new Date(SEED_NOW - day * DAY_MS + (patternIndex * 47 + n * 131) * 60_000 - 90 * 60_000).toISOString(),
+          createdAt: new Date(SEED_NOW - day * DAY_MS + minutes * 60_000).toISOString(),
         });
       }
     });
-  }
-  const walkChecks: { day: number; equipmentId: string; code: LineSignal["code"] }[] = [
-    { day: 2, equipmentId: "st-04/hose", code: "cable_wear" },
-    { day: 3, equipmentId: "st-02/pump", code: "noise" },
-    { day: 5, equipmentId: "st-04/pump", code: "leak" },
-    { day: 6, equipmentId: "st-04/hose", code: "cable_wear" },
-  ];
-  walkChecks.forEach((item, index) => {
+  });
+  WALK_HISTORY.forEach((item, index) => {
     const stationId = item.equipmentId.split("/")[0];
     signals.push({
       id: `signal-history-w${index + 1}`,
@@ -518,7 +532,23 @@ export function createSeedSignals(): LineSignal[] {
       createdAt: new Date(SEED_NOW - item.day * DAY_MS + 30 * 60_000).toISOString(),
     });
   });
-  return signals.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  return signals.sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+}
+
+export function createSeedWorkOrders(): WorkOrder[] {
+  return WALK_HISTORY.map((item, index) => {
+    const openedAt = new Date(SEED_NOW - item.day * DAY_MS + 30 * 60_000).toISOString();
+    return {
+      id: `WO-${4101 + index}`,
+      stationId: item.equipmentId.split("/")[0],
+      equipmentId: item.equipmentId,
+      symptom: item.code,
+      findingIds: [`signal-history-w${index + 1}`],
+      ...(item.closedAfterDays
+        ? { status: "closed" as const, openedAt, closedAt: new Date(Date.parse(openedAt) + item.closedAfterDays * DAY_MS).toISOString(), closedBy: "role:maintenance@body" as const }
+        : { status: "open" as const, openedAt }),
+    };
+  });
 }
 
 export function createSeedData(): StoreSnapshot {
@@ -553,7 +583,7 @@ export function createSeedData(): StoreSnapshot {
     cameraMaintenanceTickets: [],
     lineOperation: createSeedLineOperation(),
     signals: createSeedSignals(),
-    corrections: [],
-    autonomySwitches: [],
+    workOrders: createSeedWorkOrders(),
+    standardSteps: [],
   };
 }

@@ -3,7 +3,8 @@ export type Role =
   | "team_leader"
   | "engineer"
   | "senior_expert"
-  | "management";
+  | "management"
+  | "maintenance";
 export type Actor = `role:${Role}@${string}`;
 export type Loop = "shift" | "kaizen" | "launch";
 export type Criticality = "leak_critical" | "non_critical";
@@ -59,44 +60,51 @@ export interface LineSignal {
   createdAt: string;
 }
 
-/** Corrections that the standardized work of a station allows the robot's own routine to run. */
-export type CorrectionTypeId = "nozzle_purge" | "pressure_step";
-export type CorrectionStatus = "proposed" | "approved" | "rejected" | "auto_executed" | "escalated" | "reversed";
+/** A step written in a station's revised standard (validated card), shown to the team leader on a bead repeat. */
+export type StandardStepType = "nozzle_purge" | "pressure_change";
+export type StandardStepStatus = "shown" | "done" | "not_done";
+export type StepNotDoneReason = "line_running" | "material_unavailable" | "robot_fault" | "other";
 
 /**
- * A bounded correction. The app records the proposal and the decision; the robot's own
- * routine would execute it. Nothing here writes to line control.
+ * A standard step on the shift board. In the standard: the team leader runs it on the
+ * robot panel and taps done or not done; the app records the tap only and never writes to
+ * line control. Not in the standard (sourceCardId null): shown as "ask the engineer", no tap.
  */
-export interface Correction {
+export interface StandardStep {
   id: string;
   stationId: string;
-  /** Null when the standardized work has no correction for this defect. */
-  correctionType: CorrectionTypeId | null;
-  defectTypeId: DefectTypeId | null;
-  alertId: string | null;
-  /** Pressure step only: signed percent from the standard setpoint. */
-  stepPercent?: number;
-  /** propose: team leader decides; auto: within the window after earned autonomy; engineer: outside the window. */
-  mode: "propose" | "auto" | "engineer";
-  status: CorrectionStatus;
-  escalationReason?: "outside_window" | "not_in_standard";
+  defectTypeId: DefectTypeId;
+  /** The confirmed repeat that showed the step. */
+  alertId: string;
+  stepType: StandardStepType;
+  inStandard: boolean;
+  /** Validated card the step is written in; null when it is not in the standard. */
+  sourceCardId: string | null;
+  /** Open Kaizen ticket the repeat was logged against, if one existed when the step was shown. */
+  ticketId: string | null;
+  status: StandardStepStatus;
+  notDoneReason?: StepNotDoneReason;
   createdAt: string;
-  decidedBy?: Actor;
-  decidedAt?: string;
-  reversedBy?: Actor;
-  reversedAt?: string;
-  /** Simulated past approval added by the demo fast-forward. */
-  fastForward?: boolean;
+  recordedBy?: Actor;
+  recordedAt?: string;
 }
 
-/** The team leader switches "auto within window" off (or back on) for one correction type at one station. */
-export interface AutonomySwitch {
+/**
+ * A maintenance work order (simulated, minimal): opened by a walk-check finding, closed by
+ * maintenance. The same finding back after its work order closed opens a Kaizen ticket.
+ */
+export interface WorkOrder {
   id: string;
   stationId: string;
-  correctionType: CorrectionTypeId;
-  state: "off" | "on";
-  actor: Actor;
-  createdAt: string;
+  equipmentId: string;
+  symptom: WalkCheckSymptom;
+  findingIds: string[];
+  status: "open" | "closed";
+  openedAt: string;
+  closedAt?: string;
+  closedBy?: Actor;
+  /** Set when this work order was opened because the finding returned after an earlier one closed. */
+  returnOf?: string;
 }
 
 export interface Station {
@@ -238,6 +246,10 @@ export interface Ticket {
   /** Robot error or walk-check tickets: the repeated signals and their repeat key. */
   triggerSignalIds?: string[];
   signalKey?: string;
+  /** Bead tickets: confirmed repeats logged after the ticket opened (a repeat always updates the open ticket). */
+  repeatAlertIds?: string[];
+  /** Walk-check tickets: the closed work order the finding came back after. */
+  returnedAfterWorkOrderId?: string;
   /** Short title for non-bead tickets, e.g. "Robot minor error E-1043 on Sealer robot 1". */
   subject?: string;
   ownerRole: Actor;
@@ -436,6 +448,8 @@ export interface TicketView {
   source: SignalSource;
   subject: string;
   triggerAlerts: AlertView[];
+  /** Confirmed repeats logged on this ticket after it opened. */
+  repeatAlerts: AlertView[];
   triggerSignals: SignalView[];
   a3: A3;
   aiPrefilledFields: A3Field[];
@@ -675,8 +689,8 @@ export interface StoreSnapshot {
   cameraMaintenanceTickets: CameraMaintenanceTicket[];
   lineOperation: LineOperation;
   signals: LineSignal[];
-  corrections: Correction[];
-  autonomySwitches: AutonomySwitch[];
+  workOrders: WorkOrder[];
+  standardSteps: StandardStep[];
 }
 
 /** /cameras/model: the real (synthetic-data) sealer-bead model that runs in the browser. */
@@ -742,15 +756,12 @@ export type WorkflowEventType =
   | "card.validated"
   | "signal.robot_error"
   | "signal.walk_check"
-  | "correction.proposed"
-  | "correction.approved"
-  | "correction.rejected"
-  | "correction.auto_executed"
-  | "correction.escalated"
-  | "correction.reversed"
-  | "autonomy.unlocked"
-  | "autonomy.switched_off"
-  | "autonomy.switched_on";
+  | "ticket.repeat_logged"
+  | "work_order.opened"
+  | "work_order.closed"
+  | "step.shown"
+  | "step.done"
+  | "step.not_done";
 
 /** /events: the event outbox and optional workflow webhook. */
 export interface EventsView {

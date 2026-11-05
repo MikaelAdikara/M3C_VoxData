@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import * as alertActions from "@/lib/actions/alerts";
-import * as correctionActions from "@/lib/actions/corrections";
+import * as standardStepActions from "@/lib/actions/standard-steps";
 import * as ideaActions from "@/lib/actions/ideas";
 import * as kaizenActions from "@/lib/actions/kaizen";
 import * as knowledgeActions from "@/lib/actions/knowledge";
@@ -13,7 +13,7 @@ import * as simulatorActions from "@/lib/actions/simulator";
 describe("server action module exports", () => {
   it.each([
     ["alerts", alertActions],
-    ["corrections", correctionActions],
+    ["standard-steps", standardStepActions],
     ["ideas", ideaActions],
     ["kaizen", kaizenActions],
     ["knowledge", knowledgeActions],

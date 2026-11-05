@@ -14,6 +14,7 @@ const LABEL: Record<Role, string> = {
   engineer: "engineer",
   senior_expert: "senior expert",
   management: "management",
+  maintenance: "maintenance",
 };
 
 /**

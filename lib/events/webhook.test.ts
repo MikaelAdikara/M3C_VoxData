@@ -43,13 +43,13 @@ describe("workflow webhook", () => {
 
   it("formats escalations as a Teams/Slack-compatible message: one {text} body per escalation", () => {
     const escalated: WorkflowEvent = {
-      id: "correction.escalated:correction-0003",
-      type: "correction.escalated",
-      topic: "learning-line/K2-Body/st-04/correction",
+      id: "step.not_done:step-0001",
+      type: "step.not_done",
+      topic: "learning-line/K2-Body/st-04/standard-step",
       timestamp: "2027-04-14T09:12:00.000+07:00",
       stationId: "st-04",
-      actor: "rule:bounded-correction",
-      data: { correction_id: "correction-0003", correction: "pressure_step", label: "Sealer pressure step +2%", step_percent: 2, defect_type: "BEAD_THIN", alert_id: "a-1", reason: "outside_window", owner_role: "role:engineer@body" },
+      actor: "role:team_leader@body",
+      data: { step_id: "step-0001", step: "nozzle_purge", label: "Nozzle purge, 30 s", in_standard: "yes", source_card: "KC-SEAL-014", defect_type: "BEAD_THIN", alert_id: "a-1", ticket_id: "KZ-SEAL-007", reason_code: "robot_fault" },
     };
     const routine: WorkflowEvent = { ...event, id: "alert.raised:x", type: "alert.raised", data: { defect_type: "BEAD_THIN", roi: "seam", anomaly_score: 0.7, threshold: 0.61 } };
 
@@ -57,7 +57,7 @@ describe("workflow webhook", () => {
     expect(Object.keys(message)).toEqual(["text"]);
     expect(message.text).toContain("st-04");
     expect(message.text).toContain("09:12 WIB");
-    expect(message.text).toContain("outside the window");
+    expect(message.text).toContain("not done, reason robot_fault");
     expect(message.text).toContain("Engineer");
     expect(message.text).toContain("simulated");
     expect(message.text).not.toMatch(/role:/);

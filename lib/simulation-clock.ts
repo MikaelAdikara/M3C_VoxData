@@ -16,8 +16,8 @@ export function simulatedNow(snapshot: StoreSnapshot): string {
     ...snapshot.routedQuestions.map((item) => Date.parse(item.createdAt)),
     ...snapshot.cameraMaintenanceTickets.map((item) => Date.parse(item.createdAt)),
     ...(snapshot.signals ?? []).map((item) => Date.parse(item.createdAt)),
-    ...(snapshot.corrections ?? []).flatMap((item) => [item.createdAt, item.decidedAt, item.reversedAt].filter(Boolean).map((value) => Date.parse(value!))),
-    ...(snapshot.autonomySwitches ?? []).map((item) => Date.parse(item.createdAt)),
+    ...(snapshot.workOrders ?? []).flatMap((item) => [item.openedAt, item.closedAt].filter(Boolean).map((value) => Date.parse(value!))),
+    ...(snapshot.standardSteps ?? []).flatMap((item) => [item.createdAt, item.recordedAt].filter(Boolean).map((value) => Date.parse(value!))),
     ...[snapshot.lineOperation.stoppedAt, snapshot.lineOperation.restartedAt].filter(Boolean).map((value) => Date.parse(value!)),
   ].filter((timestamp) => Number.isFinite(timestamp) && timestamp >= shiftStart && timestamp <= shiftEnd);
   return new Date(Math.min(Math.max(shiftStart, ...timestamps), shiftEnd)).toISOString();

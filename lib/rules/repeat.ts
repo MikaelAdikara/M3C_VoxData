@@ -22,8 +22,9 @@ export interface RepeatState {
 }
 
 /**
- * The one repeat rule, whatever the source: matching items in this shift, oldest first.
- * The third one (REPEAT_TICKET_THRESHOLD) opens a Kaizen ticket.
+ * The bead repeat rule: matching items in this shift, oldest first. The third one
+ * (REPEAT_TICKET_THRESHOLD) opens a Kaizen ticket. Robot codes and walk-check findings
+ * have their own rules (lib/rules/signals.ts).
  */
 export function repeatStateOf(items: readonly { id: string; createdAt: string }[], shift: Shift): RepeatState {
   const matching = items

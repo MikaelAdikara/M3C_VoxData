@@ -8,16 +8,20 @@ import { Badge, LoopBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
-import { injectRobotErrors, submitWalkCheck } from "@/lib/actions/signals";
+import { closeWorkOrder, injectRobotErrors, submitWalkCheck } from "@/lib/actions/signals";
 import type { SignalsView } from "@/lib/learning-layer-views";
 import { SIGNAL_SOURCE_LABEL } from "@/lib/signals/catalog";
 import type { WalkCheckSymptom } from "@/lib/types";
 
 const dayFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
 
+const lower = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+const fmtAvg = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+
 /**
- * Line signals: camera bead alerts, robot controller error codes and member walk-checks
- * feed one repeat rule. The third repeat of the same thing in a shift opens a Kaizen ticket.
+ * Line signals: robot controller error codes and member walk-checks, each with its own
+ * trigger. A code that rises in the weekly Pareto, or a finding back after its work order
+ * closed, opens a Kaizen ticket owned by maintenance. Bead alerts keep the shift repeat rule.
  */
 export function SignalsScreen({ view, canWalkCheck }: { view: SignalsView; canWalkCheck: boolean }) {
   const [pending, start] = useTransition();
@@ -27,8 +31,11 @@ export function SignalsScreen({ view, canWalkCheck }: { view: SignalsView; canWa
   const [symptom, setSymptom] = useState<WalkCheckSymptom | null>(null);
   const [photo, setPhoto] = useState(false);
   const [note, setNote] = useState("");
-  const maxPareto = Math.max(1, ...view.robotPareto.map((p) => p.count));
+  const rows = view.pareto.rows;
+  const maxPareto = Math.max(1, ...rows.map((p) => Math.max(p.thisWeek, p.needed)));
   const today = dayFmt.format(new Date(view.shift.startsAt));
+  const demoRow = rows.find((r) => r.key === "robot_error:st-04/robot-1:E-2210");
+  const dayOf = (iso: string) => dayFmt.format(new Date(iso));
 
   function logFinding() {
     if (!symptom) return;
@@ -37,7 +44,7 @@ export function SignalsScreen({ view, canWalkCheck }: { view: SignalsView; canWa
     start(async () => {
       const r = await submitWalkCheck({ equipmentId, symptom, photoAttached: photo, note });
       if (r.ok) {
-        setSent("Finding logged. It counts toward the repeat rule for this equipment.");
+        setSent("Finding logged. It opened a work order, or joined the open one for the same finding.");
         setSymptom(null);
         setPhoto(false);
         setNote("");
@@ -53,13 +60,23 @@ export function SignalsScreen({ view, canWalkCheck }: { view: SignalsView; canWa
     });
   }
 
+  function closeOrder(id: string) {
+    setError(null);
+    setSent(null);
+    start(async () => {
+      const r = await closeWorkOrder(id);
+      if (r.ok) setSent(`${id} closed. Log the same finding again to see the return rule open a ticket.`);
+      else setError(r.error);
+    });
+  }
+
   return (
     <main className="page">
       <div className="page__head">
         <div>
           <h1 className="page__title">Line signals</h1>
           <p className="page__sub">
-            Three sources, one repeat rule: the {view.threshold === 3 ? "third" : `${view.threshold}th`} repeat of the same thing at one station in a shift opens a Kaizen ticket. Simulated data.
+            Robot error codes and member walk-checks, each with its own trigger. Tickets from both are owned by maintenance. Bead alerts keep their shift repeat rule on the <Link href="/shift-board">shift board</Link>. Simulated data.
           </p>
         </div>
         <LoopBadge loop="kaizen" />
@@ -72,37 +89,58 @@ export function SignalsScreen({ view, canWalkCheck }: { view: SignalsView; canWa
       ) : null}
 
       <div className="sig">
-        <section className="panel" aria-labelledby="counters-title">
+        <section className="panel" aria-labelledby="robot-title">
           <div className="panel__head">
-            <h2 id="counters-title">Repeat counters, shift {view.shift.label}</h2>
-            <span className="muted">Ticket at {view.threshold} of {view.threshold}</span>
+            <h2 id="robot-title">Robot controller error codes</h2>
+            <span className="muted">Weekly Pareto · simulated codes</span>
           </div>
-          {view.counters.length === 0 ? (
-            <div className="panel__body">
-              <EmptyState title="Nothing repeating yet this shift" />
-            </div>
-          ) : (
-            <ul className="sig__counters">
-              {view.counters.map((c) => (
-                <li key={c.key} data-full={c.count >= c.threshold || undefined}>
-                  <span className="sig-badge" data-source={c.source}>{SIGNAL_SOURCE_LABEL[c.source]}</span>
-                  <span className="sig__subject">
-                    {c.subject} <span className="mono muted">{c.stationId}</span>
+          <div className="panel__body">
+            <p className="sig__rule">
+              <Icon name="chart-line" />
+              <span>
+                Ticket rule: <strong>{lower(view.pareto.rule)}</strong>. A code that is always high does not open a ticket; a code that rises does.
+              </span>
+            </p>
+            <ul className="sig__pareto">
+              {rows.map((p) => (
+                <li key={p.key} data-rising={p.rising || undefined}>
+                  <span className="sig__code">
+                    <span className="mono">{p.code}</span> {p.label}
+                    <small>
+                      {p.equipmentName} · <span className="mono">{p.stationId}</span>
+                    </small>
                   </span>
-                  <span className="sig__dots" role="img" aria-label={`${Math.min(c.count, c.threshold)} of ${c.threshold}`}>
-                    {Array.from({ length: c.threshold }, (_, i) => (
-                      <span key={i} data-on={i < c.count || undefined} />
-                    ))}
+                  <span className="pareto__track sig__track" role="img" aria-label={`${p.thisWeek} this week, needs ${p.needed}`}>
+                    <span className="pareto__bar" style={{ width: `${(p.thisWeek / maxPareto) * 100}%` }} />
+                    <span className="sig__mark" style={{ left: `${(p.needed / maxPareto) * 100}%` }} />
                   </span>
-                  {c.ticketId ? (
-                    <Link className="badge badge--instruct" href={`/kaizen/${c.ticketId}`}>{c.ticketId}</Link>
-                  ) : (
-                    <span className="muted num">{c.count} / {c.threshold}</span>
-                  )}
+                  <span className="sig__nums num">
+                    <strong>{p.thisWeek}</strong> this week
+                    <small>avg {fmtAvg(p.trailingAverage)} · needs {p.needed}</small>
+                  </span>
+                  <span className="sig__state">
+                    {p.ticketId ? (
+                      <Link className="badge badge--instruct" href={`/kaizen/${p.ticketId}`}>{p.ticketId}</Link>
+                    ) : p.rising ? (
+                      <Badge tone="outline">Rising</Badge>
+                    ) : (
+                      <span className="muted">Steady</span>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>
-          )}
+            <div className="sig__demo">
+              <Button variant="ghost" disabled={pending} onClick={robotError} icon={<Icon name="cpu" />}>
+                Demo: sealer robot 1 at st-04 reports E-2210
+              </Button>
+              <small className="muted">
+                {demoRow && !demoRow.ticketId
+                  ? `E-2210 is at ${demoRow.thisWeek} this week against an average of ${fmtAvg(demoRow.trailingAverage)}; at ${demoRow.needed} it crosses the rule and a ticket opens for maintenance, before any breakdown.`
+                  : "Each tap adds one simulated report from the controller's error-code feed."}
+              </small>
+            </div>
+          </div>
         </section>
 
         <section className="panel" aria-labelledby="walk-title">
@@ -144,32 +182,59 @@ export function SignalsScreen({ view, canWalkCheck }: { view: SignalsView; canWa
               Log finding
             </Button>
             <p className="muted sig__hint" role="status">
-              {sent ?? (canWalkCheck ? "Members on the line are sensors too: three of the same finding in a shift open a ticket." : "Switch the role to Operator or Team leader to log a walk-check.")}
+              {sent ?? (canWalkCheck ? "A finding opens a work order. If the same finding comes back after its work order is closed, a Kaizen ticket opens." : "Switch the role to Operator or Team leader to log a walk-check.")}
             </p>
           </div>
         </section>
 
-        <section className="panel" aria-labelledby="robot-title">
+        <section className="panel" aria-labelledby="wo-title">
           <div className="panel__head">
-            <h2 id="robot-title">Robot controller error codes</h2>
-            <span className="muted">Minor codes, last 7 days · simulated codes</span>
+            <h2 id="wo-title">Work orders</h2>
+            <span className="muted">Maintenance · simulated</span>
           </div>
           <div className="panel__body">
-            <ul className="sig__pareto">
-              {view.robotPareto.map((p) => (
-                <li key={p.code}>
-                  <span><span className="mono">{p.code}</span> {p.label}</span>
-                  <span className="pareto__track"><span className="pareto__bar" style={{ width: `${(p.count / maxPareto) * 100}%` }} /></span>
-                  <span className="num">{p.count}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="sig__demo">
-              <Button variant="ghost" disabled={pending} onClick={robotError} icon={<Icon name="cpu" />}>
-                Demo: sealer robot 1 at st-04 reports E-2210
-              </Button>
-              <small className="muted">The same code three times in a shift opens a ticket before any breakdown.</small>
-            </div>
+            <p className="sig__rule">
+              <Icon name="wrench" />
+              <span>
+                Ticket rule: <strong>{lower(view.workOrders.rule)}</strong>. The fix did not hold, so it goes to Kaizen.
+              </span>
+            </p>
+            {view.workOrders.open.length ? (
+              <ul className="sig__orders">
+                {view.workOrders.open.map((o) => (
+                  <li key={o.id}>
+                    <span className="sig__wo">
+                      <strong className="mono">{o.id}</strong> {o.symptomLabel} · {o.equipmentName} <span className="mono muted">{o.stationId}</span>
+                      <small>
+                        Open since {dayOf(o.openedAt)} · {o.findings} finding{o.findings === 1 ? "" : "s"}
+                        {o.returnOf ? ` · back after ${o.returnOf} closed` : ""}
+                        {o.ticketId ? <> · <Link className="mono" href={`/kaizen/${o.ticketId}`}>{o.ticketId}</Link></> : null}
+                      </small>
+                    </span>
+                    <Button variant="ghost" disabled={pending} onClick={() => closeOrder(o.id)} icon={<Icon name="check" />} aria-label={`Close ${o.id} (simulated maintenance)`}>
+                      Close (simulated maintenance)
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <EmptyState title="No open work orders" />
+            )}
+            {view.workOrders.closed.length ? (
+              <>
+                <h3 className="sig__h">Recently closed</h3>
+                <ul className="sig__orders">
+                  {view.workOrders.closed.map((o) => (
+                    <li key={o.id}>
+                      <span className="sig__wo">
+                        <span className="mono">{o.id}</span> {o.symptomLabel} · {o.equipmentName} <span className="mono muted">{o.stationId}</span>
+                        <small>Closed {o.closedAt ? dayOf(o.closedAt) : ""} by maintenance</small>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : null}
           </div>
         </section>
 

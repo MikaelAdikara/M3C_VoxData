@@ -19,7 +19,7 @@ import { buildDraftContext } from "@/lib/kaizen/a3-draft";
 import { matchedWords } from "@/lib/kaizen/similar";
 import { buildEvents, summarizeEvent } from "@/lib/events/outbox";
 import { lastDelivery, webhookFormat, webhookUrl } from "@/lib/events/webhook";
-import { buildCorrectionsView, buildSignalsView, toSignalView } from "@/lib/learning-layer-views";
+import { buildSignalsView, buildStandardStepsView, toSignalView } from "@/lib/learning-layer-views";
 import { SIGNAL_SOURCE_LABEL } from "@/lib/signals/catalog";
 import { detectBodyType } from "@/lib/vision/body-type";
 import { openDraftSentences } from "@/lib/rules/ai-draft";
@@ -339,6 +339,10 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
       .map((alertId) => snapshot.alerts.find((alert) => alert.id === alertId))
       .filter((alert): alert is Alert => alert !== undefined)
       .map((alert) => toAlertView(alert, defectTypesById)),
+    repeatAlerts: (ticket.repeatAlertIds ?? [])
+      .map((alertId) => snapshot.alerts.find((alert) => alert.id === alertId))
+      .filter((alert): alert is Alert => alert !== undefined)
+      .map((alert) => toAlertView(alert, defectTypesById)),
     a3: ticket.a3,
     aiPrefilledFields: [...ticket.aiPrefilledFields],
     similarCases: buildDraftContext(snapshot, ticket).cases.map((c) => {
@@ -623,6 +627,6 @@ export async function getSignalsView() {
   return buildSignalsView(await getStore().getSnapshot());
 }
 
-export async function getCorrectionsView() {
-  return buildCorrectionsView(await getStore().getSnapshot());
+export async function getStandardStepsView() {
+  return buildStandardStepsView(await getStore().getSnapshot());
 }

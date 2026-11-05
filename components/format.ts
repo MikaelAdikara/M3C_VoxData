@@ -14,7 +14,14 @@ const ROLE_NAME: Record<string, string> = {
   engineer: "Engineer",
   senior_expert: "Senior expert",
   management: "Management",
+  maintenance: "Maintenance",
 };
+
+/** "role:maintenance@body" -> "Maintenance": the owner role of a ticket, without the scope. */
+export function roleName(actor: string) {
+  const m = /^role:([a-z_]+)@/.exec(actor);
+  return m ? (ROLE_NAME[m[1]] ?? m[1]) : actor;
+}
 
 /** "role:operator@st-04" -> "Operator · st-04"; other actors (model, rule) are shown as written. */
 export function actorLabel(actor: string) {
@@ -24,8 +31,11 @@ export function actorLabel(actor: string) {
       .replace(/^model:/, "Model ")
       .replace(/^controller:/, "Robot controller ")
       .replace(/^rule:repeat-3-per-shift$/, "Repeat rule")
-      .replace(/^rule:bounded-correction$/, "Correction rule")
-      .replace(/^rule:earned-autonomy$/, "Autonomy rule");
+      .replace(/^rule:repeat-on-open-ticket$/, "Repeat rule")
+      .replace(/^rule:weekly-pareto-rise$/, "Weekly Pareto rule")
+      .replace(/^rule:finding-back-after-work-order$/, "Work-order return rule")
+      .replace(/^rule:walk-check-finding$/, "Walk-check rule")
+      .replace(/^rule:standard-step$/, "Standard step rule");
   }
   return `${ROLE_NAME[m[1]] ?? m[1]} · ${m[2]}`;
 }

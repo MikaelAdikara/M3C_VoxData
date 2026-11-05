@@ -22,23 +22,19 @@ const TYPE_LABEL: Record<EventsView["events"][number]["type"], string> = {
   "card.validated": "Card validated",
   "signal.robot_error": "Robot error code",
   "signal.walk_check": "Walk-check",
-  "correction.proposed": "Correction proposed",
-  "correction.approved": "Correction approved",
-  "correction.rejected": "Correction rejected",
-  "correction.auto_executed": "Auto correction",
-  "correction.escalated": "To engineer",
-  "correction.reversed": "Correction reversed",
-  "autonomy.unlocked": "Auto unlocked",
-  "autonomy.switched_off": "Auto switched off",
-  "autonomy.switched_on": "Auto switched on",
+  "ticket.repeat_logged": "Repeat on ticket",
+  "work_order.opened": "Work order opened",
+  "work_order.closed": "Work order closed",
+  "step.shown": "Step shown",
+  "step.done": "Step done",
+  "step.not_done": "Step not done",
 };
 
 const TYPE_TONE: Partial<Record<EventsView["events"][number]["type"], string>> = {
   "andon.yellow": "badge--caution",
   "card.validated": "badge--safe",
   "ticket.opened": "badge--instruct",
-  "correction.auto_executed": "badge--instruct",
-  "correction.escalated": "badge--instruct",
+  "step.not_done": "badge--instruct",
 };
 
 export function EventsScreen({ view }: { view: EventsView }) {
@@ -55,7 +51,7 @@ export function EventsScreen({ view }: { view: EventsView }) {
         <div>
           <h1 className="page__title">Event outbox</h1>
           <p className="page__sub">
-            Every alert, operator decision, team-leader decision, robot error code, walk-check finding, correction, Kaizen ticket and validated card as one JSON event. Actors are roles, rules or machines, never names.
+            Every alert, operator decision, team-leader decision, robot error code, walk-check finding, work order, standard step, Kaizen ticket and validated card as one JSON event. Actors are roles, rules or machines, never names.
           </p>
         </div>
       </div>
@@ -80,7 +76,7 @@ export function EventsScreen({ view }: { view: EventsView }) {
           </p>
           <p className="muted">
             {webhook.format === "chat"
-              ? "Chat format is on: only escalations are sent, one message each (yellow andon, new ticket, correction proposed, auto correction, sent to engineer, auto switched off)."
+              ? "Chat format is on: only escalations are sent, one message each (yellow andon, new Kaizen ticket, standard step not done)."
               : "Optional chat format: set WORKFLOW_WEBHOOK_FORMAT=chat and point the webhook at a Teams or Slack incoming webhook; escalations then arrive as one plain message each."}
           </p>
           {webhook.lastDelivery ? (

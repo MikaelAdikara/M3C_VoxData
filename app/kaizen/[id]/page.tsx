@@ -20,7 +20,9 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
       canEdit={role === "engineer"}
       notice={
         <RoleGate need="engineer" current={role}>
-          Only the owner engineer writes the A3, starts the trial and requests validation.
+          {view.ticket.ownerRole === "role:maintenance@body"
+            ? "Maintenance owns this ticket; in this demo the engineer seat writes the A3, starts the trial and requests validation."
+            : "Only the owner engineer writes the A3, starts the trial and requests validation."}
         </RoleGate>
       }
     />
