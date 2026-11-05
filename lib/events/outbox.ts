@@ -1,18 +1,18 @@
-import type { StoreSnapshot } from "@/lib/types";
+import { correctionLabel } from "@/lib/corrections/standard";
+import { AUTONOMY_RULE, getAutonomyState } from "@/lib/rules/autonomy";
+import { signalLabel } from "@/lib/signals/catalog";
+import { detectBodyType } from "@/lib/vision/body-type";
+import type { CorrectionTypeId, StoreSnapshot, WorkflowEventType } from "@/lib/types";
+
+export type { WorkflowEventType };
 
 /**
  * Event outbox (UNS-style envelope, ES Figure D4). Every alert, operator decision,
- * team-leader decision, Kaizen ticket and validated card is one JSON event. Events are
+ * team-leader decision, Kaizen ticket and validated card is one JSON event, and so is
+ * every robot error code, walk-check finding and bounded-correction step. Events are
  * derived from the stored state, so the outbox needs no storage of its own. Actors are
- * roles plus station; no names, no images, no free-text notes.
+ * roles, rules, models or controllers; no names, no images, no free-text notes.
  */
-export type WorkflowEventType =
-  | "alert.raised"
-  | "andon.yellow"
-  | "alert.rejected"
-  | "decision.team_leader"
-  | "ticket.opened"
-  | "card.validated";
 
 export interface WorkflowEvent {
   id: string;
@@ -38,8 +38,64 @@ export function buildEvents(snapshot: StoreSnapshot): WorkflowEvent[] {
       timestamp: a.createdAt,
       stationId: a.stationId,
       actor: `model:${a.modelVersion}`,
-      data: { alert_id: a.id, body_id: a.bodyId, roi: a.roi, defect_type: a.defectTypeId, anomaly_score: a.anomalyScore, threshold: a.threshold, model_version: a.modelVersion },
+      data: { alert_id: a.id, body_id: a.bodyId, body_type: detectBodyType(a.bodyId, a.modelVersion).id, body_type_source: "model_detection_camera", roi: a.roi, defect_type: a.defectTypeId, anomaly_score: a.anomalyScore, threshold: a.threshold, model_version: a.modelVersion },
     });
+  }
+
+  for (const s of snapshot.signals ?? []) {
+    const type = s.source === "robot_error" ? "signal.robot_error" : "signal.walk_check";
+    events.push({
+      id: `${type}:${s.id}`,
+      type,
+      topic: `learning-line/K2-Body/${s.stationId}/${s.source === "robot_error" ? "robot" : "walk-check"}`,
+      timestamp: s.createdAt,
+      stationId: s.stationId,
+      actor: s.actor,
+      data: s.source === "robot_error"
+        ? { signal_id: s.id, signal_source: s.source, equipment_id: s.equipmentId, error_code: s.code }
+        : { signal_id: s.id, signal_source: s.source, equipment_id: s.equipmentId, symptom: s.code, photo_attached: s.photoAttached ? "yes" : "no" },
+    });
+  }
+
+  for (const c of snapshot.corrections ?? []) {
+    const topic = `learning-line/K2-Body/${c.stationId}/correction`;
+    const base = { correction_id: c.id, correction: c.correctionType, label: correctionLabel(c.correctionType, c.stepPercent), step_percent: c.stepPercent ?? null, defect_type: c.defectTypeId, alert_id: c.alertId, ...(c.fastForward ? { fast_forward: "yes" } : {}) };
+    const rule = "rule:bounded-correction";
+    if (c.mode === "auto") {
+      events.push({ id: `correction.auto_executed:${c.id}`, type: "correction.auto_executed", topic, timestamp: c.createdAt, stationId: c.stationId, actor: rule, data: { ...base, notify: "team_leader", executed_by: "robot_routine" } });
+    } else if (c.mode === "engineer") {
+      events.push({ id: `correction.escalated:${c.id}`, type: "correction.escalated", topic, timestamp: c.createdAt, stationId: c.stationId, actor: rule, data: { ...base, reason: c.escalationReason ?? null, owner_role: "role:engineer@body" } });
+    } else {
+      events.push({ id: `correction.proposed:${c.id}`, type: "correction.proposed", topic, timestamp: c.createdAt, stationId: c.stationId, actor: rule, data: { ...base, decides: "team_leader" } });
+      if (c.decidedAt && c.decidedBy) {
+        const type = c.status === "rejected" ? "correction.rejected" : "correction.approved";
+        events.push({ id: `${type}:${c.id}`, type, topic, timestamp: c.decidedAt, stationId: c.stationId, actor: c.decidedBy, data: base });
+      }
+    }
+    if (c.status === "reversed" && c.reversedAt && c.reversedBy) {
+      events.push({ id: `correction.reversed:${c.id}`, type: "correction.reversed", topic, timestamp: c.reversedAt, stationId: c.stationId, actor: c.reversedBy, data: base });
+    }
+  }
+
+  const autonomyKeys = new Set((snapshot.corrections ?? []).filter((c) => c.correctionType).map((c) => `${c.stationId}|${c.correctionType}`));
+  for (const key of autonomyKeys) {
+    const [stationId, correctionType] = key.split("|") as [string, CorrectionTypeId];
+    const state = getAutonomyState(snapshot.corrections, snapshot.autonomySwitches ?? [], stationId, correctionType);
+    if (!state.unlockedAt) continue;
+    events.push({
+      id: `autonomy.unlocked:${key}`,
+      type: "autonomy.unlocked",
+      topic: `learning-line/K2-Body/${stationId}/correction`,
+      timestamp: state.unlockedAt,
+      stationId,
+      actor: "rule:earned-autonomy",
+      data: { correction: correctionType, approvals: state.approvals, reversals: state.reversals, rule: `>= ${AUTONOMY_RULE.minApprovals} approvals and ${AUTONOMY_RULE.maxReversals} reversals` },
+    });
+  }
+
+  for (const w of snapshot.autonomySwitches ?? []) {
+    const type = w.state === "off" ? "autonomy.switched_off" : "autonomy.switched_on";
+    events.push({ id: `${type}:${w.id}`, type, topic: `learning-line/K2-Body/${w.stationId}/correction`, timestamp: w.createdAt, stationId: w.stationId, actor: w.actor, data: { correction: w.correctionType, level: w.state === "off" ? "propose" : "auto_within_window" } });
   }
 
   for (const d of snapshot.decisions) {
@@ -63,7 +119,13 @@ export function buildEvents(snapshot: StoreSnapshot): WorkflowEvent[] {
       timestamp: t.createdAt,
       stationId: t.stationId,
       actor: "rule:repeat-3-per-shift",
-      data: { ticket_id: t.id, defect_type: t.defectTypeId, trigger_alerts: t.triggerAlertIds.length, owner_role: t.ownerRole },
+      data: {
+        ticket_id: t.id,
+        signal_source: t.source ?? "bead",
+        defect_type: t.defectTypeId,
+        ...(t.source && t.source !== "bead" ? { subject: t.subject ?? null, trigger_signals: t.triggerSignalIds?.length ?? 0 } : { trigger_alerts: t.triggerAlertIds.length }),
+        owner_role: t.ownerRole,
+      },
     });
   }
 
@@ -101,8 +163,32 @@ export function summarizeEvent(e: WorkflowEvent): string {
     case "decision.team_leader":
       return `Team leader decided ${String(d.decision).replace("_", " and ")}`;
     case "ticket.opened":
-      return `Kaizen ticket ${d.ticket_id} opened for ${d.defect_type} (${d.trigger_alerts} alerts)`;
+      return d.signal_source && d.signal_source !== "bead"
+        ? `Kaizen ticket ${d.ticket_id} opened: ${d.subject} (${d.trigger_signals} repeats)`
+        : `Kaizen ticket ${d.ticket_id} opened for ${d.defect_type} (${d.trigger_alerts} alerts)`;
     case "card.validated":
       return `Card ${d.card_id} r${d.revision} validated`;
+    case "signal.robot_error":
+      return `Robot controller ${d.equipment_id}: minor error ${signalLabel({ source: "robot_error", code: String(d.error_code) })}`;
+    case "signal.walk_check":
+      return `Walk-check on ${d.equipment_id}: ${signalLabel({ source: "walk_check", code: String(d.symptom) }).toLowerCase()}${d.photo_attached === "yes" ? ", photo attached" : ""}`;
+    case "correction.proposed":
+      return `Correction proposed: ${d.label}; team leader decides${d.fast_forward ? " (fast-forward)" : ""}`;
+    case "correction.approved":
+      return `Team leader approved ${d.label}; the robot's own routine runs it${d.fast_forward ? " (fast-forward)" : ""}`;
+    case "correction.rejected":
+      return `Team leader rejected ${d.label}`;
+    case "correction.auto_executed":
+      return `Auto within window: ${d.label}; team leader notified`;
+    case "correction.escalated":
+      return d.reason === "outside_window" ? `${d.label} is outside the window: sent to the engineer` : `No standardized correction for ${d.defect_type}: sent to the engineer`;
+    case "correction.reversed":
+      return `Team leader reversed ${d.label}`;
+    case "autonomy.unlocked":
+      return `Auto within window unlocked for ${d.correction} (${d.approvals} approvals, ${d.reversals} reversals)`;
+    case "autonomy.switched_off":
+      return `Team leader switched auto off for ${d.correction}`;
+    case "autonomy.switched_on":
+      return `Team leader switched auto back on for ${d.correction}`;
   }
 }

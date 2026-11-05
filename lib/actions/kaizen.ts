@@ -221,7 +221,7 @@ export async function requestValidation(ticketId: string): Promise<ActionResult>
         stationIds: [ticket.stationId],
         variants: [station?.line.split("-")[0] ?? "K2"],
         factor4M: draftFactor(),
-        symptom: defectType?.name ?? ticket.defectTypeId,
+        symptom: defectType?.name ?? ticket.subject ?? ticket.defectTypeId ?? "Repeated line signal",
         rootCause: ticket.a3.rootCause,
         countermeasure: ticket.a3.countermeasure,
         standardRevised: ticket.a3.standardise,

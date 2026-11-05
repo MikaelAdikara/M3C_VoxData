@@ -9,6 +9,7 @@ import {
   revalidatePaths,
 } from "@/lib/action-support";
 import { getCurrentRole } from "@/lib/queries";
+import { proposeCorrectionIfNeeded } from "@/lib/corrections/propose";
 import { openRepeatTicketIfNeeded } from "@/lib/repeat-ticket";
 import { getFalseAlarmBudgetState } from "@/lib/rules/budget";
 import { getStore } from "@/lib/store";
@@ -45,12 +46,13 @@ export async function confirmAlert(alertId: string): Promise<ActionResult> {
       });
 
       openRepeatTicketIfNeeded(draft, alert);
+      proposeCorrectionIfNeeded(draft, alert);
       return { ok: true };
     });
   } catch {
     return { ok: false, error: "Could not confirm the alert." };
   } finally {
-    revalidatePaths(["/", "/station", "/shift-board", "/cameras", "/kaizen", "/metrics"]);
+    revalidatePaths(["/", "/station", "/shift-board", "/cameras", "/kaizen", "/metrics", "/signals", "/events"]);
   }
 }
 

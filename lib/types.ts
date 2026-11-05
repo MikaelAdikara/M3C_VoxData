@@ -38,6 +38,67 @@ export type CameraKind = "sealer" | "paint_tablet" | "final";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
+/** Where a repeat that opens a Kaizen ticket comes from. Tickets without a source are bead alerts. */
+export type SignalSource = "bead" | "robot_error" | "walk_check";
+export type WalkCheckSymptom = "noise" | "leak" | "cable_wear" | "loose_fixing" | "overheating" | "other";
+
+/**
+ * A non-camera signal from the line (simulated): a minor error code from a robot
+ * controller, or a finding from a member's tablet walk-check. Same repeat rule as bead alerts.
+ */
+export interface LineSignal {
+  id: string;
+  source: "robot_error" | "walk_check";
+  stationId: string;
+  equipmentId: string;
+  /** Robot: the controller error code. Walk-check: the symptom. */
+  code: string;
+  photoAttached?: boolean;
+  note?: string;
+  actor: Actor | `controller:${string}`;
+  createdAt: string;
+}
+
+/** Corrections that the standardized work of a station allows the robot's own routine to run. */
+export type CorrectionTypeId = "nozzle_purge" | "pressure_step";
+export type CorrectionStatus = "proposed" | "approved" | "rejected" | "auto_executed" | "escalated" | "reversed";
+
+/**
+ * A bounded correction. The app records the proposal and the decision; the robot's own
+ * routine would execute it. Nothing here writes to line control.
+ */
+export interface Correction {
+  id: string;
+  stationId: string;
+  /** Null when the standardized work has no correction for this defect. */
+  correctionType: CorrectionTypeId | null;
+  defectTypeId: DefectTypeId | null;
+  alertId: string | null;
+  /** Pressure step only: signed percent from the standard setpoint. */
+  stepPercent?: number;
+  /** propose: team leader decides; auto: within the window after earned autonomy; engineer: outside the window. */
+  mode: "propose" | "auto" | "engineer";
+  status: CorrectionStatus;
+  escalationReason?: "outside_window" | "not_in_standard";
+  createdAt: string;
+  decidedBy?: Actor;
+  decidedAt?: string;
+  reversedBy?: Actor;
+  reversedAt?: string;
+  /** Simulated past approval added by the demo fast-forward. */
+  fastForward?: boolean;
+}
+
+/** The team leader switches "auto within window" off (or back on) for one correction type at one station. */
+export interface AutonomySwitch {
+  id: string;
+  stationId: string;
+  correctionType: CorrectionTypeId;
+  state: "off" | "on";
+  actor: Actor;
+  createdAt: string;
+}
+
 export interface Station {
   id: string;
   line: string;
@@ -169,8 +230,16 @@ export interface A3AiDraft {
 export interface Ticket {
   id: string;
   stationId: string;
-  defectTypeId: DefectTypeId;
+  /** Null for tickets opened by a robot error code or a walk-check finding. */
+  defectTypeId: DefectTypeId | null;
   triggerAlertIds: string[];
+  /** Absent on bead-alert tickets. */
+  source?: SignalSource;
+  /** Robot error or walk-check tickets: the repeated signals and their repeat key. */
+  triggerSignalIds?: string[];
+  signalKey?: string;
+  /** Short title for non-bead tickets, e.g. "Robot minor error E-1043 on Sealer robot 1". */
+  subject?: string;
   ownerRole: Actor;
   status: TicketStatus;
   a3: A3;
@@ -251,6 +320,16 @@ export interface AlertView {
   createdAt: string;
   status: AlertStatus;
   recommendation: RecommendationView | null;
+  /** Body type read by the line's model-detection camera (simulated); selects the bead model. */
+  bodyType: BodyTypeView;
+}
+
+export interface BodyTypeView {
+  id: string;
+  name: string;
+  source: "model_detection_camera";
+  confidence: number;
+  beadModel: string;
 }
 
 export interface ReasonCodeOption {
@@ -311,7 +390,9 @@ export interface ModelReviewView {
 export interface TicketSummary {
   id: string;
   stationId: string;
-  defectType: DefectType;
+  defectType: DefectType | null;
+  source: SignalSource;
+  subject: string;
   ownerRole: Actor;
   status: TicketStatus;
   createdAt: string;
@@ -336,10 +417,26 @@ export interface SimilarCaseView {
   score: number;
 }
 
+export interface SignalView {
+  id: string;
+  source: LineSignal["source"];
+  stationId: string;
+  equipmentId: string;
+  equipmentName: string;
+  code: string;
+  label: string;
+  photoAttached: boolean;
+  actor: string;
+  createdAt: string;
+}
+
 export interface TicketView {
   ticket: Ticket;
-  defectType: DefectType;
+  defectType: DefectType | null;
+  source: SignalSource;
+  subject: string;
   triggerAlerts: AlertView[];
+  triggerSignals: SignalView[];
   a3: A3;
   aiPrefilledFields: A3Field[];
   similarCases: SimilarCaseView[];
@@ -577,6 +674,9 @@ export interface StoreSnapshot {
   recordingGaps: RecordingGap[];
   cameraMaintenanceTickets: CameraMaintenanceTicket[];
   lineOperation: LineOperation;
+  signals: LineSignal[];
+  corrections: Correction[];
+  autonomySwitches: AutonomySwitch[];
 }
 
 /** /cameras/model: the real (synthetic-data) sealer-bead model that runs in the browser. */
@@ -632,11 +732,31 @@ export interface CameraModelView {
   };
 }
 
+/** Event types in the outbox (see lib/events/outbox.ts). */
+export type WorkflowEventType =
+  | "alert.raised"
+  | "andon.yellow"
+  | "alert.rejected"
+  | "decision.team_leader"
+  | "ticket.opened"
+  | "card.validated"
+  | "signal.robot_error"
+  | "signal.walk_check"
+  | "correction.proposed"
+  | "correction.approved"
+  | "correction.rejected"
+  | "correction.auto_executed"
+  | "correction.escalated"
+  | "correction.reversed"
+  | "autonomy.unlocked"
+  | "autonomy.switched_off"
+  | "autonomy.switched_on";
+
 /** /events: the event outbox and optional workflow webhook. */
 export interface EventsView {
   events: {
     id: string;
-    type: "alert.raised" | "andon.yellow" | "alert.rejected" | "decision.team_leader" | "ticket.opened" | "card.validated";
+    type: WorkflowEventType;
     topic: string;
     timestamp: string;
     stationId: string | null;
@@ -650,6 +770,7 @@ export interface EventsView {
     configured: boolean;
     host: string | null;
     signed: boolean;
+    format: "events" | "chat";
     lastDelivery: { at: string; events: number; ok: boolean; status: number | null; error: string | null } | null;
   };
 }

@@ -6,6 +6,7 @@ import { Badge, LoopBadge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { getCurrentRole, getKaizenView } from "@/lib/queries";
+import { SIGNAL_SOURCE_LABEL } from "@/lib/signals/catalog";
 
 export const metadata = { title: "Kaizen · Learning Line" };
 
@@ -66,10 +67,13 @@ export default async function KaizenPage() {
             <h2 id="tickets-title">Open tickets</h2>
             <Badge tone="outline">{view.tickets.length} open</Badge>
           </div>
+          <p className="panel__note muted">
+            Three sources, one repeat rule: camera bead alerts, robot controller error codes and member walk-checks. <Link href="/signals">Line signals</Link>
+          </p>
           <div className="panel__body">
             {view.tickets.length === 0 ? (
               <EmptyState title="No open tickets">
-                A ticket opens automatically on the third confirmed repeat of a defect at one station in a shift.
+                A ticket opens automatically on the third repeat at one station in a shift: a confirmed bead defect, the same robot error code, or the same walk-check finding.
               </EmptyState>
             ) : (
               <ul className="ticket-list">
@@ -78,11 +82,12 @@ export default async function KaizenPage() {
                     <Link href={`/kaizen/${t.id}`} className="ticket-row">
                       <span className="ticket-row__id mono">{t.id}</span>
                       <span className="ticket-row__what">
-                        {t.defectType.name} · {t.stationId}
+                        {t.subject} · {t.stationId}
                         <small>{t.ownerRole}</small>
                       </span>
                       <span className="ticket-row__status">
-                        {t.defectType.criticality === "leak_critical" ? (
+                        <span className="sig-badge" data-source={t.source}>{SIGNAL_SOURCE_LABEL[t.source]}</span>
+                        {t.defectType?.criticality === "leak_critical" ? (
                           <Badge tone="stop" icon={<Icon name="drop" weight="bold" />}>
                             Leak-critical
                           </Badge>

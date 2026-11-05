@@ -14,9 +14,9 @@ describe("event outbox", () => {
     expect(new Set(events.map((e) => e.id)).size).toBe(events.length);
   });
 
-  it("names actors as roles or rules, never people, and carries no free-text notes", () => {
+  it("names actors as roles, rules, models or robot controllers, never people, and carries no free-text notes", () => {
     for (const e of buildEvents(seed)) {
-      expect(e.actor).toMatch(/^(role:|model:|rule:)/);
+      expect(e.actor).toMatch(/^(role:|model:|rule:|controller:)/);
       expect(e.data).not.toHaveProperty("note");
     }
   });

@@ -4,12 +4,13 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import type { ReactNode } from "react";
 
-import { plantTime } from "@/components/format";
+import { actorLabel, plantTime } from "@/components/format";
 import { Trail } from "@/components/shell/Trail";
 import { BeadIllustration } from "@/components/station/BeadIllustration";
 import { Badge, LoopBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { SIGNAL_SOURCE_LABEL } from "@/lib/signals/catalog";
 import { advanceTicket, checkDraftSentence, draftA3, requestValidation, selectRootCause, updateA3 } from "@/lib/actions/kaizen";
 import type { A3DraftSentence, A3Field, TicketStatus, TicketView } from "@/lib/types";
 
@@ -31,7 +32,7 @@ export function TicketScreen({
   canEdit: boolean;
   notice?: ReactNode;
 }) {
-  const { ticket, triggerAlerts, a3, aiPrefilledFields, validation, similarCases, aiDraft } = view;
+  const { ticket, triggerAlerts, triggerSignals, a3, aiPrefilledFields, validation, similarCases, aiDraft } = view;
   const canDraft = canEdit && ["open", "a3_in_progress"].includes(ticket.status);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -75,10 +76,12 @@ export function TicketScreen({
 
   return (
     <>
-      <Trail
-        current={ticket.status === "validated" || ticket.status === "closed" ? "done" : validation.draftCardId ? "card" : "kaizen"}
-        label={`Abnormality trail for ${ticket.id}`}
-      />
+      {view.source === "bead" ? (
+        <Trail
+          current={ticket.status === "validated" || ticket.status === "closed" ? "done" : validation.draftCardId ? "card" : "kaizen"}
+          label={`Abnormality trail for ${ticket.id}`}
+        />
+      ) : null}
       <main className="page">
         <p className="crumb">
           <Link href="/kaizen">Kaizen cockpit</Link> / <span className="mono">{ticket.id}</span>
@@ -86,15 +89,18 @@ export function TicketScreen({
         <div className="page__head">
           <div>
             <h1 className="page__title">
-              <span className="mono">{ticket.id}</span> · {defect.name} at {ticket.stationId}
+              <span className="mono">{ticket.id}</span> · {view.subject} at {ticket.stationId}
             </h1>
             <p className="page__sub">
               Opened {plantTime(ticket.createdAt).slice(0, 5)} · owner {ticket.ownerRole} · trigger:{" "}
-              {ticket.triggerAlertIds.length} confirmed alert{ticket.triggerAlertIds.length === 1 ? "" : "s"}
+              {view.source === "bead"
+                ? `${ticket.triggerAlertIds.length} confirmed alert${ticket.triggerAlertIds.length === 1 ? "" : "s"}`
+                : `${triggerSignals.length} ${view.source === "robot_error" ? "controller reports" : "walk-check findings"}`}
             </p>
           </div>
           <div className="head-badges">
-            {defect.criticality === "leak_critical" ? (
+            <span className="sig-badge" data-source={view.source}>{SIGNAL_SOURCE_LABEL[view.source]}</span>
+            {defect?.criticality === "leak_critical" ? (
               <Badge tone="stop" icon={<Icon name="drop" weight="bold" />}>
                 Leak-critical
               </Badge>
@@ -136,6 +142,29 @@ export function TicketScreen({
                 </figure>
               ))}
             </div>
+          </section>
+        ) : null}
+
+        {triggerSignals.length > 0 ? (
+          <section className="panel trigger" aria-labelledby="trigger-sig-title">
+            <div className="panel__head">
+              <h2 id="trigger-sig-title">
+                Trigger: {view.source === "robot_error" ? "robot controller error codes" : "member walk-check findings"}
+              </h2>
+              <span className="muted">Same repeat rule as bead alerts · simulated</span>
+            </div>
+            <ol className="panel__body sig-trigger">
+              {triggerSignals.map((sg) => (
+                <li key={sg.id}>
+                  <span className="num">{plantTime(sg.createdAt).slice(0, 5)}</span>
+                  <span>
+                    <strong>{sg.label}</strong> · {sg.equipmentName}
+                    {sg.photoAttached ? <small> · photo attached</small> : null}
+                  </span>
+                  <span className="muted">{actorLabel(sg.actor)}</span>
+                </li>
+              ))}
+            </ol>
           </section>
         ) : null}
 

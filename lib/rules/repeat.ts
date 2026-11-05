@@ -2,7 +2,7 @@ import type { Alert, Decision, DefectTypeId, Shift } from "@/lib/types";
 
 export const REPEAT_TICKET_THRESHOLD = 3;
 
-function isWithinShift(createdAt: string, shift: Shift): boolean {
+export function isWithinShift(createdAt: string, shift: Shift): boolean {
   const timestamp = Date.parse(createdAt);
   return timestamp >= Date.parse(shift.startsAt) && timestamp <= Date.parse(shift.endsAt);
 }
@@ -21,6 +21,22 @@ export interface RepeatState {
   thresholdReached: boolean;
 }
 
+/**
+ * The one repeat rule, whatever the source: matching items in this shift, oldest first.
+ * The third one (REPEAT_TICKET_THRESHOLD) opens a Kaizen ticket.
+ */
+export function repeatStateOf(items: readonly { id: string; createdAt: string }[], shift: Shift): RepeatState {
+  const matching = items
+    .filter((item) => isWithinShift(item.createdAt, shift))
+    .sort((left, right) => Date.parse(left.createdAt) - Date.parse(right.createdAt));
+  return {
+    count: matching.length,
+    alertIds: matching.map((item) => item.id),
+    isThirdRepeat: matching.length === REPEAT_TICKET_THRESHOLD,
+    thresholdReached: matching.length >= REPEAT_TICKET_THRESHOLD,
+  };
+}
+
 export function getConfirmedRepeatState(
   alerts: readonly Alert[],
   decisions: readonly Decision[],
@@ -28,20 +44,13 @@ export function getConfirmedRepeatState(
   defectTypeId: DefectTypeId,
   shift: Shift,
 ): RepeatState {
-  const matching = alerts
-    .filter(
+  return repeatStateOf(
+    alerts.filter(
       (alert) =>
         alert.stationId === stationId &&
         alert.defectTypeId === defectTypeId &&
-        isWithinShift(alert.createdAt, shift) &&
         isConfirmedAlert(alert, decisions),
-    )
-    .sort((left, right) => Date.parse(left.createdAt) - Date.parse(right.createdAt));
-
-  return {
-    count: matching.length,
-    alertIds: matching.map((alert) => alert.id),
-    isThirdRepeat: matching.length === REPEAT_TICKET_THRESHOLD,
-    thresholdReached: matching.length >= REPEAT_TICKET_THRESHOLD,
-  };
+    ),
+    shift,
+  );
 }

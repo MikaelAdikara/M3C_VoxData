@@ -19,7 +19,14 @@ const ROLE_NAME: Record<string, string> = {
 /** "role:operator@st-04" -> "Operator · st-04"; other actors (model, rule) are shown as written. */
 export function actorLabel(actor: string) {
   const m = /^role:([a-z_]+)@(.+)$/.exec(actor);
-  if (!m) return actor.replace(/^model:/, "Model ").replace(/^rule:repeat-3-per-shift$/, "Repeat rule");
+  if (!m) {
+    return actor
+      .replace(/^model:/, "Model ")
+      .replace(/^controller:/, "Robot controller ")
+      .replace(/^rule:repeat-3-per-shift$/, "Repeat rule")
+      .replace(/^rule:bounded-correction$/, "Correction rule")
+      .replace(/^rule:earned-autonomy$/, "Autonomy rule");
+  }
   return `${ROLE_NAME[m[1]] ?? m[1]} · ${m[2]}`;
 }
 

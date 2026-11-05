@@ -18,7 +18,10 @@ import { buildCameraModelView } from "@/lib/vision/model-view";
 import { buildDraftContext } from "@/lib/kaizen/a3-draft";
 import { matchedWords } from "@/lib/kaizen/similar";
 import { buildEvents, summarizeEvent } from "@/lib/events/outbox";
-import { lastDelivery, webhookUrl } from "@/lib/events/webhook";
+import { lastDelivery, webhookFormat, webhookUrl } from "@/lib/events/webhook";
+import { buildCorrectionsView, buildSignalsView, toSignalView } from "@/lib/learning-layer-views";
+import { SIGNAL_SOURCE_LABEL } from "@/lib/signals/catalog";
+import { detectBodyType } from "@/lib/vision/body-type";
 import { openDraftSentences } from "@/lib/rules/ai-draft";
 import { fingerprintSnapshot, seedFingerprint, SEED_VERSION } from "@/lib/seed-identity";
 import { SEED_REFERENCE_CLOCK } from "@/lib/seed";
@@ -38,6 +41,7 @@ import type {
   KnowledgeCard,
   KnowledgeFilters,
   KnowledgeView,
+  LineSignal,
   MetricsView,
   LineView,
   OverviewView,
@@ -50,6 +54,8 @@ import type {
   StationDecisionHistoryItem,
   StationView,
   StoreSnapshot,
+  Ticket,
+  TicketSummary,
   TicketView,
   TrailView,
 } from "@/lib/types";
@@ -82,6 +88,26 @@ function toAlertView(
     createdAt: alert.createdAt,
     status: alert.status,
     recommendation,
+    bodyType: detectBodyType(alert.bodyId, alert.modelVersion),
+  };
+}
+
+/** Title of a ticket, whatever opened it: the defect name, or the repeated signal. */
+function ticketSubject(ticket: Ticket, defectType: DefectType | null): string {
+  return defectType?.name ?? ticket.subject ?? SIGNAL_SOURCE_LABEL[ticket.source ?? "bead"];
+}
+
+function toTicketSummary(ticket: Ticket, defectTypes: Map<string, DefectType>): TicketSummary {
+  const defectType = ticket.defectTypeId ? (defectTypes.get(ticket.defectTypeId) ?? null) : null;
+  return {
+    id: ticket.id,
+    stationId: ticket.stationId,
+    defectType,
+    source: ticket.source ?? "bead",
+    subject: ticketSubject(ticket, defectType),
+    ownerRole: ticket.ownerRole,
+    status: ticket.status,
+    createdAt: ticket.createdAt,
   };
 }
 
@@ -281,15 +307,8 @@ export function buildKaizenView(snapshot: StoreSnapshot): KaizenView {
       .sort((left, right) => right.count - left.count),
     tickets: snapshot.tickets
       .filter((ticket) => ticket.status !== "closed")
-      .map((ticket) => ({
-        id: ticket.id,
-        stationId: ticket.stationId,
-        defectType: defectTypesById.get(ticket.defectTypeId)!,
-        ownerRole: ticket.ownerRole,
-        status: ticket.status,
-        createdAt: ticket.createdAt,
-      }))
-      .filter((ticket) => ticket.defectType !== undefined)
+      .map((ticket) => toTicketSummary(ticket, defectTypesById))
+      .filter((ticket) => ticket.defectType !== null || ticket.source !== "bead")
       .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt)),
   };
 }
@@ -299,8 +318,8 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
   const ticket = snapshot.tickets.find((item) => item.id === id);
   if (!ticket) return null;
   const defectTypesById = new Map(snapshot.defectTypes.map((item) => [item.id, item]));
-  const defectType = defectTypesById.get(ticket.defectTypeId);
-  if (!defectType) return null;
+  const defectType = ticket.defectTypeId ? (defectTypesById.get(ticket.defectTypeId) ?? null) : null;
+  if (!defectType && (ticket.source ?? "bead") === "bead") return null;
   const draft = snapshot.cards
     .filter((card) => card.sourceTicketId === ticket.id && card.status === "draft")
     .sort((left, right) => right.revision - left.revision)[0];
@@ -310,6 +329,12 @@ export async function getTicketView(id: string): Promise<TicketView | null> {
   return {
     ticket,
     defectType,
+    source: ticket.source ?? "bead",
+    subject: ticketSubject(ticket, defectType),
+    triggerSignals: (ticket.triggerSignalIds ?? [])
+      .map((signalId) => snapshot.signals.find((signal) => signal.id === signalId))
+      .filter((signal): signal is LineSignal => signal !== undefined)
+      .map(toSignalView),
     triggerAlerts: ticket.triggerAlertIds
       .map((alertId) => snapshot.alerts.find((alert) => alert.id === alertId))
       .filter((alert): alert is Alert => alert !== undefined)
@@ -527,7 +552,7 @@ export function buildMetricsView(snapshot: StoreSnapshot): MetricsView {
     provenance: "simulated",
     sourceLabel: "Simulated K2-Body demo state",
     pareto: kaizen.pareto.map((item) => ({ ...item, percent: paretoTotal ? Math.round(item.count / paretoTotal * 100) : 0, provenance: "simulated", sourceLabel: "Simulated 30-day history" })),
-    ticketProgress: ticketStatuses.map((status) => ({ status, count: snapshot.tickets.filter((ticket) => ticket.status === status).length, tickets: snapshot.tickets.filter((ticket) => ticket.status === status).map((ticket) => ({ id: ticket.id, stationId: ticket.stationId, defectType: snapshot.defectTypes.find((type) => type.id === ticket.defectTypeId)!, ownerRole: ticket.ownerRole, status: ticket.status, createdAt: ticket.createdAt })), provenance: "simulated", sourceLabel: "Simulated Kaizen ticket history" })),
+    ticketProgress: ticketStatuses.map((status) => ({ status, count: snapshot.tickets.filter((ticket) => ticket.status === status).length, tickets: snapshot.tickets.filter((ticket) => ticket.status === status).map((ticket) => toTicketSummary(ticket, new Map(snapshot.defectTypes.map((type) => [type.id, type])))), provenance: "simulated", sourceLabel: "Simulated Kaizen ticket history" })),
     knowledgeProgress: cardStatuses.map((status) => ({ status, count: [...cardsById.values()].filter((card) => card.status === status).length, provenance: "simulated", sourceLabel: "Simulated knowledge-card history" })),
     seedVersion: SEED_VERSION,
     seedFingerprint,
@@ -590,6 +615,14 @@ export async function getEventsView(limit = 80): Promise<EventsView> {
     events: events.slice(0, limit).map((e) => ({ ...e, summary: summarizeEvent(e), json: JSON.stringify(e, null, 2) })),
     total: events.length,
     counts: [...counts].map(([type, count]) => ({ type, count })),
-    webhook: { configured: Boolean(url), host: url?.host ?? null, signed: Boolean(process.env.WORKFLOW_WEBHOOK_SECRET), lastDelivery: lastDelivery() },
+    webhook: { configured: Boolean(url), host: url?.host ?? null, signed: Boolean(process.env.WORKFLOW_WEBHOOK_SECRET), format: webhookFormat(), lastDelivery: lastDelivery() },
   };
+}
+
+export async function getSignalsView() {
+  return buildSignalsView(await getStore().getSnapshot());
+}
+
+export async function getCorrectionsView() {
+  return buildCorrectionsView(await getStore().getSnapshot());
 }

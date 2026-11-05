@@ -1,21 +1,25 @@
 import { describe, expect, it } from "vitest";
 
 import * as alertActions from "@/lib/actions/alerts";
+import * as correctionActions from "@/lib/actions/corrections";
 import * as ideaActions from "@/lib/actions/ideas";
 import * as kaizenActions from "@/lib/actions/kaizen";
 import * as knowledgeActions from "@/lib/actions/knowledge";
 import * as roleActions from "@/lib/actions/role";
 import * as shiftActions from "@/lib/actions/shift";
+import * as signalActions from "@/lib/actions/signals";
 import * as simulatorActions from "@/lib/actions/simulator";
 
 describe("server action module exports", () => {
   it.each([
     ["alerts", alertActions],
+    ["corrections", correctionActions],
     ["ideas", ideaActions],
     ["kaizen", kaizenActions],
     ["knowledge", knowledgeActions],
     ["role", roleActions],
     ["shift", shiftActions],
+    ["signals", signalActions],
     ["simulator", simulatorActions],
   ])("exports only async functions from %s", (_name, actions) => {
     expect(Object.keys(actions).length).toBeGreaterThan(0);

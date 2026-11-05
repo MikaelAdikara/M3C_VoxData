@@ -1,6 +1,7 @@
 import { pilotScenarios, externalPilotClasses, curatedVisualReferences } from "@/lib/pilot-scenarios";
 import { calculateOverrideRate, calculateOverrideRateForAlerts } from "@/lib/rules/metrics";
 import { simulatedNow } from "@/lib/simulation-clock";
+import { detectBodyType } from "@/lib/vision/body-type";
 import type { Alert, AlertView, CameraEventView, CameraView, LineStationView, LineView, PilotView, ShiftBoardView, StoreSnapshot, TrailView } from "@/lib/types";
 
 const SIMULATED_SOURCE = "Simulated K2-Body demo state";
@@ -15,6 +16,7 @@ function alertView(alert: Alert, snapshot: StoreSnapshot): AlertView {
     ...alert,
     defectType: snapshot.defectTypes.find((item) => item.id === alert.defectTypeId) ?? null,
     recommendation: null,
+    bodyType: detectBodyType(alert.bodyId, alert.modelVersion),
   };
 }
 

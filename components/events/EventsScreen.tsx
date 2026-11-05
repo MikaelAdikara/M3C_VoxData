@@ -6,6 +6,8 @@ import { actorLabel, plantTime } from "@/components/format";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { sendTestEvent } from "@/lib/actions/events";
+
+import { PlugsIn } from "./PlugsIn";
 import type { EventsView } from "@/lib/types";
 
 const dayFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
@@ -18,12 +20,25 @@ const TYPE_LABEL: Record<EventsView["events"][number]["type"], string> = {
   "decision.team_leader": "Team-leader decision",
   "ticket.opened": "Kaizen ticket",
   "card.validated": "Card validated",
+  "signal.robot_error": "Robot error code",
+  "signal.walk_check": "Walk-check",
+  "correction.proposed": "Correction proposed",
+  "correction.approved": "Correction approved",
+  "correction.rejected": "Correction rejected",
+  "correction.auto_executed": "Auto correction",
+  "correction.escalated": "To engineer",
+  "correction.reversed": "Correction reversed",
+  "autonomy.unlocked": "Auto unlocked",
+  "autonomy.switched_off": "Auto switched off",
+  "autonomy.switched_on": "Auto switched on",
 };
 
 const TYPE_TONE: Partial<Record<EventsView["events"][number]["type"], string>> = {
   "andon.yellow": "badge--caution",
   "card.validated": "badge--safe",
   "ticket.opened": "badge--instruct",
+  "correction.auto_executed": "badge--instruct",
+  "correction.escalated": "badge--instruct",
 };
 
 export function EventsScreen({ view }: { view: EventsView }) {
@@ -40,10 +55,12 @@ export function EventsScreen({ view }: { view: EventsView }) {
         <div>
           <h1 className="page__title">Event outbox</h1>
           <p className="page__sub">
-            Every alert, operator decision, team-leader decision, Kaizen ticket and validated card as one JSON event. Actors are roles, never names.
+            Every alert, operator decision, team-leader decision, robot error code, walk-check finding, correction, Kaizen ticket and validated card as one JSON event. Actors are roles, rules or machines, never names.
           </p>
         </div>
       </div>
+
+      <PlugsIn />
 
       <section className="panel ev-hook" aria-labelledby="hook-title">
         <div className="panel__head">
@@ -51,12 +68,20 @@ export function EventsScreen({ view }: { view: EventsView }) {
           <span className={`badge ${webhook.configured ? "badge--safe" : "badge--outline"}`}>
             {webhook.configured ? `On · ${webhook.host}` : "Off"}
           </span>
+          <span className="badge badge--outline">
+            {webhook.format === "chat" ? "Format: chat message (Teams/Slack-compatible)" : "Format: JSON events"}
+          </span>
         </div>
         <div className="panel__body ev-hook__body">
           <p>
             {webhook.configured
               ? `New events are posted to ${webhook.host}${webhook.signed ? " with an HMAC signature" : ""} as they happen, for a workflow tool such as n8n: for example a yellow andon becomes a Telegram message to the team-leader group.`
               : "Off in this demo, so no event leaves the app. In the plant, events go to the team's workflow tool: for example, a yellow andon becomes a Telegram message to the team-leader group."}
+          </p>
+          <p className="muted">
+            {webhook.format === "chat"
+              ? "Chat format is on: only escalations are sent, one message each (yellow andon, new ticket, correction proposed, auto correction, sent to engineer, auto switched off)."
+              : "Optional chat format: set WORKFLOW_WEBHOOK_FORMAT=chat and point the webhook at a Teams or Slack incoming webhook; escalations then arrive as one plain message each."}
           </p>
           {webhook.lastDelivery ? (
             <p className="muted">

@@ -1,4 +1,4 @@
-import { createSeedCameras, createSeedLineOperation, createSeedRecordingGaps } from "@/lib/seed";
+import { createSeedCameras, createSeedLineOperation, createSeedRecordingGaps, createSeedSignals } from "@/lib/seed";
 import type { StoreSnapshot } from "@/lib/types";
 
 // Older Postgres snapshots have no BE-4 fields. Keep their existing decisions and
@@ -25,6 +25,9 @@ export function normalizeSnapshot(snapshot: StoreSnapshot): StoreSnapshot {
     cameras: legacy.cameras ?? createSeedCameras(),
     recordingGaps: legacy.recordingGaps ?? createSeedRecordingGaps(),
     cameraMaintenanceTickets: legacy.cameraMaintenanceTickets ?? [],
+    signals: legacy.signals ?? createSeedSignals(),
+    corrections: legacy.corrections ?? [],
+    autonomySwitches: legacy.autonomySwitches ?? [],
     lineOperation: legacy.lineOperation ?? (latestStop && stoppedAlert
       ? { state: "stopped", stoppedByDecisionId: latestStop.id, heldBodyId: stoppedAlert.bodyId, stoppedAt: latestStop.createdAt, bodiesCompleted: 68 }
       : createSeedLineOperation()),

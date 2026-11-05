@@ -20,6 +20,7 @@ import "./styles/ai.css";
 import "./styles/guide.css";
 import "./styles/plan.css";
 import "./styles/landing3.css";
+import "./styles/learning-layer.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],

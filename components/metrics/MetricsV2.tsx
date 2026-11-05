@@ -191,7 +191,7 @@ export function KaizenFlow({ view }: { view: MetricsView }) {
               {c.status === "closed" ? (
                 <div className="stack">{tickets.map((t) => <span key={t.id}>{t.id.replace("KZ-SEAL-", "")}</span>)}</div>
               ) : (
-                tickets.map((t) => <span key={t.id} className="kc">{t.id}<small>{t.stationId} · {t.defectType.name.toLowerCase()}</small></span>)
+                tickets.map((t) => <span key={t.id} className="kc">{t.id}<small>{t.stationId} · {t.subject.toLowerCase()}</small></span>)
               )}
             </div>
           );

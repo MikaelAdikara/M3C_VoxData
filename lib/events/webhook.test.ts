@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { postEvents, webhookUrl } from "@/lib/events/webhook";
+import type { WorkflowEvent } from "@/lib/events/outbox";
+import { chatMessage, postEvents, webhookBodies, webhookFormat, webhookUrl } from "@/lib/events/webhook";
 
 const event = { id: "andon.yellow:x", type: "andon.yellow" as const, topic: "t", timestamp: "2027-04-14T08:00:00Z", stationId: "st-04", actor: "role:operator@st-04", data: {} };
 
@@ -8,6 +9,7 @@ describe("workflow webhook", () => {
   afterEach(() => {
     delete process.env.WORKFLOW_WEBHOOK_URL;
     delete process.env.WORKFLOW_WEBHOOK_SECRET;
+    delete process.env.WORKFLOW_WEBHOOK_FORMAT;
     vi.unstubAllGlobals();
   });
 
@@ -31,5 +33,53 @@ describe("workflow webhook", () => {
 
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("down"); }));
     expect(await postEvents([event])).toMatchObject({ ok: false });
+  });
+
+  it("keeps the JSON envelope by default; chat format is opt-in", () => {
+    expect(webhookFormat()).toBe("events");
+    process.env.WORKFLOW_WEBHOOK_FORMAT = "chat";
+    expect(webhookFormat()).toBe("chat");
+  });
+
+  it("formats escalations as a Teams/Slack-compatible message: one {text} body per escalation", () => {
+    const escalated: WorkflowEvent = {
+      id: "correction.escalated:correction-0003",
+      type: "correction.escalated",
+      topic: "learning-line/K2-Body/st-04/correction",
+      timestamp: "2027-04-14T09:12:00.000+07:00",
+      stationId: "st-04",
+      actor: "rule:bounded-correction",
+      data: { correction_id: "correction-0003", correction: "pressure_step", label: "Sealer pressure step +2%", step_percent: 2, defect_type: "BEAD_THIN", alert_id: "a-1", reason: "outside_window", owner_role: "role:engineer@body" },
+    };
+    const routine: WorkflowEvent = { ...event, id: "alert.raised:x", type: "alert.raised", data: { defect_type: "BEAD_THIN", roi: "seam", anomaly_score: 0.7, threshold: 0.61 } };
+
+    const message = chatMessage(escalated)!;
+    expect(Object.keys(message)).toEqual(["text"]);
+    expect(message.text).toContain("st-04");
+    expect(message.text).toContain("09:12 WIB");
+    expect(message.text).toContain("outside the window");
+    expect(message.text).toContain("Engineer");
+    expect(message.text).toContain("simulated");
+    expect(message.text).not.toMatch(/role:/);
+    expect(chatMessage(routine)).toBeNull();
+    expect(chatMessage(event, { test: true })!.text.startsWith("[TEST] ")).toBe(true);
+
+    const bodies = webhookBodies([routine, event, escalated], "chat");
+    expect(bodies).toHaveLength(2);
+    for (const b of bodies) expect(Object.keys(JSON.parse(b.body))).toEqual(["text"]);
+    expect(JSON.parse(webhookBodies([routine, escalated], "events")[0].body).events).toHaveLength(2);
+  });
+
+  it("posts one chat message per escalation when the chat format is on", async () => {
+    process.env.WORKFLOW_WEBHOOK_URL = "https://chat.example.test/incoming";
+    process.env.WORKFLOW_WEBHOOK_FORMAT = "chat";
+    const fetchMock = vi.fn(async () => new Response("1", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const routine = { ...event, id: "alert.raised:y", type: "alert.raised" as const };
+    expect(await postEvents([routine])).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await postEvents([event, routine])).toMatchObject({ ok: true, events: 1 });
+    const [, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(JSON.parse(init.body as string)).toEqual({ text: expect.stringContaining("yellow andon") });
   });
 });

@@ -16,7 +16,8 @@ const SAME_STATION_BONUS = 0.5;
 
 export interface CaseQuery {
   stationId: string;
-  defectTypeId: DefectTypeId;
+  /** Null for robot error or walk-check tickets: no defect-type bonus. */
+  defectTypeId: DefectTypeId | null;
   defectName: string;
   text: string;
 }

@@ -6,6 +6,7 @@ export const SCREENS: { href: string; label: string; icon: IconName; topOnly?: b
   { href: "/shift-board", label: "Shift board", icon: "squares-four" },
   { href: "/cameras", label: "Cameras", icon: "video-camera" },
   { href: "/kaizen", label: "Kaizen", icon: "clipboard-text" },
+  { href: "/signals", label: "Signals", icon: "wrench", topOnly: true },
   { href: "/knowledge", label: "Knowledge", icon: "books" },
   { href: "/metrics", label: "Metrics", icon: "chart-line" },
   { href: "/plan", label: "Plan", icon: "flag", topOnly: true },

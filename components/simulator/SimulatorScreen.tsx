@@ -5,6 +5,8 @@ import { useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { fastForwardApprovals, injectCorrectionRepeat } from "@/lib/actions/corrections";
+import { injectRobotErrors } from "@/lib/actions/signals";
 import { injectFalseAlarm, injectRepeat3, injectTrueDefect, resetDemo } from "@/lib/actions/simulator";
 import type { ActionResult } from "@/lib/types";
 
@@ -42,6 +44,33 @@ const SCENARIOS: Scenario[] = [
     next: { label: "See the ticket in Kaizen", href: "/kaizen" },
     icon: "clipboard-text",
     run: injectRepeat3,
+  },
+  {
+    id: "robot",
+    title: "Inject robot error ×3",
+    what: "Sealer robot 1 at st-04 reports minor error E-2210 (simulated code) three times, before any breakdown. Same repeat rule: the third opens a Kaizen ticket marked Robot error code.",
+    next: { label: "See it in Line signals", href: "/signals" },
+    icon: "cpu",
+    run: () => injectRobotErrors(3),
+  },
+];
+
+const CORRECTION_SCENARIOS: Scenario[] = [
+  {
+    id: "fast-forward",
+    title: "Fast-forward approvals",
+    what: "Adds 19 simulated past team-leader approvals of the sealer pressure step at st-04 (one per earlier day, no reversal) and one waiting proposal. Approve it as the team leader: the 20th approval unlocks auto within window.",
+    next: { label: "Approve on the Shift board", href: "/shift-board" },
+    icon: "arrow-bend-up-right",
+    run: fastForwardApprovals,
+  },
+  {
+    id: "correction-repeat",
+    title: "Add thin-bead repeat at st-04",
+    what: "The operator confirms another thin bead at st-04. With auto unlocked, a +2% step runs within the ±5% window and the team leader is notified; a step past the window goes to the engineer.",
+    next: { label: "See it on the Shift board", href: "/shift-board" },
+    icon: "warning",
+    run: injectCorrectionRepeat,
   },
 ];
 
@@ -93,6 +122,32 @@ export function SimulatorScreen() {
       <div className="sim">
         <section className="sim__scenarios" aria-label="Scenarios">
           {SCENARIOS.map((s) => (
+            <article key={s.id} className="panel sim__card">
+              <div className="panel__body">
+                <h2>
+                  <Icon name={s.icon} weight="bold" /> {s.title}
+                </h2>
+                <p className="muted">{s.what}</p>
+                <div className="sim__row">
+                  <Button
+                    onClick={() => fire(s.id, s.run, "Added")}
+                    disabled={pending}
+                    aria-busy={busy === s.id}
+                  >
+                    {busy === s.id ? "Adding…" : s.title}
+                  </Button>
+                  {done[s.id] ? (
+                    <span className="sim__ok" role="status">
+                      <Icon name="check" weight="bold" /> {done[s.id]} ·{" "}
+                      <Link href={s.next.href}>{s.next.label}</Link>
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            </article>
+          ))}
+          <h2 className="sim__group" id="corrections">Bounded correction (Shift loop)</h2>
+          {CORRECTION_SCENARIOS.map((s) => (
             <article key={s.id} className="panel sim__card">
               <div className="panel__body">
                 <h2>

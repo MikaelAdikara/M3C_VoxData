@@ -12,7 +12,8 @@ import type { A3DraftSentence, A3DraftSource, A3Field, Alert, DefectType, Knowle
 
 export interface DraftContext {
   ticket: Ticket;
-  defect: DefectType;
+  /** The defect, or for a robot error or walk-check ticket its subject as a non-critical "defect". */
+  defect: Pick<DefectType, "name" | "criticality">;
   alerts: Alert[];
   cases: SimilarCase[];
   cards: KnowledgeCard[];
@@ -31,7 +32,8 @@ export function cardRef(card: Pick<KnowledgeCard, "id" | "revision">): string {
 }
 
 export function buildDraftContext(snapshot: StoreSnapshot, ticket: Ticket, fields: A3Field[] = DRAFT_FIELDS, exclude?: string): DraftContext {
-  const defect = snapshot.defectTypes.find((d) => d.id === ticket.defectTypeId)!;
+  const defect: Pick<DefectType, "name" | "criticality"> =
+    snapshot.defectTypes.find((d) => d.id === ticket.defectTypeId) ?? { name: ticket.subject ?? "Repeated line signal", criticality: "non_critical" };
   const alerts = ticket.triggerAlertIds
     .map((id) => snapshot.alerts.find((a) => a.id === id))
     .filter((a): a is Alert => a !== undefined)

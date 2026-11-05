@@ -162,6 +162,18 @@ export function StationScreen({
                 </span>
               </div>
             ) : null}
+            {alert ? (
+              <p className="bodytype" title="Simulated: read from the line's existing model-detection camera, not from a controller body-ID tap">
+                <Icon name="camera" />
+                <span>
+                  <strong>{alert.bodyType.name}</strong>
+                  <small>
+                    From the line&apos;s model-detection camera ({Math.round(alert.bodyType.confidence * 100)}%) · selects bead model{" "}
+                    <span className="mono">{alert.bodyType.beadModel}</span>
+                  </small>
+                </span>
+              </p>
+            ) : null}
             {camera ? <CameraHealth camera={camera} events={cameraEvents} /> : null}
             <History items={decisionHistory} reasonCodes={reasonCodes} />
           </section>

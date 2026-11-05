@@ -6,6 +6,7 @@ import type {
   DefectTypeId,
   Idea,
   KnowledgeCard,
+  LineSignal,
   Station,
   StoreSnapshot,
   Ticket,
@@ -471,6 +472,55 @@ function createIdeas(): Idea[] {
   });
 }
 
+/**
+ * Seven days of simulated robot controller minor errors and member walk-check findings
+ * before the current shift, at most two of one kind per day, so none reached the repeat rule.
+ */
+export function createSeedSignals(): LineSignal[] {
+  const robotPattern: { equipmentId: string; code: string; perDay: number[] }[] = [
+    { equipmentId: "st-04/robot-1", code: "E-1043", perDay: [2, 1, 2, 0, 1, 2, 1] },
+    { equipmentId: "st-04/robot-2", code: "E-2210", perDay: [1, 1, 0, 1, 0, 1, 0] },
+    { equipmentId: "st-02/robot-1", code: "W-0317", perDay: [1, 0, 1, 1, 1, 0, 1] },
+    { equipmentId: "st-01/robot-1", code: "E-0562", perDay: [0, 1, 0, 0, 1, 0, 0] },
+  ];
+  const signals: LineSignal[] = [];
+  for (let day = 1; day <= 7; day += 1) {
+    robotPattern.forEach((pattern, patternIndex) => {
+      for (let n = 0; n < pattern.perDay[day - 1]; n += 1) {
+        signals.push({
+          id: `signal-history-r${day}-${patternIndex}-${n}`,
+          source: "robot_error",
+          stationId: pattern.equipmentId.split("/")[0],
+          equipmentId: pattern.equipmentId,
+          code: pattern.code,
+          actor: `controller:${pattern.equipmentId}`,
+          createdAt: new Date(SEED_NOW - day * DAY_MS + (patternIndex * 47 + n * 131) * 60_000 - 90 * 60_000).toISOString(),
+        });
+      }
+    });
+  }
+  const walkChecks: { day: number; equipmentId: string; code: LineSignal["code"] }[] = [
+    { day: 2, equipmentId: "st-04/hose", code: "cable_wear" },
+    { day: 3, equipmentId: "st-02/pump", code: "noise" },
+    { day: 5, equipmentId: "st-04/pump", code: "leak" },
+    { day: 6, equipmentId: "st-04/hose", code: "cable_wear" },
+  ];
+  walkChecks.forEach((item, index) => {
+    const stationId = item.equipmentId.split("/")[0];
+    signals.push({
+      id: `signal-history-w${index + 1}`,
+      source: "walk_check",
+      stationId,
+      equipmentId: item.equipmentId,
+      code: item.code,
+      photoAttached: index % 2 === 0,
+      actor: `role:operator@${stationId}`,
+      createdAt: new Date(SEED_NOW - item.day * DAY_MS + 30 * 60_000).toISOString(),
+    });
+  });
+  return signals.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+}
+
 export function createSeedData(): StoreSnapshot {
   const alerts = [...createHistoricalAlerts(), ...structuredClone(currentAlerts)];
   const tickets = createTickets(alerts);
@@ -502,5 +552,8 @@ export function createSeedData(): StoreSnapshot {
     recordingGaps: createSeedRecordingGaps(),
     cameraMaintenanceTickets: [],
     lineOperation: createSeedLineOperation(),
+    signals: createSeedSignals(),
+    corrections: [],
+    autonomySwitches: [],
   };
 }
