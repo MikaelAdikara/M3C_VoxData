@@ -96,9 +96,28 @@ The BE-4 prototype generator is `scripts/generate-pilot-assets.mjs`. It writes d
 - Labelled on screen as **Projection** (financial model), **Target** (2028, 2030) or **Case data** (2025 baselines). Nothing is added that the proposal does not state; `lib/plan/plan-data.test.ts` checks the totals (Rp56.4 bn investment, Rp35.2 bn gross benefit 2030, peak cash need Rp29.6 bn in Q1 2029).
 - If the proposal changes before submission, update this file and the test in the same commit.
 
-## 11. Learning layer: line signals and bounded corrections (added 5 Nov 2026)
+## 11. Learning layer: line signals, work orders and standard steps (added 5 Nov 2026)
 
-- `createSeedSignals()` in `lib/seed.ts` adds seven days of simulated robot controller minor errors (four invented codes: `E-1043`, `E-2210`, `W-0317`, `E-0562`) and four member walk-check findings, all before the current shift and at most two of one kind per day, so none reached the repeat rule and no signal ticket is seeded. The codes match no real controller's code list.
-- Bounded corrections come from `lib/corrections/standard.ts` (simulated standardized work): nozzle purge cycle for broken or missing bead; sealer pressure step of 2% per step, within ±5% of the standard setpoint per shift, for thin bead (+) or excess sealer (−). Bead off path has no listed correction and goes to the engineer.
-- Earned autonomy rule (team-set, `lib/rules/autonomy.ts`): auto within window unlocks after 20 team-leader approvals and 0 reversals per correction type per station. The seed has no corrections; the Demo control fast-forward adds 19 simulated past approvals, labelled as fast-forward in the outbox.
+- **Robot controller error codes.** `createSeedSignals()` in `lib/seed.ts` adds five weeks of simulated minor errors. The four codes are invented (`E-1043`, `E-2210`, `W-0317`, `E-0562`) and match no real controller's code list. Counts per week, this week first:
+
+  | Code | Robot | This week | Weeks 1 to 4 before | Status |
+  |---|---|---|---|---|
+  | E-1043 | st-04 sealer robot 1 | 9 | 8, 9, 7, 8 | Steady: needs 16 |
+  | E-2210 | st-04 sealer robot 1 | 4 | 1, 2, 1, 2 | One short: needs 5 |
+  | W-0317 | st-02 sealer robot 1 | 3 | 2, 3, 2, 3 | Steady: needs 5 |
+  | E-0562 | st-01 sealer robot 1 | 1 | 0, 1, 1, 0 | Steady: needs 5 |
+
+  Rule (`lib/rules/signals.ts`): this week ≥ 5 and ≥ 2× the trailing 4-week weekly average. "This week" is the seven days up to the simulated clock. No code meets the rule in the seed, so no robot ticket is seeded. One demo report of E-2210 (on `/signals` or in Demo control) makes 5 and opens a maintenance-owned ticket.
+- **Walk-checks and work orders.** Four findings over the last 12 days, each with its work order (`createSeedWorkOrders()`):
+  - WO-4101: st-04 hose cable wear, closed.
+  - WO-4102: st-04 pump leak, closed.
+  - WO-4103: st-02 pump noise, open.
+  - WO-4104: st-01 robot 1 loose fixing, open.
+
+  A finding opens a work order, or joins the open one for the same equipment and symptom. The same finding after its work order closed opens a new work order and a maintenance-owned ticket. None came back in the seed. Logging st-04 hose cable wear or st-04 pump leak again opens a ticket at once; any other finding needs the close step first.
+- **Standard steps.** `lib/standard-steps/catalog.ts` (simulated) lists the steps written in validated cards:
+  - Nozzle purge, 30 s, for thin bead at st-04, from card KC-SEAL-014 (warm-up purge; "Standardized work st-04, step 2").
+  - Nozzle purge until flow is continuous, for missing bead at st-05, from card KC-SEAL-042.
+
+  A step shows from the second confirmed occurrence of the defect at the station in a shift, and only while its card is validated. A sealer pressure change (thin or excess bead) is in no card, so it shows only as "ask the engineer", once per station and defect per shift. The seed has no steps. Reasons for "not done" are fixed codes: could not stop for it, purge material not ready, robot panel fault, other.
 - Body type per body is simulated from the body number (`lib/vision/body-type.ts`) and stands for the line's model-detection camera; it selects the per-body-type bead model name.

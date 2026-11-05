@@ -33,7 +33,7 @@ Body of each POST:
 }
 ```
 
-Event types: `alert.raised`, `andon.yellow`, `alert.rejected`, `decision.team_leader`, `ticket.opened`, `card.validated`.
+Event types: `alert.raised`, `andon.yellow`, `alert.rejected`, `decision.team_leader`, `ticket.opened`, `ticket.repeat_logged`, `card.validated`, `signal.robot_error`, `signal.walk_check`, `work_order.opened`, `work_order.closed`, `step.shown`, `step.done`, `step.not_done`.
 
 ## Example: yellow andon to a Telegram group (n8n)
 

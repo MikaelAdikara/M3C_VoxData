@@ -13,17 +13,21 @@ Companion to the M3C 2026 Executive Summary and semifinal proposal *"The Learnin
 | `/kaizen` Kaizen cockpit | Engineer | Third repeat of a defect type opens a ticket with its data; engineer writes the A3 |
 | `/knowledge` Knowledge cards + assistant | Engineer, senior expert | Senior validates the card; the assistant answers only from validated cards and cites them |
 | `/metrics` Loop metrics | Management | Override rate, false alarms per station per shift, repeat defects prevented, learning cycle time |
-| `/signals` Line signals | Operator, team leader | Robot controller error codes and member walk-checks use the same repeat rule as bead alerts and open tickets in the same Kaizen list |
+| `/signals` Line signals | Operator, team leader | Robot controller error codes (weekly Pareto) and member walk-checks (work orders); both open maintenance-owned tickets in the same Kaizen list |
 | `/simulator` Demo control | Presenter | Inject a defect or a false alarm to drive the story live |
 
 ## Learning layer on existing plant tools
 
 The Learning Line sits on tools a plant already runs and adds the learning loop. All of it is simulated here; `/events` shows the wiring under **How it plugs in**.
 
-- **Three signal sources, one repeat rule.** Camera bead alerts, robot controller minor error codes (the same code on the same robot) and member walk-check findings (`/signals`, a short tablet form) all open a Kaizen ticket on the third repeat in a shift. Tickets and outbox events show the source.
+- **Three signal sources, three trigger rules, one Kaizen list.** Tickets and outbox events show the source and the owner role.
+  - Bead alert: the third confirmed repeat of a defect at one station in a shift opens a ticket owned by the engineer. Every later confirmed repeat is logged on the open ticket.
+  - Robot controller error code (`/signals`): a ticket opens when a code on one robot rises in the weekly Pareto, that is this week ≥ 5 and ≥ 2× its trailing 4-week weekly average. The rule is shown on screen. The seed has E-2210 on sealer robot 1 at st-04 at 4 this week against an average of 1.5; one demo report crosses the rule.
+  - Member walk-check (`/signals`, a short tablet form): a finding opens a work order, or joins the open one for the same equipment and symptom. When the same finding comes back after its work order was closed, a ticket opens. Demo path: log a finding, close its work order, log it again.
+  - Robot error code and walk-check tickets are owned by maintenance.
 - **Body type from the model-detection camera.** The station screen shows the body type read by the line's existing model-detection camera, which selects the per-body-type bead model; no separate controller tap is needed.
-- **Bounded correction with earned autonomy** (Shift board). A confirmed repeat proposes one correction listed in the station's standardized work (nozzle purge cycle, or a sealer pressure step within ±5%). The team leader approves or rejects with one tap; the robot's own routine would run it, and the app only records the decision. Auto within window unlocks after 20 approvals and 0 reversals; the team leader is notified of every auto run and can reverse it or switch auto off with one tap. Anything outside the window goes to the engineer. Demo control has **Fast-forward approvals** to show the unlock.
-- **Chat notification.** With `WORKFLOW_WEBHOOK_FORMAT=chat`, escalations are posted as one `{"text": …}` message each, the body a Teams or Slack incoming webhook accepts. Off by default.
+- **Standard step** (Shift board). When a confirmed bead defect repeats in a shift, the shift board shows a correction step only if the station's revised standard (a validated card) holds it, with the source card id. The team leader runs it on the robot panel and taps **Done on robot panel** or **Not done (reason)**. The app records the tap only and never writes to line control. In the demo, a thin-bead repeat at st-04 shows the 30 s nozzle purge from card KC-SEAL-014. A sealer pressure change is in no standard, so it only shows as "ask the engineer". The repeat still opens or updates the Kaizen ticket, whatever the step did. Events: `step.shown`, `step.done`, `step.not_done`.
+- **Chat notification.** With `WORKFLOW_WEBHOOK_FORMAT=chat`, escalations (yellow andon, new Kaizen ticket, standard step not done) are posted as one `{"text": …}` message each, the body a Teams or Slack incoming webhook accepts. Off by default.
 
 ## Run locally
 
