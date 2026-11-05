@@ -95,3 +95,10 @@ The BE-4 prototype generator is `scripts/generate-pilot-assets.mjs`. It writes d
 - `lib/plan/plan-data.ts` copies the semifinal proposal (semifinal v26, 19 Oct 2026: Table 5 phase plan, Table 6 decision ladder, Table 8 KPI targets, Table 9 benefit chain) and the quarterly series of the financial model (`model/LearningLine_Financial_Model.xlsx`, exported to `semifinal/w1_w2_data.json`): cumulative net cash and gross benefit per quarter, Q1 2026 to Q4 2030.
 - Labelled on screen as **Projection** (financial model), **Target** (2028, 2030) or **Case data** (2025 baselines). Nothing is added that the proposal does not state; `lib/plan/plan-data.test.ts` checks the totals (Rp56.4 bn investment, Rp35.2 bn gross benefit 2030, peak cash need Rp29.6 bn in Q1 2029).
 - If the proposal changes before submission, update this file and the test in the same commit.
+
+## 11. Learning layer: line signals and bounded corrections (added 5 Nov 2026)
+
+- `createSeedSignals()` in `lib/seed.ts` adds seven days of simulated robot controller minor errors (four invented codes: `E-1043`, `E-2210`, `W-0317`, `E-0562`) and four member walk-check findings, all before the current shift and at most two of one kind per day, so none reached the repeat rule and no signal ticket is seeded. The codes match no real controller's code list.
+- Bounded corrections come from `lib/corrections/standard.ts` (simulated standardized work): nozzle purge cycle for broken or missing bead; sealer pressure step of 2% per step, within ±5% of the standard setpoint per shift, for thin bead (+) or excess sealer (−). Bead off path has no listed correction and goes to the engineer.
+- Earned autonomy rule (team-set, `lib/rules/autonomy.ts`): auto within window unlocks after 20 team-leader approvals and 0 reversals per correction type per station. The seed has no corrections; the Demo control fast-forward adds 19 simulated past approvals, labelled as fast-forward in the outbox.
+- Body type per body is simulated from the body number (`lib/vision/body-type.ts`) and stands for the line's model-detection camera; it selects the per-body-type bead model name.

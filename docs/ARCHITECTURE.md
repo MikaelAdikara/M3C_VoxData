@@ -63,7 +63,7 @@ model_reviews(id, station_id, alert_ids[], status)   -- queue of verified reject
 
 ## 5. Event format (Figure D4)
 
-The Executive Summary proposes the following UNS-style event envelope. The prototype does **not** implement `/api/events` or SSE; Station and Shift board refresh their server views about every 2 seconds. Since W17 (Oct 2026) `lib/events/outbox.ts` derives one event per alert, operator decision (yellow andon or rejection), team-leader decision, ticket and validated card from the stored state; `/events` lists them and, when `WORKFLOW_WEBHOOK_URL` is set, new events are POSTed to a workflow tool after each change (see `docs/integrations/README.md`). The ES envelope below remains the target format at the edge:
+The Executive Summary proposes the following UNS-style event envelope. The prototype does **not** implement `/api/events` or SSE; Station and Shift board refresh their server views about every 2 seconds. Since W17 (Oct 2026) `lib/events/outbox.ts` derives one event per alert, operator decision (yellow andon or rejection), team-leader decision, ticket and validated card from the stored state; `/events` lists them and, when `WORKFLOW_WEBHOOK_URL` is set, new events are POSTed to a workflow tool after each change (see `docs/integrations/README.md`). Since Nov 2026 the outbox also carries robot controller error codes and member walk-checks (`signal.*`), bounded corrections (`correction.*`) and earned-autonomy changes (`autonomy.*`); `WORKFLOW_WEBHOOK_FORMAT=chat` posts escalations as Teams/Slack-compatible `{"text": …}` messages. The ES envelope below remains the target format at the edge:
 
 ```json
 {
