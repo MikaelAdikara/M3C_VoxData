@@ -21,6 +21,7 @@ import "./styles/guide.css";
 import "./styles/plan.css";
 import "./styles/landing3.css";
 import "./styles/learning-layer.css";
+import "./styles/plant.css";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],

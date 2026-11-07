@@ -5,6 +5,7 @@ import { A3Sheet } from "@/components/landing/A3Sheet";
 import { CoverBar } from "@/components/landing/CoverBar";
 import { HeroLine } from "@/components/landing/HeroLine";
 import { TrailSpine } from "@/components/landing/TrailSpine";
+import { PlantStory } from "@/components/plant/PlantStory";
 import { Icon } from "@/components/ui/Icon";
 import { Prov } from "@/components/ui/Prov";
 import { getCameraView, getOverviewView, getTrailView } from "@/lib/queries";
@@ -77,6 +78,9 @@ export default async function CoverPage() {
 
         {/* 2. The trail on a center spine */}
         <TrailSpine trail={trail} />
+
+        {/* 3. The same defect on a clay model of the plant: the three loops implemented on the floor */}
+        <PlantStory />
 
         {/* 3. Three signs */}
         <section className="sec wrap" aria-labelledby="never-title">
