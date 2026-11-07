@@ -7,7 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 const FILM = "/landing/film/learning-line-720.mp4";
 
 /**
- * "Watch the film": opens the 2:25 concept film in a native modal <dialog>.
+ * "Watch how it works": opens the 2:25 concept video in a native modal <dialog>.
  * Escape and the close button stop playback; focus returns to the button.
  */
 export function FilmButton() {
@@ -30,12 +30,12 @@ export function FilmButton() {
     <>
       <button type="button" className="btn btn--xl btn--ghost" onClick={() => setOpen(true)}>
         <Icon name="play" weight="fill" />
-        Watch the film <span className="film-len">2:25</span>
+        Watch how it works <span className="film-len">2:25</span>
       </button>
-      <dialog ref={dialog} className="film" aria-label="Learning Line concept film" onClose={() => setOpen(false)}>
+      <dialog ref={dialog} className="film" aria-label="How the Learning Line works, 2:25 video" onClose={() => setOpen(false)}>
         <div className="film__head">
-          <p>The Learning Line, concept film with simulated data</p>
-          <button type="button" className="icon-btn" aria-label="Close film" onClick={() => setOpen(false)}>
+          <p>How the Learning Line works, concept video with simulated data</p>
+          <button type="button" className="icon-btn" aria-label="Close video" onClick={() => setOpen(false)}>
             <Icon name="x" />
           </button>
         </div>
