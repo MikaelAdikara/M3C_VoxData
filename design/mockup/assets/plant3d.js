@@ -71,7 +71,7 @@ const OFFICE = { x0: -62, x1: -48, z0: 0, z1: 13, h: 7.6 };
 const ST04 = xAt(3);
 const ANDON_X = ST04 - PITCH * 0.32;   // gantry line of a station
 const TABLET = [ST04 + 3.0, 0, 3.7];
-const OPERATOR = [ST04 + 2.1, 0, 4.6];
+const OPERATOR = [ST04 + 3.6, 0, 4.7];   // clear of the repair-bay lane (flagged body spans ST04 ± 2.3)
 const TL_DESK = [-13.5, 0, 10.2];
 const ENGINEER = [-44.2, 0, 8.6];
 const EXPERT = [-42.4, 0, 10.2];
@@ -711,7 +711,7 @@ export async function createPlant(canvas, opts = {}) {
   [[-20, 4.2, 0.5], [12, -4.3, 3.0], [-8, -36.8, 3.1], [5, -29.2, 0.2], [50, -20, 1.5], [17.5, 3.9, 2.6]].forEach(([x, z, ry]) => {
     const p = makePerson(world, {}); p.g.position.set(x, 0, z); p.g.rotation.y = ry;
   });
-  const TL_PATH = [[TL_DESK[0], TL_DESK[2] - 1.0], [TL_DESK[0] + 0.5, 6.2], [ST04 - 1.0, 6.0], [OPERATOR[0] - 1.5, OPERATOR[2] - 0.1]];
+  const TL_PATH = [[TL_DESK[0], TL_DESK[2] - 1.0], [TL_DESK[0] + 0.5, 6.2], [ST04 - 1.0, 6.0], [OPERATOR[0] + 1.4, OPERATOR[2] + 0.3]];
   const tlPath = polyPath(TL_PATH, 1.4);
 
   /* AGVs + moving cars */
