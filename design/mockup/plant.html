@@ -34,10 +34,8 @@
   .floor__eyebrow { font: 700 13px/1 var(--font); letter-spacing: .14em; text-transform: uppercase; color: #5f5f5f; }
   .floor__h { margin: 10px 0 0; font: 800 clamp(34px, 4.6vw, 64px)/.92 "Big Shoulders Display", sans-serif; text-transform: uppercase; color: var(--ink, #252525); }
   .floor__card { position: absolute; left: clamp(16px, 5vw, 72px); bottom: clamp(24px, 9vh, 96px); width: min(460px, calc(100vw - 32px));
-    padding: 24px 26px 26px; border-radius: 18px; background: rgba(255,255,255,.72); -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%);
-    border: 1.5px solid rgba(255,255,255,.85); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 30px 60px -30px rgba(38,40,43,.45); }
-  .floor__card::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 5px; border-radius: 0 4px 4px 0; background: var(--tone, #252525); transition: background .25s ease; }
-  .floor__kicker { font: 700 13px/1.2 var(--font); letter-spacing: .1em; text-transform: uppercase; color: #5f5f5f; }
+    padding: 24px 28px 26px; border-radius: 6px; color: #252525; background: #f1f1ef; border: 0; box-shadow: 0 22px 44px -30px rgba(38, 40, 43, .38); }
+    .floor__kicker { font: 700 13px/1.2 var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--tone-ink, #5f5f5f); }
   .floor__title { margin: 6px 0 0; font: 800 clamp(28px, 3vw, 40px)/.95 "Big Shoulders Display", sans-serif; text-transform: uppercase; }
   .floor__body { margin: 10px 0 0; font: 400 17px/1.45 var(--font); color: #333; }
   .floor__text { transition: opacity .22s cubic-bezier(.23,1,.32,1), transform .22s cubic-bezier(.23,1,.32,1); }
@@ -45,7 +43,7 @@
   .floor__dots { position: absolute; right: clamp(16px, 3vw, 40px); top: 50%; transform: translateY(-50%); display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
   .floor__dots li { width: 10px; height: 10px; border-radius: 50%; background: rgba(37,37,37,.22); transition: transform .2s ease, background .2s ease; }
   .floor__dots li[aria-current="step"] { background: var(--ink, #252525); transform: scale(1.35); }
-  .floor__tag { position: absolute; right: clamp(16px, 3vw, 40px); bottom: 16px; padding: 4px 10px 5px; border-radius: 8px; background: rgba(38,40,43,.8); color: #f1f1f1; font: 600 12px/1 var(--font); letter-spacing: .02em; }
+  .floor__tag { position: absolute; right: clamp(16px, 3vw, 40px); bottom: 16px; color: #5f5f5f; font-weight: 600; font-size: 13px; line-height: 1; letter-spacing: .02em; }
   @media (max-width: 720px) {
     .floor__veil { background: linear-gradient(0deg, rgba(228,228,228,.95) 0%, rgba(228,228,228,.55) 38%, rgba(228,228,228,0) 60%); }
     .floor__dots { display: none; }
@@ -73,7 +71,7 @@
         </div>
       </div>
       <ol class="floor__dots" aria-label="Chapters"></ol>
-      <span class="floor__tag">Concept animation · simulated data</span>
+      <span class="floor__tag">Concept animation, simulated data</span>
     </div>
   </section>
 
@@ -89,7 +87,7 @@ const fallback = root.querySelector(".floor__fallback");
 const text = root.querySelector(".floor__text");
 const kicker = root.querySelector(".floor__kicker"), title = root.querySelector(".floor__title"), body = root.querySelector(".floor__body");
 const dots = root.querySelector(".floor__dots");
-const TONES = { caution: "#f2b705", safe: "#1a7a3d", instruct: "#0066b1" };
+const TONES = { caution: "#6b4f00", safe: "#1a7a3d", instruct: "#0066b1" };
 const STILLS = ["style-1-aerial", "style-1-aerial", "style-2-sealer", "style-2-sealer", "style-1-aerial", "style-3-rollout"];
 CHAPTERS.forEach(() => dots.appendChild(document.createElement("li")));
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -101,7 +99,7 @@ function showChapter(c) {
   const ch = CHAPTERS[c];
   const apply = () => {
     kicker.textContent = ch.kicker; title.textContent = ch.title; body.textContent = ch.body;
-    root.style.setProperty("--tone", TONES[ch.tone] || "#252525");
+    root.style.setProperty("--tone-ink", TONES[ch.tone] || "#5f5f5f");
     text.dataset.swap = "false";
   };
   [...dots.children].forEach((d, i) => { if (i === c) d.setAttribute("aria-current", "step"); else d.removeAttribute("aria-current"); });

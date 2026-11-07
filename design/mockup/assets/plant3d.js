@@ -42,8 +42,10 @@ const BAY_Z = 7.2;
 
 export const COLORS = { yellow: 0xf2b705, blue: 0x0066b1, green: 0x1a7a3d, red: 0xeb0a1e };
 const C = {
-  bg: 0xe4e4e4, slab: 0xe9e9e7, slabSide: 0xd9d9d7, road: 0xd6d6d4, mark: 0xfbfbfa,
+  bg: 0xe4e4e4, slab: 0xe9e9e7, slabSide: 0xd9d9d7, road: 0xd8d7d4, mark: 0xfbfbfa,
   floor: 0xe3e3e1, aisle: 0xcacac8, clay: 0xf4f4f2, clay2: 0xe9e9e7, clay3: 0xdcdcda,
+  // v3 premium look: screen-space sky gradient (top cool → horizon warm) and sage clay trees
+  skyTop: 0xe2e5e9, skyBottom: 0xf1efeb, tree: 0xa9b8a0, trunk: 0xd8d2c4,
   window: 0xcfd1d3, biw: 0xa7abb0, lampOff: 0xd6d6d4, lane: 0xc9cbcd, slat: 0xb3b6b9,
 };
 
@@ -94,6 +96,28 @@ export const PRESETS = {
   closing: { pos: [-92, 30, 74], target: [-2, 2, -8], fov: 22 },
 };
 
+/* ------------------------------------------------------------------ body tracking (pure, no scene needed) */
+
+/** Continuous line offset: a body with serial n sits at slot position n + lineP(flow). */
+function lineP(flow, stopped = false) {
+  const cyc = Math.floor(flow), ph = flow - cyc;
+  return stopped ? cyc : cyc - 1 + easeInOut(clamp01(ph / MOVE));
+}
+const BODY_TOP = 2.0;
+/** K2 serial of the body that sits at station index idx when flow == atFlow. */
+const serialAt = (idx, atFlow) => Math.round(idx - lineP(atFlow));
+/**
+ * World position [x, y, z] (y = roof height) of the defect body: the K2 body that sat at st-04 when
+ * flow == state.defect.startFlow, at the current state.flow. Follows it all the way to final-01 and beyond
+ * (past final-01 the body leaves the line; the position keeps extrapolating along x).
+ */
+export function defectBodyPos(state = {}) {
+  const flow = state.flow ?? 0;
+  const start = state.defect?.startFlow ?? flow;
+  const n = serialAt(3, start);
+  return [xAt(n + lineP(flow, !!state.stopped)), BODY_TOP, 0];
+}
+
 /* ------------------------------------------------------------------ factory */
 
 export async function createPlant(canvas, opts = {}) {
@@ -112,16 +136,33 @@ export async function createPlant(canvas, opts = {}) {
   renderer.toneMappingExposure = 1.0;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(C.bg);
-  scene.fog = new THREE.Fog(C.bg, 200, 600);
+  // subtle vertical gradient behind the model: cool upper sky, warmer and lighter at the horizon/bottom
+  const skyTex = (() => {
+    const S = 256, data = new Uint8Array(2 * S * 4);
+    // hex values are sRGB; keep them raw (no linear conversion) because the texture is tagged sRGB
+    const top = new THREE.Color().setHex(C.skyTop, THREE.LinearSRGBColorSpace), bot = new THREE.Color().setHex(C.skyBottom, THREE.LinearSRGBColorSpace), c = new THREE.Color();
+    for (let y = 0; y < S; y++) {
+      const v = y / (S - 1);                 // 0 = bottom row, 1 = top row
+      c.copy(bot).lerp(top, smooth(v * 1.15 - 0.05));
+      for (let x = 0; x < 2; x++) {
+        const i = (y * 2 + x) * 4;
+        data[i] = Math.round(c.r * 255); data[i + 1] = Math.round(c.g * 255); data[i + 2] = Math.round(c.b * 255); data[i + 3] = 255;
+      }
+    }
+    const t = new THREE.DataTexture(data, 2, S);
+    t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+    return t;
+  })();
+  scene.background = skyTex;
+  scene.fog = new THREE.Fog(new THREE.Color(C.skyTop).lerp(new THREE.Color(C.skyBottom), 0.6), 200, 600);
   const camera = new THREE.PerspectiveCamera(28, W / H, 0.5, 900);
 
-  /* lights */
+  /* lights: warm key sun (~5200 K) + cool sky fill, warm bounce from the ground */
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.environmentIntensity = 0.32;
-  const hemi = new THREE.HemisphereLight(0xffffff, 0xbdbdbb, 0.58);
-  const sun = new THREE.DirectionalLight(0xffffff, 1.85);
+  scene.environmentIntensity = 0.26;
+  const hemi = new THREE.HemisphereLight(0xe4ecf8, 0xcbc7c0, 0.64);
+  const sun = new THREE.DirectionalLight(0xfff5e9, 1.95);
   sun.castShadow = true;
   sun.shadow.mapSize.set(4096, 4096);
   sun.shadow.radius = 5;
@@ -147,7 +188,8 @@ export async function createPlant(canvas, opts = {}) {
     person: clayMat(0xf6f5f3), helmet: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }),
     robot: clayMat(0xf6f6f4, { roughness: 0.75 }), joint: clayMat(0xc9cbcd, { roughness: 0.6, metalness: 0.15 }),
     bead: new THREE.MeshStandardMaterial({ color: 0xfff3cf, roughness: 0.35, emissive: 0x6b5a22 }),
-    roof: clayMat(0xf2f2f0, { transparent: false }),
+    roof: clayMat(0xf3f2ef, { transparent: false }),
+    tree: clayMat(C.tree, { roughness: 0.95 }), trunk: clayMat(C.trunk),
   };
   const shadowed = (m, cast = true) => { m.castShadow = cast; m.receiveShadow = true; return m; };
   const mesh = (g, m, cast = true) => shadowed(new THREE.Mesh(g, m), cast);
@@ -354,8 +396,8 @@ export async function createPlant(canvas, opts = {}) {
   [[-48, -6], [-44, -9], [70, 30], [-62, -10], [-66, -2]].forEach((p) => treePts.push(p));
   {
     const n = treePts.length;
-    const crown = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 20, 14), M.clay, n);
-    const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.2, 1, 8), M.clay2, n);
+    const crown = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 20, 14), M.tree, n);
+    const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.2, 1, 8), M.trunk, n);
     const m4 = new THREE.Matrix4();
     treePts.forEach(([x, z], i) => {
       const r = 1.15 + rnd() * 0.6;
@@ -445,6 +487,32 @@ export async function createPlant(canvas, opts = {}) {
     return new THREE.CatmullRomCurve3(pts);
   });
   const beadGeos = beadCurves.map((c) => new THREE.TubeGeometry(c, 120, 0.075, 8, false));
+  // defect seams: roof-edge + door-line seams per variant, for the shell (stages 0/1) and the finished car (stage 2)
+  function seamCurvesFor(sh) {
+    sh.updateMatrixWorld(true);
+    const bb = new THREE.Box3().setFromObject(sh);
+    const meshes = []; sh.traverse((o) => o.isMesh && meshes.push(o));
+    const top = bb.max.y, h = bb.max.y - bb.min.y;
+    const roof = [], side = [];
+    let lastY = top - 0.05, lastZ = bb.max.z * 0.9;
+    const yS = bb.min.y + h * 0.4;
+    for (let i = 0; i <= 28; i++) {
+      const x = lerp(bb.min.x * 0.32, bb.max.x * 0.22, i / 28);
+      ray.set(new THREE.Vector3(x, top + 2, bb.max.z * 0.4), new THREE.Vector3(0, -1, 0));
+      const hit = ray.intersectObjects(meshes, false)[0];
+      lastY = hit && hit.point.y > bb.min.y + h * 0.84 ? hit.point.y + 0.03 : lastY;
+      roof.push(new THREE.Vector3(x, lastY, bb.max.z * 0.4));
+    }
+    for (let i = 0; i <= 32; i++) {
+      const x = lerp(bb.min.x * 0.8, bb.max.x * 0.8, i / 32);
+      ray.set(new THREE.Vector3(x, yS, bb.max.z + 2), new THREE.Vector3(0, 0, -1));
+      const hit = ray.intersectObjects(meshes, false)[0];
+      lastZ = hit && hit.point.z > bb.max.z * 0.6 ? hit.point.z + 0.035 : lastZ;
+      side.push(new THREE.Vector3(x, yS, lastZ));
+    }
+    return [new THREE.CatmullRomCurve3(roof), new THREE.CatmullRomCurve3(side)];
+  }
+  const seamShell = shells.map(seamCurvesFor), seamCar = cars.map(seamCurvesFor);
 
   /* andon tower */
   function andonTower(parent, x, z) {
@@ -551,17 +619,35 @@ export async function createPlant(canvas, opts = {}) {
   let tabKey = null;
   function paintTablet(st) {
     const mode = typeof st === "string" ? st : st?.mode ?? "idle";
-    const label = (typeof st === "object" && st?.text) || (mode === "alert" ? "ALERT st-04" : mode === "confirmed" ? "CONFIRMED" : mode === "review" ? "MODEL REVIEW" : "st-04  RUNNING");
+    const ovr = mode === "override" || mode === "overridden";
+    const label = (typeof st === "object" && st?.text) || (mode === "alert" || ovr ? "ALERT st-04" : mode === "confirmed" ? "CONFIRMED" : mode === "review" ? "MODEL REVIEW" : "st-04  RUNNING");
     const key = mode + "|" + label;
     if (key === tabKey) return;
     tabKey = key;
     const g = tabCanvas.getContext("2d");
     g.fillStyle = "#f7f7f5"; g.fillRect(0, 0, 512, 320);
-    const accent = mode === "alert" ? "#f2b705" : mode === "confirmed" ? "#1a7a3d" : mode === "review" ? "#0066b1" : "#c9cbcd";
+    const accent = mode === "alert" ? "#f2b705" : mode === "confirmed" ? "#1a7a3d" : mode === "review" ? "#0066b1" : ovr ? "#a3a6a9" : "#c9cbcd";
     g.fillStyle = accent; g.fillRect(0, 0, 512, 92);
-    g.fillStyle = mode === "alert" ? "#1b1b1b" : "#ffffff";
+    g.fillStyle = mode === "alert" ? "#1b1b1b" : ovr ? "#eceded" : "#ffffff";
     g.font = "bold 50px Helvetica, Arial, sans-serif"; g.textBaseline = "middle";
     g.fillText(label, 28, 48);
+    if (ovr) {
+      // dismissed alert: struck header, greyed lines, "OVERRIDDEN" stamp
+      const w = g.measureText(label).width;
+      g.strokeStyle = "#5c5f62"; g.lineWidth = 6; g.lineCap = "round";
+      g.beginPath(); g.moveTo(22, 50); g.lineTo(34 + w, 46); g.stroke();
+      g.fillStyle = "#e6e7e8";
+      for (let i = 0; i < 2; i++) g.fillRect(28, 124 + i * 40, 250 - i * 70, 16);
+      g.fillStyle = "#55585b"; g.font = "bold 46px Helvetica, Arial, sans-serif";
+      const ow = g.measureText("OVERRIDDEN").width;
+      g.strokeStyle = "#6b6e71"; g.lineWidth = 5; g.strokeRect(28, 206, ow + 36, 82);
+      g.fillText("OVERRIDDEN", 46, 249);
+      g.strokeStyle = "#8e9194"; g.lineWidth = 9;
+      g.beginPath(); g.arc(438, 196, 44, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.moveTo(407, 165); g.lineTo(469, 227); g.stroke();
+      tabTex.needsUpdate = true;
+      return;
+    }
     g.fillStyle = "#d9dadb";
     for (let i = 0; i < 3; i++) g.fillRect(28, 128 + i * 46, 300 - i * 60, 18);
     if (mode === "confirmed") {
@@ -714,6 +800,22 @@ export async function createPlant(canvas, opts = {}) {
   const TL_PATH = [[TL_DESK[0], TL_DESK[2] - 1.0], [TL_DESK[0] + 0.5, 6.2], [ST04 - 1.0, 6.0], [OPERATOR[0] + 1.4, OPERATOR[2] + 0.3]];
   const tlPath = polyPath(TL_PATH, 1.4);
 
+  /* ambient walkers (state.crowd): narrow closed loops along aisles and outside paths.
+     None of them touches the st-04 repair-bay lane, the operator spot, the TL walk or a conveyor. */
+  const loopH = (x0, x1, z, w = 0.7) => polyPath([[x0, z - w / 2], [x1, z - w / 2], [x1, z + w / 2], [x0, z + w / 2]], 0.34, true);
+  const loopV = (z0, z1, x, w = 0.7) => polyPath([[x - w / 2, z0], [x - w / 2, z1], [x + w / 2, z1], [x + w / 2, z0]], 0.34, true);
+  const WALK = {
+    k2North: loopH(-28, 28, -7.0), k2SouthW: loopH(-30, -17, 13.4), k2SouthE: loopH(5, 30, 13.4), k2Mid: loopH(7, 28, 5.8, 0.6),
+    k1North: loopH(-28, 28, -41.0), fa: loopV(-30, 0, 62), outS: loopH(-30, 30, 17.0), outN: loopH(-28, 30, -48.0),
+  };
+  // ordered so a partial crowd is spread over the campus
+  const walkers = [
+    ["k2North", 0.00, 1.05, {}], ["k1North", 0.20, 1.00, { vest: true }], ["outS", 0.10, 1.10, { helmet: false }],
+    ["k2SouthE", 0.35, 0.95, {}], ["fa", 0.60, 1.00, { vest: true }], ["k2Mid", 0.15, 0.90, {}],
+    ["outN", 0.70, 1.05, { helmet: false, vest: true }], ["k2North", 0.52, 1.00, { vest: true }], ["k1North", 0.68, 1.08, {}],
+    ["k2SouthW", 0.40, 1.00, { vest: true }], ["outS", 0.58, 0.95, { helmet: false, vest: true }],
+  ].map(([key, off, speed, o], i) => ({ p: makePerson(world, o), path: WALK[key], off, speed, ph: i * 1.37 }));
+
   /* AGVs + moving cars */
   const agvGeo = new THREE.BoxGeometry(1.5, 0.32, 0.95);
   const agvs = [];
@@ -722,6 +824,9 @@ export async function createPlant(canvas, opts = {}) {
     { path: polyPath([[-30, -24], [30, -24], [30, -27], [-30, -27]], 1.2, true), n: 2, speed: 1.4, y: 0 },
     { path: polyPath([[-60, -16], [60, -16]], 0, false), n: 3, speed: 2.2, y: 0, pingpong: true },
     { path: polyPath([[47, -30], [59, -30], [59, 0], [47, 0]], 1.5, true), n: 2, speed: 1.3, y: 0 },
+    // v3 extra AGVs (scaled by state.crowd) along the north walls of both halls
+    { path: polyPath([[-28, -9.9], [28, -9.9], [28, -8.9], [-28, -8.9]], 0.45, true), n: 2, speed: 1.5, y: 0, extra: true },
+    { path: polyPath([[-28, -43.9], [28, -43.9], [28, -43.0], [-28, -43.0]], 0.42, true), n: 1, speed: 1.3, y: 0, extra: true },
   ];
   agvLoops.forEach((L, li) => {
     for (let i = 0; i < L.n; i++) {
@@ -752,7 +857,41 @@ export async function createPlant(canvas, opts = {}) {
     world.add(c);
   }
 
+  /* final-assembly andon towers (lit by phase 3 and by the ending wave) */
+  const faObjs = [[56.0, -5.0], [56.0, -15.0], [56.0, -24.0]].map(([x, z], i) => {
+    sBox(0.16, 3.75, 0.16, M.steel, x, 1.87, z);
+    return { id: `fa-0${i + 1}`, x, z, lamps: andonTower(world, x, z) };
+  });
+
   flushStatics(world);
+
+  /* defect seam: red glowing roof seam + roof glow + soft floor glow, carried by one K2 body */
+  const defectG = new THREE.Group();
+  const seamMat = new THREE.MeshBasicMaterial({ color: COLORS.red, toneMapped: false, transparent: true, opacity: 1, side: THREE.DoubleSide, fog: false });
+  const seamGroup = ([roofC, sideC]) => {
+    const g = new THREE.Group();
+    const geos = [new THREE.TubeGeometry(roofC, 96, 0.085, 8, false), new THREE.TubeGeometry(sideC, 96, 0.06, 8, false)];
+    geos.forEach((geo) => [1, -1].forEach((sz) => {              // both sides of the body (mirrored in z)
+      const m = new THREE.Mesh(geo, seamMat); m.scale.z = sz; m.userData.noAO = true; m.renderOrder = 5; g.add(m);
+    }));
+    const sprites = [];
+    [[roofC, [0.15, 0.5, 0.85], 1.5], [sideC, [0.1, 0.37, 0.63, 0.9], 1.25]].forEach(([c, us, size]) => us.forEach((u) => [1, -1].forEach((sz) => {
+      const p = c.getPointAt(u);
+      const sp = glowSprite(COLORS.red, size); sp.position.set(p.x, p.y + 0.03, p.z * sz); g.add(sp); sprites.push(sp);
+    })));
+    g.userData.sprites = sprites;
+    g.visible = false;
+    defectG.add(g);
+    return g;
+  };
+  const seams = seamShell.map(seamGroup), seamsCar = seamCar.map(seamGroup);
+  const defectFloor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ map: glowTex, color: COLORS.red, transparent: true, opacity: 0, depthWrite: false, fog: false, toneMapped: false }));
+  defectFloor.scale.set(8.6, 1, 6.4); defectFloor.position.y = 0.05;   // just above the conveyor slats
+  defectFloor.userData.noAO = true; defectFloor.renderOrder = 4;
+  defectG.add(defectFloor);
+  defectG.visible = false;
+  world.add(defectG);
 
   /* ================================================================ routes */
   // polyline with filleted corners -> evenly sampled points with arc length
@@ -913,6 +1052,27 @@ export async function createPlant(canvas, opts = {}) {
     [mkRing(53, -6), mkRing(53, -15), mkRing(53, -24)],
   ];
 
+  // ending wave: every station (K2, K1, final assembly) ordered by distance from st-04
+  const waveStations = [
+    ...K2.objs.map((o) => ({ id: o.id, x: o.x, z: 0 })),
+    ...K1.objs.map((o) => ({ id: o.id, x: o.x, z: K1Z })),
+    ...faObjs.map((o) => ({ id: o.id, x: 53, z: o.z })),
+  ];
+  {
+    const dmax = Math.max(...waveStations.map((w) => Math.hypot(w.x - ST04, w.z)));
+    const discGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+    waveStations.forEach((w) => {
+      w.th = 0.8 * Math.hypot(w.x - ST04, w.z) / dmax;
+      w.ring = new THREE.Mesh(discGeo, new THREE.MeshBasicMaterial({ map: glowTex, color: COLORS.green, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+      w.ring.position.set(w.x, 0.12, w.z); w.ring.userData.noAO = true; w.ring.renderOrder = 4; w.ring.visible = false;
+      w.edge = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: COLORS.green, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+      w.edge.position.set(w.x, 0.11, w.z); w.edge.userData.noAO = true; w.edge.renderOrder = 4; w.edge.visible = false;
+      world.add(w.ring, w.edge);
+    });
+  }
+  const waveReached = new Set();
+  let waveGlow = 1;            // wave-lit lamps get bigger glows on wide shots so the sweep reads from the aerial
+
   // escaping-defect marker (red pin with a floor pulse)
   const pin = new THREE.Group();
   {
@@ -948,7 +1108,21 @@ export async function createPlant(canvas, opts = {}) {
   const cardShadow = new THREE.Mesh(new THREE.CircleGeometry(1.1, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: glowTex, color: 0x000000, transparent: true, opacity: 0.12, depthWrite: false }));
   cardShadow.userData.noAO = true; cardShadow.visible = false;
   world.add(card, cardShadow);
-  const cardRoute = [R.launch[0], R.launch[2]];
+  // one continuous smooth path: office -> st-01 -> st-02 -> north door -> K1 line (no branch jump)
+  const cardPath = (() => {
+    const pts = [[-41.5, 9.2], [-38.2, 8.8], [-36.9, 3.0], [-36.5, -4.6], [-33.4, -7.3], [-26.4, -7.4], [xAt(0), -4.8],
+      [(xAt(0) + xAt(1)) / 2, -6.9], [xAt(1), -4.8], [-13.4, -7.4], [-12.5, -11.0], [-12.5, -20.0], [-13.0, -25.6], [k1xAt(0), K1Z + 4.6]];
+    const curve = new THREE.CatmullRomCurve3(pts.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, "centripetal");
+    const total = curve.getLength(), n = Math.ceil(total / 0.25);
+    const samples = curve.getSpacedPoints(n).map((v) => new THREE.Vector2(v.x, v.z));
+    const at = (d) => {
+      d = Math.min(total, Math.max(0, d));
+      const f = (d / total) * n, i = Math.min(n - 1, Math.floor(f));
+      const a = samples[i], b = samples[i + 1], p = a.clone().lerp(b, f - i), dir = b.clone().sub(a).normalize();
+      return { x: p.x, z: p.y, dx: dir.x, dz: dir.y };
+    };
+    return { samples, total, at, closed: false };
+  })();
 
   /* ================================================================ post */
   const rt = new THREE.WebGLRenderTarget(W * PR, H * PR, { type: THREE.HalfFloatType, samples: 4 });
@@ -963,7 +1137,7 @@ export async function createPlant(canvas, opts = {}) {
     try { gtao = new GTAOPass(scene, camera, W * PR, H * PR); } finally { Math.random = realRandom; }
     gtao.output = GTAOPass.OUTPUT.Default;
     gtao.blendIntensity = 1.0;
-    gtao.updateGtaoMaterial({ radius: 1.2, distanceExponent: 1.4, thickness: 1.5, scale: 1.0, samples: 12, distanceFallOff: 1.0 });
+    gtao.updateGtaoMaterial({ radius: 1.2, distanceExponent: 1.5, thickness: 1.6, scale: 1.15, samples: 12, distanceFallOff: 1.0 });
     gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 });
     const origHide = gtao._overrideVisibility.bind(gtao);
     gtao._overrideVisibility = function () {
@@ -972,7 +1146,25 @@ export async function createPlant(canvas, opts = {}) {
     };
     composer.addPass(gtao);
   }
-  const tiltH = new ShaderPass(HorizontalTiltShiftShader), tiltV = new ShaderPass(VerticalTiltShiftShader);
+  // tilt-shift with a sharp band around the focus line (r) and a soft ramp to full blur (px per tap = amt)
+  const tiltShader = (dir) => ({
+    uniforms: { tDiffuse: { value: null }, amt: { value: 0 }, r: { value: 0.5 }, band: { value: 0.1 }, soft: { value: 0.32 }, texel: { value: new THREE.Vector2(dir === "h" ? 1 / (W * PR) : 0, dir === "v" ? 1 / (H * PR) : 0) } },
+    vertexShader: HorizontalTiltShiftShader.vertexShader,
+    fragmentShader: /* glsl */`
+      uniform sampler2D tDiffuse; uniform float amt; uniform float r; uniform float band; uniform float soft; uniform vec2 texel;
+      varying vec2 vUv;
+      void main() {
+        float k = smoothstep(band, band + soft, abs(vUv.y - r));
+        vec2 o = texel * amt * k;
+        vec4 sum = texture2D(tDiffuse, vUv) * 0.1633;
+        sum += (texture2D(tDiffuse, vUv - o) + texture2D(tDiffuse, vUv + o)) * 0.1531;
+        sum += (texture2D(tDiffuse, vUv - 2.0 * o) + texture2D(tDiffuse, vUv + 2.0 * o)) * 0.12245;
+        sum += (texture2D(tDiffuse, vUv - 3.0 * o) + texture2D(tDiffuse, vUv + 3.0 * o)) * 0.0918;
+        sum += (texture2D(tDiffuse, vUv - 4.0 * o) + texture2D(tDiffuse, vUv + 4.0 * o)) * 0.051;
+        gl_FragColor = sum;
+      }`,
+  });
+  const tiltH = new ShaderPass(tiltShader("h")), tiltV = new ShaderPass(tiltShader("v"));
   tiltH.enabled = tiltV.enabled = false;
   if (useDOF) { composer.addPass(tiltH); composer.addPass(tiltV); }
   composer.addPass(new OutputPass());
@@ -1034,18 +1226,8 @@ export async function createPlant(canvas, opts = {}) {
           o.robot.tipDot.visible = false;
         }
       }
-      let st = s.stations?.[o.id] ?? defaults(o);
-      const on = { ...lampsFor(st) };
-      Object.keys(o.lamps).forEach((key) => {
-        let val = on[key] ?? 0;
-        if (val === 1 && (key === "yellow" || key === "red")) val = pulse;
-        const lit = val > 0.5;
-        const col = tmpCol.setHex(COLORS[key]);
-        o.lamps[key].m.color.copy(offCol).lerp(col, lit ? 1 : val * 0.8);
-        o.lamps[key].m.emissive.copy(col).multiplyScalar(lit ? 0.9 * val : 0);
-        o.lamps[key].glow.material.opacity = lit ? 0.75 * val : 0;
-        o.lamps[key].glow.scale.setScalar(lit ? 2.6 : 1.6);
-      });
+      const waved = waveReached.has(o.id);
+      applyLamps(o.lamps, waved ? "validated" : s.stations?.[o.id] ?? defaults(o), pulse, waved ? waveGlow : 1);
       if (o.cone) {
         const on2 = s.cone && s.cone.station === o.id ? clamp01(s.cone.k ?? 1) : 0;
         o.cone.coneMat.opacity = 0.16 * on2;
@@ -1057,6 +1239,19 @@ export async function createPlant(canvas, opts = {}) {
     return atSt04;
   }
   const b4visible = (b) => b.g.visible;
+  function applyLamps(lamps, st, pulse, glowScale = 1) {
+    const on = lampsFor(st);
+    Object.keys(lamps).forEach((key) => {
+      let val = on[key] ?? 0;
+      if (val === 1 && (key === "yellow" || key === "red")) val = pulse;
+      const lit = val > 0.5;
+      const col = tmpCol.setHex(COLORS[key]);
+      lamps[key].m.color.copy(offCol).lerp(col, lit ? 1 : val * 0.8);
+      lamps[key].m.emissive.copy(col).multiplyScalar(lit ? 0.9 * val : 0);
+      lamps[key].glow.material.opacity = lit ? 0.75 * val : 0;
+      lamps[key].glow.scale.setScalar((lit ? 2.6 : 1.6) * glowScale);
+    });
+  }
 
   function setCamera(cam) {
     camera.fov = cam.fov ?? 28;
@@ -1077,7 +1272,7 @@ export async function createPlant(canvas, opts = {}) {
     sun.position.copy(tgt).addScaledVector(SUN_DIR, 220);
     Object.assign(sun.shadow.camera, { left: -half, right: half, top: half, bottom: -half, near: 50, far: 420 });
     sun.shadow.camera.updateProjectionMatrix();
-    if (gtao) gtao.updateGtaoMaterial({ radius: Math.min(6, Math.max(0.55, dist * 0.028)) });
+    if (gtao) gtao.updateGtaoMaterial({ radius: Math.min(6.5, Math.max(0.6, dist * 0.032)) });
     return dist;
   }
 
@@ -1102,6 +1297,27 @@ export async function createPlant(canvas, opts = {}) {
       h.roof.children[0].userData.noAO = k < 0.999;
     });
 
+    // ending wave: which stations it has reached (overrides `stations`)
+    const wk = s.wave ? clamp01(typeof s.wave === "number" ? s.wave : s.wave.k ?? 0) : 0;
+    waveReached.clear();
+    waveGlow = Math.min(2.4, Math.max(1, ws * 0.85));
+    waveStations.forEach((w) => {
+      const q = wk > 0 ? clamp01((wk - w.th) / 0.2) : 0;
+      const hit = wk > 0 && wk >= w.th;
+      if (hit) waveReached.add(w.id);
+      const sc = Math.min(1.8, Math.max(1, ws * 0.7));
+      w.ring.visible = hit;                      // soft green pool: flashes on the flip, then stays faintly lit
+      w.edge.visible = hit && q < 1;             // crisp ring that expands and fades
+      if (hit) {
+        const e = 1 - (1 - q) * (1 - q);
+        const r = (5 + 3 * e) * sc;
+        w.ring.scale.set(r, 1, r);
+        w.ring.material.opacity = 0.5 + 0.4 * Math.sin(Math.PI * Math.min(1, q));
+        w.edge.scale.setScalar((0.5 + 1.2 * e) * sc);
+        w.edge.material.opacity = 0.95 * (1 - q);
+      }
+    });
+
     // lines
     const atSt04 = updateLine(K2, s, flow, t, () => (s.stopped ? "stopped" : phase >= 1 ? "validated" : "running"));
     updateLine(K1, { stations: s.stations, stopped: false }, flow * 0.9 + 0.35, t, () => (phase >= 2 ? "validated" : "running"));
@@ -1114,6 +1330,34 @@ export async function createPlant(canvas, opts = {}) {
       const bz = BAY_Z * easeInOut(clamp01(s.flagged.bay ?? 0));
       flaggedBody.position.set(xAt(fi), 0.18, bz);
       bayMark.position.set(xAt(fi), 0, BAY_Z);
+    }
+
+    // final-assembly towers
+    {
+      const pulseFA = 0.78 + 0.22 * Math.sin(t * 4.2);
+      faObjs.forEach((o) => { const w = waveReached.has(o.id); applyLamps(o.lamps, w ? "validated" : s.stations?.[o.id] ?? (phase >= 3 ? "validated" : "running"), pulseFA, w ? waveGlow : 1); });
+    }
+
+    // defect body: red seam + glows ride the body that sat at st-04 at defect.startFlow
+    {
+      const dk = s.defect ? clamp01(s.defect.k ?? 1) : 0;
+      let b = null;
+      if (dk > 0) {
+        b = K2.bodies.get(serialAt(3, s.defect.startFlow ?? flow)) ?? null;
+        if (b && !b.g.visible) b = null;
+      }
+      defectG.visible = !!b;
+      if (b) {
+        defectG.position.copy(b.g.position);
+        const fl = 0.86 + 0.14 * Math.sin(t * 5.0);
+        const isCar = b.stages[2]?.visible;
+        [seams, seamsCar].forEach((arr, ai) => arr.forEach((g, i) => {
+          g.visible = i === b.variant && (ai === 1) === !!isCar;
+          if (g.visible) g.userData.sprites.forEach((sp) => { sp.material.opacity = 0.55 * dk * fl; });
+        }));
+        seamMat.opacity = dk;
+        defectFloor.material.opacity = 0.8 * dk * (0.9 + 0.1 * Math.sin(t * 5.0));
+      }
     }
 
     // tablet
@@ -1145,13 +1389,30 @@ export async function createPlant(canvas, opts = {}) {
     }
 
     // AGVs + cars (seekable by t)
+    const crowd = clamp01(s.crowd ?? 1);
+    const extraAgvs = agvs.filter((a) => a.L.extra);
     agvs.forEach((a) => {
       const L = a.L, total = L.path.total;
+      if (L.extra) { a.g.visible = crowd * extraAgvs.length > extraAgvs.indexOf(a) + 0.5; if (!a.g.visible) return; }
       let s0 = ((t * L.speed) / total + a.off) % 1;
       if (L.pingpong) s0 = 1 - Math.abs(1 - 2 * s0);
       const p = L.path.at(s0 * total);
       a.g.position.set(p.x, 0.04, p.z);
       a.g.rotation.y = Math.atan2(p.dx, p.dz) + Math.PI / 2;
+    });
+    walkers.forEach((w, i) => {
+      const p = w.p;
+      p.g.visible = crowd * walkers.length > i + 0.5;
+      if (!p.g.visible) return;
+      const d = (((t * w.speed) + w.off * w.path.total) % w.path.total + w.path.total) % w.path.total;
+      const a = w.path.at(d);
+      p.g.position.set(a.x, 0, a.z);
+      p.g.rotation.y = Math.atan2(a.dx, a.dz);
+      const g = t * w.speed * 3.4 + w.ph;
+      const sw = Math.sin(g) * 0.5;
+      p.legs[0].rotation.x = sw; p.legs[1].rotation.x = -sw;
+      p.arms[0].rotation.x = -sw * 0.7; p.arms[1].rotation.x = sw * 0.7;
+      p.body.position.y = Math.abs(Math.cos(g)) * 0.04;
     });
     movingCars.forEach((c) => {
       const s0 = ((t * 2.6) / carRoute.total + c.off) % 1;
@@ -1195,9 +1456,7 @@ export async function createPlant(canvas, opts = {}) {
     const ck = s.card;
     card.visible = cardShadow.visible = ck != null && ck > 0 && ck < 1;
     if (card.visible) {
-      const t0 = cardRoute[0].total, t1 = cardRoute[1].total;
-      const dist = smooth(ck) * (t0 + t1);
-      const p = dist < t0 ? cardRoute[0].at(dist) : cardRoute[1].at(dist - t0);
+      const p = cardPath.at(smooth(ck) * cardPath.total);
       const hY = 3.2 + Math.sin(ck * Math.PI) * 1.2 + Math.sin(t * 2) * 0.08;
       card.position.set(p.x, hY, p.z);
       card.quaternion.copy(camera.quaternion);
@@ -1230,8 +1489,8 @@ export async function createPlant(canvas, opts = {}) {
     if (tiltH.enabled) {
       // focus line at the target's screen height
       const fy = 1 - (project(cam.target).y / H);
-      tiltH.uniforms.h.value = (focus * 2.2) / W; tiltH.uniforms.r.value = fy;
-      tiltV.uniforms.v.value = (focus * 2.2) / H; tiltV.uniforms.r.value = fy;
+      const amt = clamp01(focus) * 7.0 * PR * (H / 1080);
+      [tiltH, tiltV].forEach((ps) => { ps.uniforms.amt.value = amt; ps.uniforms.r.value = fy; ps.uniforms.band.value = 0.1; ps.uniforms.soft.value = 0.34; });
     }
 
     composer.render();
@@ -1276,6 +1535,20 @@ export async function createPlant(canvas, opts = {}) {
   };
   STATIONS.forEach((st, i) => { anchors[st.id] = [xAt(i), 2.6, 0]; });
   K1_STATIONS.forEach((id, i) => { anchors[id] = [k1xAt(i), 2.6, K1Z]; });
+  faObjs.forEach((o) => { anchors[o.id] = [o.x, 5.9, o.z]; });
 
-  return { render, project, anchors, presets: PRESETS, lerpCam, stations: STATIONS, renderer, scene, camera, colors: COLORS };
+  /**
+   * World position [x, y, z] (roof height) at `flow` of the body that sat at `stationId` when flow == atFlow
+   * (default: flow itself, i.e. the body nearest that station right now). K2 ids, K1 ids (k1-xx, using the K1
+   * line's own flow*0.9+0.35 timing) are supported; unknown ids return the hallK2 anchor.
+   */
+  function bodyAt(stationId, flow = 0, atFlow = flow) {
+    let i = STATIONS.findIndex((x) => x.id === stationId);
+    if (i >= 0) return [xAt(serialAt(i, atFlow) + lineP(flow)), BODY_TOP, 0];
+    i = K1_STATIONS.indexOf(stationId);
+    if (i >= 0) { const f = flow * 0.9 + 0.35, f0 = atFlow * 0.9 + 0.35; return [k1xAt(Math.round(i - lineP(f0)) + lineP(f)), BODY_TOP, K1Z]; }
+    return anchors.hallK2.slice();
+  }
+
+  return { render, project, anchors, presets: PRESETS, lerpCam, stations: STATIONS, renderer, scene, camera, colors: COLORS, defectBodyPos, bodyAt };
 }

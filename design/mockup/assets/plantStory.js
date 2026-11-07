@@ -41,7 +41,7 @@ export function storyState(p, t, plant) {
     case 0:
       s.roof = 1 - seg(u, 0.45, 0.9); s.focus = 0.3 * (1 - u); break;
     case 1:
-      s.routes.defect = { k: seg(u, 0.1, 0.8), pulse: true }; s.flow = 3.3 + 1.6 * seg(u, 0.1, 0.8); break;
+      s.routes.defect = { k: seg(u, 0.1, 0.8), pulse: true }; s.flow = 3.3 + 1.6 * seg(u, 0.1, 0.8); s.defect = { startFlow: 3.3, k: seg(u, 0.0, 0.15) }; break;
     case 2:
       s.flow = 3.55; s.bead = seg(u, 0.05, 0.45); s.cone = { station: "st-04", k: seg(u, 0.3, 0.6) };
       s.tablet = u > 0.75 ? "alert" : "idle"; s.focus = 0.25; break;
@@ -59,7 +59,7 @@ export function storyState(p, t, plant) {
       if (u > 0.85) s.stations["st-01"] = "validated";
       break;
     default:
-      s.phase = 3 * seg(u, 0.1, 0.9); break;
+      s.phase = 3 * seg(u, 0.1, 0.75); s.wave = { k: seg(u, 0.72, 1.0) }; break;
   }
   return { state: s, chapter: c, u };
 }

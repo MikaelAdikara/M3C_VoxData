@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { CHAPTERS, storyState } from "./story";
 
-const TONES: Record<string, string> = { caution: "var(--caution)", safe: "var(--safe)", instruct: "var(--instruct)" };
+// category colour lives on the kicker text, never on the container
+const TONES: Record<string, string> = { caution: "#6b4f00", safe: "#1a7a3d", instruct: "#0066b1" };
 // still shown per chapter when WebGL is unavailable
 const STILLS = ["style-1-aerial", "style-1-aerial", "style-2-sealer", "style-2-sealer", "style-1-aerial", "style-3-rollout"];
 
@@ -73,7 +74,7 @@ export function PlantStory() {
 
   const ch = CHAPTERS[chapter];
   return (
-    <section ref={rootRef} className="floor" id="floor" aria-labelledby="floor-title" style={{ ["--n" as string]: CHAPTERS.length, ["--tone" as string]: TONES[ch.tone ?? ""] ?? "var(--ink)" }} data-fallback={fallback || undefined}>
+    <section ref={rootRef} className="floor" id="floor" aria-labelledby="floor-title" style={{ ["--n" as string]: CHAPTERS.length, ["--tone-ink" as string]: TONES[ch.tone ?? ""] ?? "#5f5f5f" }} data-fallback={fallback || undefined}>
       <div className="floor__sticky">
         <canvas ref={canvasRef} className="floor__canvas" width={1920} height={1080} aria-hidden="true" />
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -93,7 +94,7 @@ export function PlantStory() {
         <ol className="floor__dots" aria-label="Chapters">
           {CHAPTERS.map((c, i) => <li key={c.id} aria-current={i === chapter ? "step" : undefined}><span className="sr-only">{c.title}</span></li>)}
         </ol>
-        <span className="floor__tag">Concept animation · simulated data</span>
+        <span className="floor__tag">Concept animation, simulated data</span>
       </div>
     </section>
   );

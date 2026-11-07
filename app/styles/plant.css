@@ -12,11 +12,8 @@
 .floor__eyebrow { font-weight: 700; font-size: 13px; line-height: 1; letter-spacing: .14em; text-transform: uppercase; color: #5f5f5f; }
 .floor__h { margin-top: 10px; font-family: var(--display); font-weight: 800; font-size: clamp(34px, 4.6vw, 64px); line-height: .92; text-transform: uppercase; color: #252525; }
 .floor__card { position: absolute; left: clamp(16px, 5vw, 72px); bottom: clamp(24px, 9vh, 96px); width: min(460px, calc(100vw - 32px));
-  padding: 24px 26px 26px; border-radius: 18px; color: #252525; background: rgba(255, 255, 255, .72);
-  -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%);
-  border: 1.5px solid rgba(255, 255, 255, .85); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 30px 60px -30px rgba(38, 40, 43, .45); }
-.floor__card::before { content: ""; position: absolute; left: 0; top: 18px; bottom: 18px; width: 5px; border-radius: 0 4px 4px 0; background: var(--tone); transition: background 220ms cubic-bezier(.23, 1, .32, 1); }
-.floor__kicker { font-weight: 700; font-size: 13px; line-height: 1.2; letter-spacing: .1em; text-transform: uppercase; color: #5f5f5f; }
+  padding: 24px 28px 26px; border-radius: 6px; color: #252525; background: #f1f1ef; border: 0; box-shadow: 0 22px 44px -30px rgba(38, 40, 43, .38); }
+.floor__kicker { font-weight: 700; font-size: 13px; line-height: 1.2; letter-spacing: .1em; text-transform: uppercase; color: var(--tone-ink, #5f5f5f); }
 .floor__title { margin-top: 6px; font-family: var(--display); font-weight: 800; font-size: clamp(28px, 3vw, 40px); line-height: .95; text-transform: uppercase; }
 .floor__body { margin-top: 10px; font-size: 17px; line-height: 1.45; color: #333; }
 .floor__text { animation: floor-in 220ms cubic-bezier(.23, 1, .32, 1); }
@@ -24,7 +21,7 @@
 .floor__dots { position: absolute; right: clamp(16px, 3vw, 40px); top: 50%; transform: translateY(-50%); display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .floor__dots li { width: 10px; height: 10px; border-radius: 50%; background: rgba(37, 37, 37, .22); transition: transform 200ms ease, background 200ms ease; }
 .floor__dots li[aria-current="step"] { background: #252525; transform: scale(1.35); }
-.floor__tag { position: absolute; right: clamp(16px, 3vw, 40px); bottom: 16px; padding: 4px 10px 5px; border-radius: 8px; background: rgba(38, 40, 43, .8); color: #f1f1f1; font-weight: 600; font-size: 12px; line-height: 1; letter-spacing: .02em; }
+.floor__tag { position: absolute; right: clamp(16px, 3vw, 40px); bottom: 16px; color: #5f5f5f; font-weight: 600; font-size: 13px; line-height: 1; letter-spacing: .02em; }
 @media (max-width: 720px) {
   .floor__veil { background: linear-gradient(0deg, rgba(228, 228, 228, .95) 0%, rgba(228, 228, 228, .55) 38%, rgba(228, 228, 228, 0) 60%); }
   .floor__dots { display: none; }
