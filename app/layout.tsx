@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Big_Shoulders, Source_Sans_3 } from "next/font/google";
+import { Source_Sans_3 } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense, type ReactNode } from "react";
 
 import { DemoGuide } from "@/components/guide/DemoGuide";
@@ -30,13 +31,13 @@ const sourceSans = Source_Sans_3({
   display: "swap",
 });
 
-const display = Big_Shoulders({
-  subsets: ["latin"],
-  weight: ["700", "800"],
+// Big Shoulders is self-hosted (variable font, OFL): Next has no fallback metrics for the Google copy and
+// warned on every build; the local file gets its fallback sized from the font itself.
+const display = localFont({
+  src: "./fonts/BigShoulders-var.woff2",
+  weight: "100 900",
   variable: "--font-display",
   display: "swap",
-  // Next has no metrics for Big Shoulders, so it cannot size a fallback; say so instead of warning on every build
-  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
