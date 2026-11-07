@@ -35,6 +35,8 @@ const display = Big_Shoulders({
   weight: ["700", "800"],
   variable: "--font-display",
   display: "swap",
+  // Next has no metrics for Big Shoulders, so it cannot size a fallback; say so instead of warning on every build
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
