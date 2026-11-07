@@ -209,3 +209,23 @@
 /* keep the device frames in shape while the captures load */
 .laptop img { aspect-ratio: 1440 / 900; background: var(--panel); object-fit: cover; }
 .phone img { aspect-ratio: 390 / 844; background: var(--panel); object-fit: cover; }
+
+/* ---------- Video: film modal + short loops (components/landing/FilmButton.tsx, LoopVideo.tsx) ---------- */
+.film-len { font-weight: 600; opacity: .7; margin-left: 2px; font-variant-numeric: tabular-nums; }
+dialog.film { width: min(1120px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 10px; background: #26282b; color: #ececec; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6); overflow: hidden; }
+dialog.film::backdrop { background: rgba(28, 29, 31, .72); }
+.film__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); padding: 10px 10px 10px 18px; }
+.film__head p { font-size: 14px; font-weight: 600; color: #a3a3a3; }
+.film__head .icon-btn { color: #ececec; }
+dialog.film video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #1f2123; }
+.loop { position: relative; margin: 0; }
+.loop video { display: block; width: 100%; height: auto; border-radius: 8px; background: var(--panel); box-shadow: 0 22px 44px -30px rgba(38, 40, 43, .38); }
+.loop__label { position: absolute; right: 10px; bottom: 8px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: #5f5f5f; paint-order: stroke fill; -webkit-text-stroke: 4px rgba(232, 232, 230, .9); }
+.beat__media { width: min(100%, 460px); margin-top: var(--s3); }
+.beat__media video { aspect-ratio: 16 / 10; object-fit: cover; }
+.laptop .loop video, .phone .loop video { border-radius: 6px 6px 0 0; box-shadow: none; }
+.laptop .loop video { aspect-ratio: 1440 / 900; object-fit: cover; }
+.phone .loop video { aspect-ratio: 390 / 844; object-fit: cover; border-radius: 25px; }
+.laptop .loop__label, .phone .loop__label { display: none; }
+@media (max-width: 1100px) { .beat__media { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { dialog.film { transition: none; } }

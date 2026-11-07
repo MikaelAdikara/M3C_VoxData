@@ -294,14 +294,23 @@ Every page has a light and a dark theme. The default follows the device; the sun
 ## Landing (cover)
 
 `app/page.tsx` (study: `design/mockup/landing3.html`). Few words, and no two sections in a row share a composition:
-1. **Hero, centred:** "AI DETECTS. PEOPLE DECIDE." over the full-width 3D line; one sentence; two pills; a live strip with takt, bodies this shift and the current andon.
-2. **The trail on a centre spine:** a sticky abnormality tag (punched card, hazard stripe) in the middle; five steps alternate left and right, each with who decides. Stamps appear only for steps that really happened; the rest say "Waiting".
-3. **Three signs:** stop, caution and safe plates for the three things the system never does.
-4. **Cameras, full bleed:** a dark band with a camera mosaic, the alert frame large in the centre, and a legend of what each frame is.
-5. **Ledger, centred:** large baseline → target figures with provenance chips; the whole case on one A3 sits behind "Read the whole case on one A3".
-6. **Closing, centred:** one heading, one button, a laptop and phone with real app captures.
+1. **Hero, centred:** "AI DETECTS. PEOPLE DECIDE." over the full-width 3D line; one sentence; three buttons (Enter the prototype, Follow one defect, Watch the film 2:25); a live strip with takt, bodies this shift and the current andon. The film opens in a native `<dialog>` (`components/landing/FilmButton.tsx`, 720p self-hosted, burned-in captions plus an optional VTT track); Escape or close stops it and returns focus.
+2. **The trail on a centre spine:** a sticky abnormality tag (punched card, hazard stripe) in the middle; five steps alternate left and right, each with who decides and a short loop of what that person sees on screen. Only the active step's loop plays. Stamps appear only for steps that really happened; the rest say "Waiting".
+3. **See it on the floor:** a sticky white-clay model of the plant scrubbed by scroll (`components/plant/PlantStory.tsx`), one plain plate per chapter with the colour on the kicker. Desktop renders it live in WebGL; phones and browsers without WebGL scrub a pre-rendered video of the same story (`public/landing/plant/floor-scrub.*`), framed per chapter for a portrait crop.
+4. **Three signs:** stop, caution and safe plates for the three things the system never does. No video here on purpose.
+5. **Cameras, full bleed:** a dark band with a camera mosaic, the alert frame large in the centre, and a legend of what each frame is.
+6. **Ledger, centred:** large baseline → target figures with provenance chips; the whole case on one A3 sits behind "Read the whole case on one A3".
+7. **Closing, centred:** one heading, one button, a laptop and phone playing short loops of the real app (posters are the captures).
 
-Footer: the TMMIN case text, "not affiliated with or endorsed by Toyota", footage and model credits. No logos at all.
+**Video on the cover** (`components/landing/LoopVideo.tsx`):
+- Loops are rendered for the web (`video-production/web-loops`), never cut from the film.
+- They are muted, seamless (the last frame equals the first), 4–7 s long, under 1.5 MB each, as MP4 + WebM with a poster.
+- `preload="none"`. A loop plays only while on screen (and only when active, in the trail).
+- Reduced motion shows the poster only.
+- Each loop carries a plain "simulated data" label.
+- No captions, cursor-free idle frames, and no slop overlays: no stripes, rims, pills, or bounce.
+
+Footer: the TMMIN case text, "not affiliated with or endorsed by Toyota", footage, model, voice and music credits. No logos at all.
 
 ## Do's and Don'ts
 

@@ -3,7 +3,9 @@ import Link from "next/link";
 import { CameraFeed } from "@/components/cctv/CameraFeed";
 import { A3Sheet } from "@/components/landing/A3Sheet";
 import { CoverBar } from "@/components/landing/CoverBar";
+import { FilmButton } from "@/components/landing/FilmButton";
 import { HeroLine } from "@/components/landing/HeroLine";
+import { LoopVideo } from "@/components/landing/LoopVideo";
 import { TrailSpine } from "@/components/landing/TrailSpine";
 import { PlantStory } from "@/components/plant/PlantStory";
 import { Icon } from "@/components/ui/Icon";
@@ -61,6 +63,7 @@ export default async function CoverPage() {
                 Start the guided demo
               </Link>
               <Link className="btn btn--xl btn--ghost" href="/station">Explore on my own</Link>
+              <FilmButton />
             </div>
           </div>
           <dl className="live" aria-label="Line right now, simulated">
@@ -149,9 +152,9 @@ export default async function CoverPage() {
           <Link className="btn btn--xl" href="/station"><Icon name="arrow-right" weight="bold" />Enter the prototype</Link>
           <div className="devices" aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <div className="laptop"><img src="/landing/v3-laptop.jpg" alt="" loading="lazy" /></div>
+            <div className="laptop"><LoopVideo src="/landing/loops/close-laptop" label="" /></div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <div className="phone"><img src="/landing/v3-phone.jpg" alt="" loading="lazy" /></div>
+            <div className="phone"><LoopVideo src="/landing/loops/close-phone" label="" /></div>
           </div>
         </section>
       </main>
@@ -163,7 +166,7 @@ export default async function CoverPage() {
         </p>
         <p>Concept prototype · simulated data · not connected to TMMIN systems</p>
         <p>
-          Camera test clips: Engin Altundağ and Parker Filme via Pexels, in black and white. Car bodies adapted from models by Daniel Zhabotinsky and Comrade1280 (CC BY 4.0, Sketchfab); line model and bead images are our own illustrations. <Link href="/simulator">Demo control</Link>
+          Camera test clips: Engin Altundağ and Parker Filme via Pexels, in black and white. Car bodies adapted from models by Daniel Zhabotinsky and Comrade1280 (CC BY 4.0, Sketchfab); line model and bead images are our own illustrations. Concept film: voice by ElevenLabs (elevenlabs.io), music &ldquo;Technology&rdquo; by Monume (Pixabay). <Link href="/simulator">Demo control</Link>
         </p>
       </footer>
     </>

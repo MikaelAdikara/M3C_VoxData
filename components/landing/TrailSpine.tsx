@@ -3,18 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 
 import { plantTime } from "@/components/format";
+import { LoopVideo } from "@/components/landing/LoopVideo";
 import { BeadIllustration } from "@/components/station/BeadIllustration";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import type { TrailStepView, TrailView } from "@/lib/types";
 
 /* The five hand-offs, in order. Text is how the loop works; the stamps on
    the tag come only from steps that really exist in the trail. */
-const BEATS: { kind: TrailStepView["kind"]; n: string; title: string; sys: string; who: string; icon: IconName; stamp: string }[] = [
-  { kind: "flagged", n: "1 · Camera", title: "A bead that doesn't match the good ones", sys: "System flags it and marks where", who: "Next: operator", icon: "video-camera", stamp: "Flagged" },
-  { kind: "confirmed", n: "2 · Operator", title: "The station that made it confirms it", sys: "Or rejects it, with a reason", who: "Decides: operator", icon: "hand-pointing", stamp: "Confirmed" },
-  { kind: "team_leader_decision", n: "3 · Team leader", title: "A person chooses what the line does", sys: "System suggests, never stops the line", who: "Decides: team leader", icon: "users-three", stamp: "Decided" },
-  { kind: "a3_open", n: "4 · Engineer", title: "The third repeat opens an A3", sys: "AI drafts two blocks, and says so", who: "Decides: engineer", icon: "clipboard-text", stamp: "A3 open" },
-  { kind: "validated_standard", n: "5 · Senior expert", title: "The fix becomes the standard", sys: "Yokoten to every same-process station", who: "Decides: senior expert", icon: "seal-check", stamp: "Validated" },
+/* Each beat carries a short loop of what that person sees on screen (video-production/web-loops). */
+const BEATS: { kind: TrailStepView["kind"]; n: string; title: string; sys: string; who: string; icon: IconName; stamp: string; loop: string }[] = [
+  { kind: "flagged", n: "1 · Camera", title: "A bead that doesn't match the good ones", sys: "System flags it and marks where", who: "Next: operator", icon: "video-camera", stamp: "Flagged", loop: "trail-1-camera" },
+  { kind: "confirmed", n: "2 · Operator", title: "The station that made it confirms it", sys: "Or rejects it, with a reason", who: "Decides: operator", icon: "hand-pointing", stamp: "Confirmed", loop: "trail-2-operator" },
+  { kind: "team_leader_decision", n: "3 · Team leader", title: "A person chooses what the line does", sys: "System suggests, never stops the line", who: "Decides: team leader", icon: "users-three", stamp: "Decided", loop: "trail-3-teamleader" },
+  { kind: "a3_open", n: "4 · Engineer", title: "The third repeat opens an A3", sys: "AI drafts two blocks, and says so", who: "Decides: engineer", icon: "clipboard-text", stamp: "A3 open", loop: "trail-4-engineer" },
+  { kind: "validated_standard", n: "5 · Senior expert", title: "The fix becomes the standard", sys: "Yokoten to every same-process station", who: "Decides: senior expert", icon: "seal-check", stamp: "Validated", loop: "trail-5-expert" },
 ];
 
 const SUBS = ["Waiting at the station", "Flagged by camera · waiting for operator", "Confirmed · yellow andon", "Decided by team leader", "Kaizen loop · A3 open", "Validated · reusable by every station"];
@@ -99,6 +101,7 @@ export function TrailSpine({ trail }: { trail: TrailView | null }) {
             <h3>{b.title}</h3>
             <span className="sys">{b.sys}</span>
             <span className="who"><Icon name="user-circle" weight="bold" />{b.who}</span>
+            <LoopVideo className="beat__media" src={`/landing/loops/${b.loop}`} active={step === i + 1} label="App screen, simulated data" />
           </div>
         ))}
       </div>
