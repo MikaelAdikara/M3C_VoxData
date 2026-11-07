@@ -237,6 +237,25 @@ export async function createPlant(canvas, opts = {}) {
     t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
     return t;
   })();
+  /* soft floor pool: broad radial falloff, full alpha at the centre, 0 at the edge, no rim */
+  const poolTex = (() => {
+    const S = 128, data = new Uint8Array(S * S * 4);
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const d = Math.min(1, Math.hypot(x + 0.5 - S / 2, y + 0.5 - S / 2) / (S / 2));
+      const a = Math.pow(1 - d * d, 2.2);
+      const i = (y * S + x) * 4;
+      data[i] = data[i + 1] = data[i + 2] = 255; data[i + 3] = Math.round(a * 255);
+    }
+    const t = new THREE.DataTexture(data, S, S);
+    t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+    return t;
+  })();
+  const poolGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+  const poolMesh = (color, size, y = 0.11) => {
+    const m = new THREE.Mesh(poolGeo, new THREE.MeshBasicMaterial({ map: poolTex, color, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+    m.scale.set(size, 1, size); m.position.y = y; m.userData.noAO = true; m.renderOrder = 3; m.userData.size = size;
+    return m;
+  };
   const glowSprite = (color, size) => {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, depthWrite: false, opacity: 0, fog: false }));
     sp.scale.set(size, size, 1);
@@ -483,7 +502,7 @@ export async function createPlant(canvas, opts = {}) {
       const x = lerp(bb.min.x * 0.32, bb.max.x * 0.22, i / 28);
       ray.set(new THREE.Vector3(x, bb.max.y + 2, zLine), new THREE.Vector3(0, -1, 0));
       const hit = ray.intersectObjects(meshes, false)[0];
-      const y = hit && hit.point.y > bb.min.y + (bb.max.y - bb.min.y) * 0.84 ? hit.point.y + 0.03 : lastY;
+      const y = hit && hit.point.y > bb.min.y + (bb.max.y - bb.min.y) * 0.84 ? hit.point.y + 0.012 : lastY;
       lastY = y;
       pts.push(new THREE.Vector3(x, y, zLine));
     }
@@ -503,14 +522,14 @@ export async function createPlant(canvas, opts = {}) {
       const x = lerp(bb.min.x * 0.32, bb.max.x * 0.22, i / 28);
       ray.set(new THREE.Vector3(x, top + 2, bb.max.z * 0.4), new THREE.Vector3(0, -1, 0));
       const hit = ray.intersectObjects(meshes, false)[0];
-      lastY = hit && hit.point.y > bb.min.y + h * 0.84 ? hit.point.y + 0.03 : lastY;
+      lastY = hit && hit.point.y > bb.min.y + h * 0.84 ? hit.point.y + 0.012 : lastY;
       roof.push(new THREE.Vector3(x, lastY, bb.max.z * 0.4));
     }
     for (let i = 0; i <= 32; i++) {
       const x = lerp(bb.min.x * 0.8, bb.max.x * 0.8, i / 32);
       ray.set(new THREE.Vector3(x, yS, bb.max.z + 2), new THREE.Vector3(0, 0, -1));
       const hit = ray.intersectObjects(meshes, false)[0];
-      lastZ = hit && hit.point.z > bb.max.z * 0.6 ? hit.point.z + 0.035 : lastZ;
+      lastZ = hit && hit.point.z > bb.max.z * 0.6 ? hit.point.z + 0.015 : lastZ;
       side.push(new THREE.Vector3(x, yS, lastZ));
     }
     return [new THREE.CatmullRomCurve3(roof), new THREE.CatmullRomCurve3(side)];
@@ -693,15 +712,19 @@ export async function createPlant(canvas, opts = {}) {
           lineG.add(camG);
           const coneGeo = new THREE.ConeGeometry(1.7, 3.1, 4, 1, true);
           coneGeo.translate(0, -1.55, 0); coneGeo.rotateY(Math.PI / 4);
-          const coneMat = new THREE.MeshBasicMaterial({ color: COLORS.yellow, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false });
+          {
+            // per-vertex alpha: strongest at the camera (apex), fading toward the floor end; no rim lines
+            const pa = coneGeo.getAttribute("position"), col = new Float32Array(pa.count * 4);
+            for (let vi = 0; vi < pa.count; vi++) { const a = lerp(1, 0.3, clamp01(-pa.getY(vi) / 3.1)); col.set([1, 1, 1, a], vi * 4); }
+            coneGeo.setAttribute("color", new THREE.BufferAttribute(col, 4));
+          }
+          const coneMat = new THREE.MeshBasicMaterial({ color: COLORS.yellow, vertexColors: true, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, fog: false });
           const cone = new THREE.Mesh(coneGeo, coneMat);
           cone.userData.noAO = true; cone.renderOrder = 4;
           cone.position.copy(camG.position); cone.position.y -= 0.15;
           cone.rotation.z = 0.32; cone.rotation.x = 0.18;
-          const edges = new THREE.LineSegments(new THREE.EdgesGeometry(coneGeo), new THREE.LineBasicMaterial({ color: COLORS.yellow, transparent: true, opacity: 0, fog: false }));
-          cone.add(edges);
           lineG.add(cone);
-          o.cone = { cone, coneMat, edgeMat: edges.material };
+          o.cone = { cone, coneMat, edgeMat: new THREE.LineBasicMaterial() };   // edgeMat kept for compatibility; no rim lines are drawn
         }
       } else if (type === "body") {
         [-1, 1].forEach((sd) => { sBox(0.5, 1.5, 0.5, M.clay, sx + 0.6, 0.75, z + sd * 2.6); sBox(0.9, 0.18, 0.18, M.steel, sx + 0.6, 1.45, z + sd * 2.2); });
@@ -873,12 +896,12 @@ export async function createPlant(canvas, opts = {}) {
   const seamMat = new THREE.MeshBasicMaterial({ color: COLORS.red, toneMapped: false, transparent: true, opacity: 1, side: THREE.DoubleSide, fog: false });
   const seamGroup = ([roofC, sideC]) => {
     const g = new THREE.Group();
-    const geos = [new THREE.TubeGeometry(roofC, 96, 0.085, 8, false), new THREE.TubeGeometry(sideC, 96, 0.06, 8, false)];
+    const geos = [new THREE.TubeGeometry(roofC, 96, 0.038, 8, false), new THREE.TubeGeometry(sideC, 96, 0.03, 8, false)];
     geos.forEach((geo) => [1, -1].forEach((sz) => {              // both sides of the body (mirrored in z)
       const m = new THREE.Mesh(geo, seamMat); m.scale.z = sz; m.userData.noAO = true; m.renderOrder = 5; g.add(m);
     }));
     const sprites = [];
-    [[roofC, [0.15, 0.5, 0.85], 1.5], [sideC, [0.1, 0.37, 0.63, 0.9], 1.25]].forEach(([c, us, size]) => us.forEach((u) => [1, -1].forEach((sz) => {
+    [[roofC, [0.15, 0.5, 0.85], 0.8], [sideC, [0.1, 0.37, 0.63, 0.9], 0.65]].forEach(([c, us, size]) => us.forEach((u) => [1, -1].forEach((sz) => {
       const p = c.getPointAt(u);
       const sp = glowSprite(COLORS.red, size); sp.position.set(p.x, p.y + 0.03, p.z * sz); g.add(sp); sprites.push(sp);
     })));
@@ -1042,12 +1065,34 @@ export async function createPlant(canvas, opts = {}) {
 
   // phase outlines around halls + station rings
   const hallLoop = (h, pad = 1.2) => polyPath([[h.x0 - pad, h.z0 - pad], [h.x1 + pad, h.z0 - pad], [h.x1 + pad, h.z1 + pad], [h.x0 - pad, h.z1 + pad]], 3, true);
-  const phaseOutlines = [hallLoop(HALL_K2), hallLoop(HALL_K1), hallLoop(HALL_FA)].map((p) => makeRibbon(p, COLORS.green, 0.5, () => 0.08));
+  const phaseOutlines = [hallLoop(HALL_K2), hallLoop(HALL_K1), hallLoop(HALL_FA)].map((p) => makeRibbon(p, COLORS.green, 0.5, () => 0.08));   // v3: never shown (no edge lines)
+  // v3 phase marker: a very soft green wash over each hall floor with feathered edges
+  const featherTex = (() => {
+    const S = 128, data = new Uint8Array(S * S * 4), f = 0.16;
+    for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+      const u = (x + 0.5) / S, v = (y + 0.5) / S;
+      const a = smooth(Math.min(u, 1 - u) / f) * smooth(Math.min(v, 1 - v) / f);
+      const i = (y * S + x) * 4;
+      data[i] = data[i + 1] = data[i + 2] = 255; data[i + 3] = Math.round(a * 255);
+    }
+    const t = new THREE.DataTexture(data, S, S);
+    t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter; t.needsUpdate = true;
+    return t;
+  })();
+  const hallTints = [HALL_K2, HALL_K1, HALL_FA].map((h) => {
+    const pad = 3;
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(h.x1 - h.x0 + 2 * pad, h.z1 - h.z0 + 2 * pad).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ map: featherTex, color: COLORS.green, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+    m.position.set((h.x0 + h.x1) / 2, 0.075, (h.z0 + h.z1) / 2);
+    m.userData.noAO = true; m.renderOrder = 2; m.visible = false;
+    world.add(m);
+    return m;
+  });
   const ringGeo = new THREE.RingGeometry(2.7, 3.0, 64);
   ringGeo.rotateX(-Math.PI / 2);
   const mkRing = (x, z) => {
-    const m = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: COLORS.green, transparent: true, opacity: 0, depthWrite: false, fog: false }));
-    m.position.set(x, 0.1, z); m.userData.noAO = true; m.renderOrder = 3; world.add(m); return m;
+    const m = poolMesh(COLORS.green, 9.0);   // soft filled pool (no outline ring), just above the conveyor slats
+    m.position.set(x, 0.215, z); m.userData.noAO = true; m.renderOrder = 3; world.add(m); return m;
   };
   const phaseRings = [
     K2.objs.map((o) => mkRing(o.x, 0)),
@@ -1063,13 +1108,12 @@ export async function createPlant(canvas, opts = {}) {
   ];
   {
     const dmax = Math.max(...waveStations.map((w) => Math.hypot(w.x - ST04, w.z)));
-    const discGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
     waveStations.forEach((w) => {
       w.th = 0.8 * Math.hypot(w.x - ST04, w.z) / dmax;
-      w.ring = new THREE.Mesh(discGeo, new THREE.MeshBasicMaterial({ map: glowTex, color: COLORS.green, transparent: true, opacity: 0, depthWrite: false, fog: false }));
-      w.ring.position.set(w.x, 0.12, w.z); w.ring.userData.noAO = true; w.ring.renderOrder = 4; w.ring.visible = false;
-      w.edge = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: COLORS.green, transparent: true, opacity: 0, depthWrite: false, fog: false }));
-      w.edge.position.set(w.x, 0.11, w.z); w.edge.userData.noAO = true; w.edge.renderOrder = 4; w.edge.visible = false;
+      w.ring = poolMesh(COLORS.green, 1, 0.12);            // resting pool
+      w.ring.position.set(w.x, 0.22, w.z); w.ring.renderOrder = 4; w.ring.visible = false;
+      w.edge = poolMesh(COLORS.green, 1, 0.11);            // expanding filled pulse (not a ring)
+      w.edge.position.set(w.x, 0.215, w.z); w.edge.renderOrder = 4; w.edge.visible = false;
       world.add(w.ring, w.edge);
     });
   }
@@ -1085,7 +1129,7 @@ export async function createPlant(canvas, opts = {}) {
     const dot = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })); dot.position.set(0, 2.62, 0.33); pin.add(dot);
   }
   const pulseRings = [0, 1].map(() => {
-    const m = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.0, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: COLORS.red, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+    const m = poolMesh(COLORS.red, 2.2, 0.02);   // soft filled pulse (no outline ring)
     m.userData.noAO = true; m.renderOrder = 4; pin.add(m); return m;
   });
   pin.visible = false;
@@ -1098,19 +1142,26 @@ export async function createPlant(canvas, opts = {}) {
     const g = cardCanvas.getContext("2d");
     const rr = (x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
     g.clearRect(0, 0, 512, 320);
-    rr(6, 6, 500, 308, 36); g.fillStyle = "rgba(255,255,255,0.82)"; g.fill();
-    g.lineWidth = 6; g.strokeStyle = "rgba(255,255,255,1)"; g.stroke();
-    g.fillStyle = "#1a7a3d"; rr(36, 36, 74, 74, 18); g.fill();
-    g.strokeStyle = "#ffffff"; g.lineWidth = 11; g.lineCap = "round"; g.beginPath(); g.moveTo(54, 74); g.lineTo(68, 90); g.lineTo(93, 56); g.stroke();
-    g.fillStyle = "#b9bcbf"; g.fillRect(132, 44, 250, 22); g.fillStyle = "#d6d8da"; g.fillRect(132, 82, 170, 16);
-    for (let i = 0; i < 4; i++) { g.fillStyle = "#dfe0e1"; g.fillRect(36, 150 + i * 36, 440 - i * 70, 16); }
+    // plain solid plate: no rim, no icon
+    rr(4, 4, 504, 312, 30); g.fillStyle = "#f1f1ef"; g.fill();
+    g.textBaseline = "alphabetic";
+    g.fillStyle = "#1a7a3d"; g.font = "bold 30px Helvetica, Arial, sans-serif";
+    if ("letterSpacing" in g) g.letterSpacing = "3px";
+    g.fillText("VALIDATED STANDARD", 40, 82);
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+    g.fillStyle = "#252525"; g.font = "bold 62px Helvetica, Arial, sans-serif";
+    g.fillText("KC-SEAL-051 r2", 40, 162);
+    g.fillStyle = "#dcdcda"; g.fillRect(40, 206, 380, 14); g.fillRect(40, 238, 280, 14);
   }
   const cardTex = new THREE.CanvasTexture(cardCanvas); cardTex.colorSpace = THREE.SRGBColorSpace; cardTex.anisotropy = 8;
   const card = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.625), new THREE.MeshBasicMaterial({ map: cardTex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, fog: false }));
   card.userData.noAO = true; card.renderOrder = 6; card.visible = false;
   const cardShadow = new THREE.Mesh(new THREE.CircleGeometry(1.1, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: glowTex, color: 0x000000, transparent: true, opacity: 0.12, depthWrite: false }));
   cardShadow.userData.noAO = true; cardShadow.visible = false;
-  world.add(card, cardShadow);
+  // the card is drawn in an overlay pass after GTAO so background AO never darkens the plate
+  const overlay = new THREE.Scene();
+  overlay.add(card);
+  world.add(cardShadow);
   // one continuous smooth path: office -> st-01 -> st-02 -> north door -> K1 line (no branch jump)
   const cardPath = (() => {
     const pts = [[-41.5, 9.2], [-38.2, 8.8], [-36.9, 3.0], [-36.5, -4.6], [-33.4, -7.3], [-26.4, -7.4], [xAt(0), -4.8],
@@ -1149,6 +1200,9 @@ export async function createPlant(canvas, opts = {}) {
     };
     composer.addPass(gtao);
   }
+  const overlayPass = new RenderPass(overlay, camera);
+  overlayPass.clear = false; overlayPass.clearDepth = true;
+  composer.addPass(overlayPass);
   // tilt-shift with a sharp band around the focus line (r) and a soft ramp to full blur (px per tap = amt)
   const tiltShader = (dir) => ({
     uniforms: { tDiffuse: { value: null }, amt: { value: 0 }, r: { value: 0.5 }, band: { value: 0.1 }, soft: { value: 0.32 }, texel: { value: new THREE.Vector2(dir === "h" ? 1 / (W * PR) : 0, dir === "v" ? 1 / (H * PR) : 0) } },
@@ -1233,7 +1287,7 @@ export async function createPlant(canvas, opts = {}) {
       applyLamps(o.lamps, waved ? "validated" : s.stations?.[o.id] ?? defaults(o), pulse, waved ? waveGlow : 1);
       if (o.cone) {
         const on2 = s.cone && s.cone.station === o.id ? clamp01(s.cone.k ?? 1) : 0;
-        o.cone.coneMat.opacity = 0.16 * on2;
+        o.cone.coneMat.opacity = 0.3 * on2;
         o.cone.edgeMat.opacity = 0.75 * on2;
         o.cone.cone.visible = on2 > 0;
         o.cone.cone.scale.set(1, 0.3 + 0.7 * on2, 1);
@@ -1310,14 +1364,15 @@ export async function createPlant(canvas, opts = {}) {
       if (hit) waveReached.add(w.id);
       const sc = Math.min(1.8, Math.max(1, ws * 0.7));
       w.ring.visible = hit;                      // soft green pool: flashes on the flip, then stays faintly lit
-      w.edge.visible = hit && q < 1;             // crisp ring that expands and fades
+      w.edge.visible = hit && q < 1;             // soft filled glow that expands and fades
       if (hit) {
         const e = 1 - (1 - q) * (1 - q);
-        const r = (5 + 3 * e) * sc;
+        const r = (6.5 + 1.5 * e) * sc;
         w.ring.scale.set(r, 1, r);
-        w.ring.material.opacity = 0.5 + 0.4 * Math.sin(Math.PI * Math.min(1, q));
-        w.edge.scale.setScalar((0.5 + 1.2 * e) * sc);
-        w.edge.material.opacity = 0.95 * (1 - q);
+        w.ring.material.opacity = 0.26 + 0.12 * Math.sin(Math.PI * Math.min(1, q));
+        const pr = (3 + 11 * e) * sc;
+        w.edge.scale.set(pr, 1, pr);
+        w.edge.material.opacity = 0.4 * (1 - q) * (1 - q);
       }
     });
 
@@ -1356,10 +1411,10 @@ export async function createPlant(canvas, opts = {}) {
         const isCar = b.stages[2]?.visible;
         [seams, seamsCar].forEach((arr, ai) => arr.forEach((g, i) => {
           g.visible = i === b.variant && (ai === 1) === !!isCar;
-          if (g.visible) g.userData.sprites.forEach((sp) => { sp.material.opacity = 0.55 * dk * fl; });
+          if (g.visible) g.userData.sprites.forEach((sp) => { sp.material.opacity = 0.32 * dk * fl; });
         }));
         seamMat.opacity = dk;
-        defectFloor.material.opacity = 0.8 * dk * (0.9 + 0.1 * Math.sin(t * 5.0));
+        defectFloor.material.opacity = 0.55 * dk * (0.9 + 0.1 * Math.sin(t * 5.0));
       }
     }
 
@@ -1452,7 +1507,7 @@ export async function createPlant(canvas, opts = {}) {
       const p = R.defect[0].at(smooth(clamp01(dv.k)) * R.defect[0].total);
       pin.position.set(p.x, 0.1, p.z);
       pin.children[0].position.y = 2.6 + Math.sin(t * 3) * 0.1;
-      pulseRings.forEach((r, i) => { const q = (t * 0.8 + i * 0.5) % 1; r.scale.setScalar(0.6 + q * 2.4); r.material.opacity = 0.55 * (1 - q); r.position.y = 0.02; });
+      pulseRings.forEach((r, i) => { const q = (t * 0.8 + i * 0.5) % 1; const sz = 2.2 * (0.6 + q * 2.4); r.scale.set(sz, 1, sz); r.material.opacity = 0.38 * (1 - q) * (1 - q); r.position.y = 0.02; });
     }
 
     // knowledge card along the launch route
@@ -1473,16 +1528,13 @@ export async function createPlant(canvas, opts = {}) {
     // rollout phases
     [0, 1, 2].forEach((i) => {
       const k = smooth(clamp01(phase - i));
-      const o = phaseOutlines[i];
-      o.mesh.visible = k > 0;
-      o.mat.uniforms.uHead.value = o.path.total * k;
-      o.mat.uniforms.uOpacity.value = 0.9;
-      o.mat.uniforms.uPulse.value = 1; o.mat.uniforms.uPhase.value = t * 4 * ws;
-      o.mat.uniforms.uCore.value = o.core * ws; o.mat.uniforms.uOuter.value = o.outer * ws; o.mat.uniforms.uSpacing.value = 9 * ws;
+      phaseOutlines[i].mesh.visible = false;
+      hallTints[i].visible = k > 0;
+      hallTints[i].material.opacity = 0.14 * k;
       phaseRings[i].forEach((r, j) => {
         const kk = smooth(clamp01((phase - i) * 1.6 - j * 0.08));
-        r.visible = kk > 0; r.material.opacity = 0.85 * kk;
-        r.scale.setScalar(0.85 + 0.15 * kk);
+        r.visible = kk > 0; r.material.opacity = 0.34 * kk;
+        const sz = r.userData.size * (0.85 + 0.15 * kk); r.scale.set(sz, 1, sz);
       });
     });
 
